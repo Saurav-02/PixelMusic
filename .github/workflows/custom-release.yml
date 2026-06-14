@@ -1,0 +1,46 @@
+name: Build Custom Release APK
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Java 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '21'
+
+    - name: Grant Execute Permission for Gradle
+      run: chmod +x gradlew
+
+    - name: Build Optimized Release APK
+      run: ./gradlew assembleRelease
+
+    - name: Sign the Release APK
+      run: |
+        # Generate a temporary signing key
+        keytool -genkey -v -keystore custom.keystore -storepass android -alias customkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        
+        BUILD_TOOLS_PATH=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
+        
+        # Find the compressed APK that Gradle just built
+        APK_PATH=$(find app/build/outputs/apk/release -name "*-unsigned.apk" | head -n 1)
+        
+        # Sign it perfectly so your phone accepts it
+        $BUILD_TOOLS_PATH/apksigner sign --ks custom.keystore --ks-pass pass:android --key-pass pass:android --out final-release.apk $APK_PATH
+
+    - name: Upload Finished APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: PixelMusic-Optimized-APK
+        path: final-release.apk
+        
