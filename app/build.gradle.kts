@@ -35,7 +35,7 @@ val enableComposeCompilerReports = providers.gradleProperty("pixelmusic.enableCo
 
 @Suppress("DEPRECATION")
 android {
-    namespace = "deezer.android.app"
+    namespace = "com.unshoo.pixelmusic"
     compileSdk = 37
 
     sourceSets {
