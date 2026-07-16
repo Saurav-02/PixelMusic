@@ -29,6 +29,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
 import androidx.lifecycle.compose.currentStateAsState
 import com.unshoo.pixelmusic.presentation.navigation.isMainRootRoute
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 
 
 @OptIn(UnstableApi::class)
