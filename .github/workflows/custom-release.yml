@@ -23,7 +23,7 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build Optimized Release APK
-      run: ./gradlew assembleRelease -Pandroid.injected.build.abi=arm64-v8a
+      run: ./gradlew :app:assembleRelease
 
     - name: Sign the Release APK
       run: |
@@ -32,8 +32,8 @@ jobs:
         
         BUILD_TOOLS_PATH=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
         
-        # Find the compressed APK that Gradle just built using a broader wildcard search
-        APK_PATH=$(find app/build/outputs/ -name "*unsigned.apk" | head -n 1)
+        # Search the entire app build directory to confidently catch the unsigned file
+        APK_PATH=$(find app/build/outputs/ -name "*unsigned.apk" -o -name "*release*.apk" | head -n 1)
         
         # Sign it perfectly so your phone accepts it
         $BUILD_TOOLS_PATH/apksigner sign --ks custom.keystore --ks-pass pass:android --key-pass pass:android --out final-release.apk $APK_PATH
