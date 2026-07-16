@@ -115,16 +115,13 @@ fun ScreenWrapper(
         label = "dimAlpha"
     )
 
+    // Hook into your data preference layer here or pass this state via parameters 
+    // val navBarStyle by userPreferences.navBarStyle.collectAsStateWithLifecycle(initialValue = NavBarStyle.DEFAULT)
+    val navBarStyle = "floating_pill" // Temporary hardcoded check matching step 1
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            // Keep both the graphicsLayer modifier AND its compositingStrategy stable across
-            // the full lifecycle of the screen. Toggling the strategy between Auto and
-            // Offscreen mid-transition (when cornerRadius crosses the threshold) causes the
-            // RenderNode's rendering mode to flip for one frame, producing a subtle flash on
-            // the outgoing screen right as the animation starts. Main root tab switches are
-            // the exception: Home/Search/Library keep the same slide/fade transition, but skip
-            // the expensive offscreen depth layer while no deeper screen is visible.
             .graphicsLayer {
                 compositingStrategy = if (shouldRunDepthEffects) {
                     CompositingStrategy.Offscreen
@@ -139,6 +136,14 @@ fun ScreenWrapper(
                 }
             }
             .background(MaterialTheme.colorScheme.background)
+            // Add safety layout margins to clear space for the floating bar overlay
+            .then(
+                if (isMainRootScreen && navBarStyle == "floating_pill") {
+                    Modifier.padding(bottom = 100.dp) // Accounts for bar height + padding space
+                } else {
+                    Modifier
+                }
+            )
     ) {
         content()
 
