@@ -23,7 +23,8 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build Optimized Release APK
-      run: ./gradlew assembleRelease
+      run: ./gradlew assembleRelease -Pandroid.injected.build.abi=arm64-v8a
+
 
     - name: Sign the Release APK
       run: |
