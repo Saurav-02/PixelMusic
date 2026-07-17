@@ -586,7 +586,7 @@ fun UnifiedPlayerSheetV2(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = currentBottomPadding)
+                .padding(bottom = currentBottomPadding + 8.dp)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 if (showPlayerContentArea) {
@@ -634,15 +634,15 @@ fun UnifiedPlayerSheetV2(
                             // restructure when the elevation crosses 0.dp during
                             // expand/collapse or right after play/pause.
                             .shadow(
-                                elevation = visualCardShadowElevation,
-                                shape = sheetInteractionState.playerShadowShape,
-                                clip = false
-                            )
-                            .background(
-                                color = playerAreaBackground,
-                                shape = sheetInteractionState.playerShadowShape
-                            )
-                            .clipToBounds()
+    elevation = visualCardShadowElevation,
+    shape = androidx.compose.foundation.shape.RoundedCornerShape(50),
+    clip = false
+)
+.background(
+    color = playerAreaBackground,
+    shape = androidx.compose.foundation.shape.RoundedCornerShape(50)
+)
+.clip(androidx.compose.foundation.shape.RoundedCornerShape(50))
                             .semantics {
                                 contentDescription = playerSheetSemanticsDescription
                             }
