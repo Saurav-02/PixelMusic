@@ -602,11 +602,8 @@ fun UnifiedPlayerSheetV2(
                                     .toInt().coerceAtLeast(0)
                                 val startPaddingPx = currentHorizontalPaddingStartPxProvider()
                                     .toInt().coerceAtLeast(0)
-                                
-                                // Calculate extra right padding to match the left nav pill's width
                                 val endPaddingPx = currentHorizontalPaddingEndPxProvider()
                                     .toInt().coerceAtLeast(0)
-                                
                                 val innerWidth = (constraints.maxWidth - startPaddingPx - endPaddingPx)
                                     .coerceAtLeast(0)
                                 val placeable = measurable.measure(
