@@ -899,7 +899,7 @@ class MainActivity : ComponentActivity() {
                                 { playerViewModel.onSearchNavIconDoubleTapped() }
                             }
 
-                            Surface(
+                            Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .fillMaxWidth()
@@ -916,9 +916,6 @@ class MainActivity : ComponentActivity() {
                                     }
                                     .height(navBarHeight)
                                     .padding(horizontal = horizontalPadding),
-                            color = Color.Transparent, 
-                            shape = actualShape,
-                            shadowElevation = 0.dp
                             ) {
                                 PlayerInternalNavigationBar(
                                     navController = navController,
