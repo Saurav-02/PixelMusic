@@ -577,17 +577,14 @@ fun UnifiedPlayerSheetV2(
                 density: androidx.compose.ui.unit.Density
             ): androidx.compose.ui.graphics.Outline {
                 
-                // Get the current expansion progress (0.0f = collapsed mini-player, 1.0f = full screen)
-                val fraction = playerContentExpansionFraction.value
+                // 1. Clamp the fraction so it NEVER exceeds 1.0 during bounce animations
+                val fraction = playerContentExpansionFraction.value.coerceIn(0f, 1f)
                 
-                // The top radius is already calculating perfectly for both states
-                val topRadiusPx = with(density) { overallSheetTopCornerRadiusProvider().toPx() }
+                // 2. Prevent negative radii
+                val topRadiusPx = with(density) { overallSheetTopCornerRadiusProvider().toPx() }.coerceAtLeast(0f)
+                val targetBottomPx = with(density) { playerContentActualBottomRadiusProvider().toPx() }.coerceAtLeast(0f)
                 
-                // The bottom radius needs to be interpolated.
-                // When collapsed (0f), it matches the top radius to form a perfect pill.
-                // When expanded (1f), it uses the actual bottom provider's target radius.
-                val targetBottomPx = with(density) { playerContentActualBottomRadiusProvider().toPx() }
-                val bottomRadiusPx = topRadiusPx + (targetBottomPx - topRadiusPx) * fraction
+                val bottomRadiusPx = (topRadiusPx + (targetBottomPx - topRadiusPx) * fraction).coerceAtLeast(0f)
                 
                 return androidx.compose.ui.graphics.Outline.Rounded(
                     androidx.compose.ui.geometry.RoundRect(
