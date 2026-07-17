@@ -392,14 +392,6 @@ fun SetupScreen(
                             navigateToPage(pagerState.currentPage + 1)
                         }
                     )
-                    SetupPage.NavBarLayout -> NavBarLayoutPage(
-                        uiState = uiState,
-                        onModeSelected = setupViewModel::setNavBarStyle,
-                        onCustomizeRadius = { showCornerRadiusOverlay = true },
-                        onSkip = {
-                            navigateToPage(pagerState.currentPage + 1)
-                        }
-                    )
                 }
             }
         }
@@ -564,7 +556,6 @@ private fun buildSetupPages(sdkInt: Int): List<SetupPage> {
     pages += SetupPage.DirectorySelection
     pages += SetupPage.ThemeSelection
     pages += SetupPage.LibraryLayout
-    pages += SetupPage.NavBarLayout
 
     if (sdkInt >= Build.VERSION_CODES.S) {
         pages += SetupPage.AlarmsPermission
