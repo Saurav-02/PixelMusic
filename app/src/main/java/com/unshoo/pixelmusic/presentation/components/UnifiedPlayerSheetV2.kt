@@ -89,6 +89,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import androidx.compose.ui.draw.clip
 
 private data class PlayerUiSheetSliceV2(
     val currentQueueSourceName: String = "",
