@@ -565,7 +565,30 @@ fun UnifiedPlayerSheetV2(
         onDraggingChange = sheetBackAndDragState.onDraggingChange,
         onDraggingPlayerAreaChange = sheetBackAndDragState.onDraggingPlayerAreaChange
     )
-
+    val dynamicPlayerShape = remember(
+        overallSheetTopCornerRadiusProvider,
+        playerContentActualBottomRadiusProvider
+    ) {
+        object : androidx.compose.ui.graphics.Shape {
+            override fun createOutline(
+                size: androidx.compose.ui.geometry.Size,
+                layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+                density: androidx.compose.ui.unit.Density
+            ): androidx.compose.ui.graphics.Outline {
+                val topRadius = overallSheetTopCornerRadiusProvider()
+                val bottomRadius = playerContentActualBottomRadiusProvider()
+                return androidx.compose.ui.graphics.Outline.Rounded(
+                    androidx.compose.ui.geometry.RoundRect(
+                        rect = androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height),
+                        topLeft = androidx.compose.ui.geometry.CornerRadius(topRadius, topRadius),
+                        topRight = androidx.compose.ui.geometry.CornerRadius(topRadius, topRadius),
+                        bottomRight = androidx.compose.ui.geometry.CornerRadius(bottomRadius, bottomRadius),
+                        bottomLeft = androidx.compose.ui.geometry.CornerRadius(bottomRadius, bottomRadius)
+                    )
+                )
+            }
+        }
+    }
     if (!actuallyShowSheetContent) return
 
     val playerSheetSemanticsDescription = remember(
@@ -636,14 +659,14 @@ fun UnifiedPlayerSheetV2(
                             // expand/collapse or right after play/pause.
                             .shadow(
     elevation = visualCardShadowElevation,
-    shape = androidx.compose.foundation.shape.RoundedCornerShape(50),
+    shape = dynamicPlayerShape,
     clip = false
 )
 .background(
     color = playerAreaBackground,
-    shape = androidx.compose.foundation.shape.RoundedCornerShape(50)
+    shape = dynamicPlayerShape
 )
-.clip(androidx.compose.foundation.shape.RoundedCornerShape(50))
+.clip(dynamicPlayerShape)
                             .semantics {
                                 contentDescription = playerSheetSemanticsDescription
                             }
