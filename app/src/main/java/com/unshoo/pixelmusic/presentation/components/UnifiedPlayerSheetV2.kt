@@ -567,7 +567,8 @@ fun UnifiedPlayerSheetV2(
     )
     val dynamicPlayerShape = remember(
         overallSheetTopCornerRadiusProvider,
-        playerContentActualBottomRadiusProvider
+        playerContentActualBottomRadiusProvider,
+        playerContentExpansionFraction
     ) {
         object : androidx.compose.ui.graphics.Shape {
             override fun createOutline(
@@ -576,9 +577,17 @@ fun UnifiedPlayerSheetV2(
                 density: androidx.compose.ui.unit.Density
             ): androidx.compose.ui.graphics.Outline {
                 
-                // Convert the Dp values to raw Float pixels here using the density
+                // Get the current expansion progress (0.0f = collapsed mini-player, 1.0f = full screen)
+                val fraction = playerContentExpansionFraction.value
+                
+                // The top radius is already calculating perfectly for both states
                 val topRadiusPx = with(density) { overallSheetTopCornerRadiusProvider().toPx() }
-                val bottomRadiusPx = with(density) { playerContentActualBottomRadiusProvider().toPx() }
+                
+                // The bottom radius needs to be interpolated.
+                // When collapsed (0f), it matches the top radius to form a perfect pill.
+                // When expanded (1f), it uses the actual bottom provider's target radius.
+                val targetBottomPx = with(density) { playerContentActualBottomRadiusProvider().toPx() }
+                val bottomRadiusPx = topRadiusPx + (targetBottomPx - topRadiusPx) * fraction
                 
                 return androidx.compose.ui.graphics.Outline.Rounded(
                     androidx.compose.ui.geometry.RoundRect(
