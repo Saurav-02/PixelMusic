@@ -148,6 +148,7 @@ import com.unshoo.pixelmusic.utils.CrashLogData
 import javax.annotation.concurrent.Immutable
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import androidx.compose.ui.graphics.Color
 
 
 @Immutable
@@ -915,9 +916,9 @@ class MainActivity : ComponentActivity() {
                                     }
                                     .height(navBarHeight)
                                     .padding(horizontal = horizontalPadding),
-                                color = NavigationBarDefaults.containerColor,
-                                shape = actualShape,
-                                shadowElevation = navBarElevation
+                            color = Color.Transparent, 
+                            shape = actualShape,
+                            shadowElevation = 0.dp
                             ) {
                                 PlayerInternalNavigationBar(
                                     navController = navController,
