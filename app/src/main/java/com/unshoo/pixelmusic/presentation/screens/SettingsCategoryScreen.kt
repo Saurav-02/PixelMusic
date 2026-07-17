@@ -811,18 +811,6 @@ fun SettingsCategoryScreen(
                             }
 
                             SettingsSubsection(title = stringResource(R.string.setcat_navigation_bar)) {
-                                ThemeSelectorItem(
-                                    label = stringResource(R.string.setcat_navbar_style_label),
-                                    description = stringResource(R.string.setcat_navbar_style_desc),
-                                    options = mapOf(
-                                        NavBarStyle.DEFAULT to stringResource(R.string.setcat_navbar_style_default),
-                                        NavBarStyle.FULL_WIDTH to stringResource(R.string.setcat_navbar_style_full_width),
-                                        NavBarStyle.FLOATING_PILL to stringResource(R.string.setcat_navbar_style_pill)
-                                    ),
-                                    selectedKey = uiState.navBarStyle,
-                                    onSelectionChanged = { settingsViewModel.setNavBarStyle(it) },
-                                    leadingIcon = { Icon(Icons.Outlined.Style, null, tint = MaterialTheme.colorScheme.secondary) }
-                                )
                                 SwitchSettingItem(
                                     title = stringResource(R.string.setcat_compact_mode_title),
                                     subtitle = stringResource(R.string.setcat_compact_mode_subtitle),
