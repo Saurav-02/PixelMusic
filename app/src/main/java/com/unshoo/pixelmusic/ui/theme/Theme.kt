@@ -374,7 +374,7 @@ fun PixelMusicTheme(
         colorSchemePairOverride != null -> {
             if (darkTheme) colorSchemePairOverride.dark else colorSchemePairOverride.light
         }
-        dynamicColor && colorPalette !in listOf("SAGE", "PURPLE", "BLUE", "ORANGE") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        colorPalette == "DYNAMIC" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             try {
                 if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             } catch (e: Exception) {
