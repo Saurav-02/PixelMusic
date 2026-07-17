@@ -809,14 +809,6 @@ fun SettingsCategoryScreen(
                                     leadingIcon = { Icon(painterResource(R.drawable.rounded_shuffle_24), null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
                             }
-                                SettingsItem(
-                                    title = stringResource(R.string.setcat_navbar_corner_title),
-                                    subtitle = stringResource(R.string.setcat_navbar_corner_subtitle),
-                                    leadingIcon = { Icon(painterResource(R.drawable.rounded_rounded_corner_24), null, tint = MaterialTheme.colorScheme.secondary) },
-                                    trailingIcon = { Icon(Icons.Rounded.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    onClick = { navController.navigateSafely("nav_bar_corner_radius") }
-                                )
-                            }
 
                             SettingsSubsection(title = stringResource(R.string.setcat_lyrics_screen)) {
                                 SwitchSettingItem(
