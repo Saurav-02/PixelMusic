@@ -237,50 +237,35 @@ fun PlayerInternalNavigationBar(
     navItems: ImmutableList<BottomNavItem>,
     currentRoute: String?,
     modifier: Modifier = Modifier,
-    navBarStyle: String,
+    navBarStyle: String, // We leave this parameter here so we don't break other files calling this function!
     compactMode: Boolean,
     bottomBarPadding: Dp = 0.dp,
     onSearchIconDoubleTap: () -> Unit = {}
 ) {
-    when (navBarStyle) {
-        NavBarStyle.FLOATING_PILL -> {
-            // Calculate the bottom inset to push the pill above the system navigation bar
-            val navBarInsetPadding = sanitizeNavigationBarBottomInset(
-                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-            )
-            val pillBottomPadding = (navBarInsetPadding - bottomBarPadding).coerceAtLeast(0.dp) + 12.dp
+    // 1. Calculate the bottom inset to push the pill above the system navigation bar
+    val navBarInsetPadding = sanitizeNavigationBarBottomInset(
+        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    )
+    val pillBottomPadding = (navBarInsetPadding - bottomBarPadding).coerceAtLeast(0.dp) + 12.dp
 
-            Surface(
-                modifier = modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = pillBottomPadding)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(percent = 50),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shadowElevation = 8.dp
-            ) {
-                PlayerInternalNavigationItemsRow(
-                    navController = navController,
-                    navItems = navItems,
-                    currentRoute = currentRoute,
-                    navBarStyle = navBarStyle,
-                    compactMode = compactMode,
-                    bottomBarPadding = 0.dp, // Passed as 0 since outer surface handles inset
-                    onSearchIconDoubleTap = onSearchIconDoubleTap,
-                    modifier = Modifier.padding(vertical = 4.dp) // Little inner breathing room for the pill
-                )
-            }
-        }
-        else -> {
-            PlayerInternalNavigationItemsRow(
-                navController = navController,
-                navItems = navItems,
-                currentRoute = currentRoute,
-                navBarStyle = navBarStyle,
-                compactMode = compactMode,
-                bottomBarPadding = bottomBarPadding,
-                onSearchIconDoubleTap = onSearchIconDoubleTap,
-                modifier = modifier
-            )
-        }
+    // 2. Wrap it permanently in the Pill Surface
+    Surface(
+        modifier = modifier
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = pillBottomPadding)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(percent = 50),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shadowElevation = 8.dp
+    ) {
+        PlayerInternalNavigationItemsRow(
+            navController = navController,
+            navItems = navItems,
+            currentRoute = currentRoute,
+            navBarStyle = NavBarStyle.FLOATING_PILL, // Force the row spacing to act like a pill
+            compactMode = compactMode,
+            bottomBarPadding = 0.dp, // Passed as 0 since outer surface handles inset
+            onSearchIconDoubleTap = onSearchIconDoubleTap,
+            modifier = Modifier.padding(vertical = 4.dp) // Inner breathing room
+        )
     }
 }
