@@ -170,14 +170,14 @@ fun PlayerInternalNavigationBar(
                     ) {
                             Row(
                                 modifier = Modifier
-                                    // 1. Smoothly animates the pill expanding/shrinking
                                     .animateContentSize(
                                         animationSpec = spring(
                                             dampingRatio = Spring.DampingRatioNoBouncy,
                                             stiffness = Spring.StiffnessMediumLow
                                         )
                                     )
-                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    // 1. Reduced horizontal padding from 14.dp to 10.dp for more breathing room
+                                    .padding(horizontal = 10.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
@@ -197,11 +197,14 @@ fun PlayerInternalNavigationBar(
                                     }
                                 }
                                 
-                                // Text always shows, just like the image reference
+                                // 3. Force text to stay on a single line
                                 Text(
                                     text = item.label,
                                     style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Clip
                                 )
                             }
                         }
