@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -108,15 +110,23 @@ private fun PlayerInternalNavigationItemsRow(
     val latestOnSearchIconDoubleTap by rememberUpdatedState(onSearchIconDoubleTap)
     val latestNavigationEnabled by rememberUpdatedState(currentRoute != null)
 
-    val rowModifier = if (navBarStyle == NavBarStyle.FULL_WIDTH) {
-        modifier
-            .fillMaxWidth()
-            .padding(top = 0.dp, bottom = innerRowPadding, start = 12.dp, end = 12.dp)
-    } else {
-        modifier
-            .padding(start = 10.dp, end = 10.dp, bottom = innerRowPadding)
-            .fillMaxWidth()
+    val rowModifier = when (navBarStyle) {
+        NavBarStyle.FULL_WIDTH -> {
+            modifier
+                .fillMaxWidth()
+                .padding(top = 0.dp, bottom = innerRowPadding, start = 12.dp, end = 12.dp)
+        }
+        NavBarStyle.FLOATING_PILL -> {
+            // The pill's outer Surface handles the bottom inset, so we don't pad the inside of the Row.
+            modifier.fillMaxWidth()
+        }
+        else -> {
+            modifier
+                .padding(start = 10.dp, end = 10.dp, bottom = innerRowPadding)
+                .fillMaxWidth()
+        }
     }
+
     Row(
         modifier = rowModifier,
         horizontalArrangement = Arrangement.SpaceAround,
@@ -232,14 +242,45 @@ fun PlayerInternalNavigationBar(
     bottomBarPadding: Dp = 0.dp,
     onSearchIconDoubleTap: () -> Unit = {}
 ) {
-    PlayerInternalNavigationItemsRow(
-        navController = navController,
-        navItems = navItems,
-        currentRoute = currentRoute,
-        navBarStyle = navBarStyle,
-        compactMode = compactMode,
-        bottomBarPadding = bottomBarPadding,
-        onSearchIconDoubleTap = onSearchIconDoubleTap,
-        modifier = modifier
-    )
+    when (navBarStyle) {
+        NavBarStyle.FLOATING_PILL -> {
+            // Calculate the bottom inset to push the pill above the system navigation bar
+            val navBarInsetPadding = sanitizeNavigationBarBottomInset(
+                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            )
+            val pillBottomPadding = (navBarInsetPadding - bottomBarPadding).coerceAtLeast(0.dp) + 12.dp
+
+            Surface(
+                modifier = modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = pillBottomPadding)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(percent = 50),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shadowElevation = 8.dp
+            ) {
+                PlayerInternalNavigationItemsRow(
+                    navController = navController,
+                    navItems = navItems,
+                    currentRoute = currentRoute,
+                    navBarStyle = navBarStyle,
+                    compactMode = compactMode,
+                    bottomBarPadding = 0.dp, // Passed as 0 since outer surface handles inset
+                    onSearchIconDoubleTap = onSearchIconDoubleTap,
+                    modifier = Modifier.padding(vertical = 4.dp) // Little inner breathing room for the pill
+                )
+            }
+        }
+        else -> {
+            PlayerInternalNavigationItemsRow(
+                navController = navController,
+                navItems = navItems,
+                currentRoute = currentRoute,
+                navBarStyle = navBarStyle,
+                compactMode = compactMode,
+                bottomBarPadding = bottomBarPadding,
+                onSearchIconDoubleTap = onSearchIconDoubleTap,
+                modifier = modifier
+            )
+        }
+    }
 }
