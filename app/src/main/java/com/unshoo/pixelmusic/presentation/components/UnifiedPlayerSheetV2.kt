@@ -575,15 +575,18 @@ fun UnifiedPlayerSheetV2(
                 layoutDirection: androidx.compose.ui.unit.LayoutDirection,
                 density: androidx.compose.ui.unit.Density
             ): androidx.compose.ui.graphics.Outline {
-                val topRadius = overallSheetTopCornerRadiusProvider()
-                val bottomRadius = playerContentActualBottomRadiusProvider()
+                
+                // Convert the Dp values to raw Float pixels here using the density
+                val topRadiusPx = with(density) { overallSheetTopCornerRadiusProvider().toPx() }
+                val bottomRadiusPx = with(density) { playerContentActualBottomRadiusProvider().toPx() }
+                
                 return androidx.compose.ui.graphics.Outline.Rounded(
                     androidx.compose.ui.geometry.RoundRect(
                         rect = androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height),
-                        topLeft = androidx.compose.ui.geometry.CornerRadius(topRadius, topRadius),
-                        topRight = androidx.compose.ui.geometry.CornerRadius(topRadius, topRadius),
-                        bottomRight = androidx.compose.ui.geometry.CornerRadius(bottomRadius, bottomRadius),
-                        bottomLeft = androidx.compose.ui.geometry.CornerRadius(bottomRadius, bottomRadius)
+                        topLeft = androidx.compose.ui.geometry.CornerRadius(topRadiusPx, topRadiusPx),
+                        topRight = androidx.compose.ui.geometry.CornerRadius(topRadiusPx, topRadiusPx),
+                        bottomRight = androidx.compose.ui.geometry.CornerRadius(bottomRadiusPx, bottomRadiusPx),
+                        bottomLeft = androidx.compose.ui.geometry.CornerRadius(bottomRadiusPx, bottomRadiusPx)
                     )
                 )
             }
