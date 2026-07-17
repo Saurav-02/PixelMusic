@@ -1,169 +1,35 @@
-name: Build Phone APK (Release)
+name: Build All Release Architecture Splits
 
 on:
   push:
     branches: [ master ]
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [ master ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  build-phone:
-    if: github.actor != 'dependabot[bot]'
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '21'
+    - name: Set up Java 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '21'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
+    - name: Grant Execute Permission for Gradle
+      run: chmod +x gradlew
 
-      - name: Decode release keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > vz-pixelmusic.jks
+    - name: Build All Release APKs
+      # assembleRelease tells Gradle to generate all variant targets configured in your build.gradle
+      run: ./gradlew :app:assembleRelease
 
-      - name: Create keystore.properties
-        run: |
-          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > keystore.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> keystore.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> keystore.properties
-
-      - name: Create local.properties
-        run: |
-          echo "TELEGRAM_API_ID=${{ secrets.TELEGRAM_API_ID }}" > local.properties
-          echo "TELEGRAM_API_HASH=${{ secrets.TELEGRAM_API_HASH }}" >> local.properties
-
-      - name: Get commit count
-        id: commit_count
-        run: echo "count=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Build all split + universal release APKs
-        run: ./gradlew :app:assembleRelease :wear:assembleRelease -Ppixelmusic.enableAbiSplits=true -PAPP_VERSION_CODE=${{ steps.commit_count.outputs.count }}
-
-      # ── Read version from gradle.properties (single source of truth) ──────────
-      - name: Read version name
-        id: version
-        run: |
-          VERSION_NAME=$(grep '^APP_VERSION_NAME=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
-          echo "Detected version: $VERSION_NAME"
-
-      # ── Detect if this version is already released on GitHub ─────────────────
-      - name: Check if version tag already exists
-        id: version_check
-        env:
-          VERSION_NAME: ${{ steps.version.outputs.version_name }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG="v${VERSION_NAME}"
-          if git tag --list "$TAG" | grep -q "$TAG"; then
-            echo "is_new_version=false" >> "$GITHUB_OUTPUT"
-            echo "Tag $TAG already exists locally — NOT a new release."
-          else
-            echo "is_new_version=true" >> "$GITHUB_OUTPUT"
-            echo "Tag $TAG does not exist — this IS a new version. GitHub Release will be created."
-          fi
-
-      - name: Verify all split APKs
-        run: |
-          BUILD_TOOLS_VERSION="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
-          for apk in \
-            app/build/outputs/apk/release/app-arm64-v8a-release.apk \
-            app/build/outputs/apk/release/app-armeabi-v7a-release.apk \
-            app/build/outputs/apk/release/app-x86_64-release.apk \
-            app/build/outputs/apk/release/app-universal-release.apk \
-            wear/build/outputs/apk/release/wear-release.apk
-          do
-            echo "Verifying $apk..."
-            "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2" dump badging "$apk" > /dev/null
-            "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner" verify --verbose "$apk"
-          done
-
-      - name: Upload split APK artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: PixelMusic-phone-release-split-apks
-          path: |
-            app/build/outputs/apk/release/app-arm64-v8a-release.apk
-            app/build/outputs/apk/release/app-armeabi-v7a-release.apk
-            app/build/outputs/apk/release/app-x86_64-release.apk
-            app/build/outputs/apk/release/app-universal-release.apk
-            wear/build/outputs/apk/release/wear-release.apk
-          if-no-files-found: error
-          compression-level: 0
-
-      - name: Generate Changelog
-        id: changelog
-        env:
-          PREV_SHA: ${{ github.event.before }}
-          CURR_SHA: ${{ github.sha }}
-        run: python3 .github/scripts/generate_changelog.py
-
-      # ── GitHub Release — ONLY when version is new (tag does not exist yet) ───
-      - name: Create GitHub Release
-        if: >
-          success() &&
-          steps.version_check.outputs.is_new_version == 'true' &&
-          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: v${{ steps.version.outputs.version_name }}
-          name: "PixelMusic v${{ steps.version.outputs.version_name }}"
-          body: |
-            ## What's new
-            ${{ steps.changelog.outputs.changelog_md }}
-
-            ---
-            | APK | Target |
-            |-----|--------|
-            | `app-universal-release.apk` | Universal — works on all devices |
-            | `app-arm64-v8a-release.apk` | Modern phones (Pixel, Samsung, etc.) |
-            | `app-armeabi-v7a-release.apk` | Older / budget ARM phones |
-            | `app-x86_64-release.apk` | Emulators & Chromebooks |
-            | `wear-release.apk` | Standalone smartwatch app (Wear OS 3.0+) |
-
-            **Commit:** ${{ github.sha }}
-          files: |
-            app/build/outputs/apk/release/app-arm64-v8a-release.apk
-            app/build/outputs/apk/release/app-armeabi-v7a-release.apk
-            app/build/outputs/apk/release/app-x86_64-release.apk
-            app/build/outputs/apk/release/app-universal-release.apk
-            wear/build/outputs/apk/release/wear-release.apk
-          draft: false
-          prerelease: false
-          make_latest: true
-
-      - name: Install Pyrofork for Telegram upload
-        if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        run: pip install -q pyrofork TgCrypto-pyrofork
-
-      - name: Publish all APKs to Telegram Channel
-        if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        env:
-          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
-          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: "@PixelMusicApp"
-          TELEGRAM_THREAD_ID: ${{ steps.version_check.outputs.is_new_version == 'true' && '2457' || '2' }}
-          VERSION_NAME: ${{ steps.version.outputs.version_name }}
-          COMMIT_SHA: ${{ github.sha }}
-          IS_RELEASE: ${{ steps.version_check.outputs.is_new_version }}
-          CHANGELOG: ${{ steps.changelog.outputs.changelog_html }}
-        run: |
-          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_API_ID" ]; then
-            echo "Telegram secrets not set, skipping."
-            exit 0
-          fi
-          python3 .github/scripts/publish_telegram.py
+    - name: Upload Unsigned Split Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: PixelMusic-Unsigned-Splits
+        # This path dynamically captures every unsigned split (.apk file) generated under outputs
+        path: app/build/outputs/apk/release/**/*.apk
+        
