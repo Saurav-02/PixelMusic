@@ -43,10 +43,10 @@ import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.navigation.navigateToTopLevelSafely
 import kotlinx.collections.immutable.ImmutableList
 
-internal val NavBarContentHeight = 90.dp
+internal val NavBarContentHeight = 76.dp
 internal val NavBarCompactContentHeight = 64.dp
 internal val NavBarContentHeightFullWidth = NavBarContentHeight
-private val MainScreenBottomGradientExtraHeight = MiniPlayerHeight + MiniPlayerBottomSpacer + 8.dp
+private val MainScreenBottomGradientExtraHeight = 64.dp + MiniPlayerBottomSpacer + 8.dp
 internal val MaxNavigationBarBottomInset = 96.dp
 
 internal fun sanitizeNavigationBarBottomInset(systemNavBarInset: Dp): Dp {
