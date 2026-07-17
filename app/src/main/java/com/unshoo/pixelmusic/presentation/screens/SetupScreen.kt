@@ -537,7 +537,6 @@ sealed class SetupPage {
     object NotificationsPermission : SetupPage()
     object AlarmsPermission : SetupPage()
     object LibraryLayout : SetupPage()
-    object NavBarLayout : SetupPage()
     object BatteryOptimization : SetupPage()
     object Finish : SetupPage()
 }
