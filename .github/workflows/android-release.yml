@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build and Sign Release APK
+    name: Build Unsigned Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -28,29 +28,10 @@ jobs:
       - name: Build Release APK
         run: ./gradlew :app:assembleRelease
 
-      - name: Generate temporary keystore
-        run: |
-          # Generates a temporary keystore file
-          keytool -genkey -v -keystore temp.keystore -alias temp_alias -keyalg RSA -keysize 2048 -validity 10000 -storepass temp_password -keypass temp_password -dname "CN=Developer, OU=App, O=PixelMusic, L=Bithari, S=West Bengal, C=IN"
-          
-          # Converts the keystore to base64 and stores it as a GitHub environment variable
-          echo "TEMP_KEYSTORE_BASE64=$(base64 -w 0 temp.keystore)" >> $GITHUB_ENV
-
-      - name: Sign Release APK
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ env.TEMP_KEYSTORE_BASE64 }}
-          alias: temp_alias
-          keyStorePassword: temp_password
-          keyPassword: temp_password
-          buildToolsVersion: 34.0.0 # <-- Add this line right here
-
-      - name: Upload Release APK artifact
+      - name: Upload Unsigned Release APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-signed
-          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          name: app-release-unsigned
+          path: app/build/outputs/apk/release/*.apk
           retention-days: 14
           
