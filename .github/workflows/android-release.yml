@@ -1,0 +1,55 @@
+name: Android Release Build
+
+on:
+  workflow_dispatch: # Allows you to manually trigger a release build
+  push:
+    tags:
+      - 'v*' # Automatically runs when you push a tag like "v1.0.0"
+
+jobs:
+  build:
+    name: Build and Sign Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew :app:assembleRelease
+
+      - name: Generate temporary keystore
+        run: |
+          # Generates a temporary keystore file
+          keytool -genkey -v -keystore temp.keystore -alias temp_alias -keyalg RSA -keysize 2048 -validity 10000 -storepass temp_password -keypass temp_password -dname "CN=Developer, OU=App, O=PixelMusic, L=Bithari, S=West Bengal, C=IN"
+          
+          # Converts the keystore to base64 and stores it as a GitHub environment variable
+          echo "TEMP_KEYSTORE_BASE64=$(base64 -w 0 temp.keystore)" >> $GITHUB_ENV
+
+      - name: Sign Release APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ env.TEMP_KEYSTORE_BASE64 }}
+          alias: temp_alias
+          keyStorePassword: temp_password
+          keyPassword: temp_password
+
+      - name: Upload Release APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-signed
+          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          retention-days: 14
+          
