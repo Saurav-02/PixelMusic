@@ -809,21 +809,6 @@ fun SettingsCategoryScreen(
                                     leadingIcon = { Icon(painterResource(R.drawable.rounded_shuffle_24), null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
                             }
-
-                            SettingsSubsection(title = stringResource(R.string.setcat_navigation_bar)) {
-                                SwitchSettingItem(
-                                    title = stringResource(R.string.setcat_compact_mode_title),
-                                    subtitle = stringResource(R.string.setcat_compact_mode_subtitle),
-                                    checked = uiState.navBarCompactMode,
-                                    onCheckedChange = { settingsViewModel.setNavBarCompactMode(it) },
-                                    leadingIcon = {
-                                        Icon(
-                                            painterResource(R.drawable.rounded_view_week_24),
-                                            null,
-                                            tint = MaterialTheme.colorScheme.secondary
-                                        )
-                                    }
-                                )
                                 SettingsItem(
                                     title = stringResource(R.string.setcat_navbar_corner_title),
                                     subtitle = stringResource(R.string.setcat_navbar_corner_subtitle),
