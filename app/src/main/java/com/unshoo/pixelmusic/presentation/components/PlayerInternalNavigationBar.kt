@@ -42,6 +42,15 @@ import com.unshoo.pixelmusic.BottomNavItem
 import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.navigation.navigateToTopLevelSafely
 import kotlinx.collections.immutable.ImmutableList
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 
 internal val NavBarContentHeight = 76.dp
 internal val NavBarCompactContentHeight = 64.dp
@@ -159,30 +168,46 @@ fun PlayerInternalNavigationBar(
                         color = containerColor,
                         contentColor = contentColor
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            if (isSelected) {
-                                Icon(
-                                    painter = painterResource(id = iconPainterResId),
-                                    contentDescription = item.label,
-                                    modifier = Modifier.size(24.dp)
+                            Row(
+                                modifier = Modifier
+                                    // 1. Smoothly animates the pill expanding/shrinking
+                                    .animateContentSize(
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessMediumLow
+                                        )
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                // 2. Smoothly slides and fades the icon in/out
+                                AnimatedVisibility(
+                                    visible = isSelected,
+                                    enter = expandHorizontally(animationSpec = tween(250)) + fadeIn(animationSpec = tween(250)),
+                                    exit = shrinkHorizontally(animationSpec = tween(250)) + fadeOut(animationSpec = tween(250))
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(id = iconPainterResId),
+                                            contentDescription = item.label,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                    }
+                                }
+                                
+                                // Text always shows, just like the image reference
+                                Text(
+                                    text = item.label,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
                             }
-                            // Text always shows, just like the image reference
-                            Text(
-                                text = item.label,
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                            )
                         }
                     }
                 }
             }
-        }
 
         // DETACHED SEARCH FAB
         if (searchItem != null) {
