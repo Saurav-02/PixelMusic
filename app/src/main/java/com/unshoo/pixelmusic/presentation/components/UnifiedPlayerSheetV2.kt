@@ -107,7 +107,7 @@ fun UnifiedPlayerSheetV2(
     playerViewModel: PlayerViewModel,
     sheetCollapsedTargetY: Float,
     containerHeight: Dp,
-    collapsedStateHorizontalPadding: Dp = 12.dp,
+    collapsedStateHorizontalPadding: Dp = 16.dp,
     navController: NavHostController,
     hideMiniPlayer: Boolean = false,
     isNavBarHidden: Boolean = false
@@ -205,7 +205,7 @@ fun UnifiedPlayerSheetV2(
     val prewarmFullPlayer = rememberPrewarmFullPlayer(infrequentPlayerState.currentSong?.id)
 
     val playerConfig by playerViewModel.playerConfigSlice.collectAsStateWithLifecycle()
-    val navBarCornerRadius = sanitizeNavBarCornerRadius(playerConfig.navBarCornerRadius)
+    val navBarCornerRadius = 32
     val navBarStyle = playerConfig.navBarStyle
     val carouselStyle = playerConfig.carouselStyle
     val fullPlayerLoadingTweaks = playerConfig.fullPlayerLoadingTweaks
@@ -232,7 +232,7 @@ fun UnifiedPlayerSheetV2(
     val screenHeightPx = remember(configuration, density) {
         with(density) { configuration.screenHeightDp.dp.toPx() }
     }
-    val miniPlayerContentHeightPx = remember { with(density) { MiniPlayerHeight.toPx() } }
+    val miniPlayerContentHeightPx = remember { with(density) { 64.dp.toPx() } }
 
     val isCastConnecting by playerViewModel.isCastConnecting.collectAsStateWithLifecycle()
     val showPlayerContentArea by remember(infrequentPlayerState.currentSong, isCastConnecting) {
