@@ -154,8 +154,8 @@ android {
             isEnable = enableAbiSplits
             reset()
             if (enableAbiSplits) {
-                include("arm64-v8a", "armeabi-v7a", "x86_64")
-                isUniversalApk = true  // also produce a universal APK
+                include("arm64-v8a") // Restrict build strictly to arm64-v8a
+                isUniversalApk = false  // Disable the generation of a universal APK
             }
         }
     }
