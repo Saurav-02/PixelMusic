@@ -45,6 +45,7 @@ jobs:
           alias: temp_alias
           keyStorePassword: temp_password
           keyPassword: temp_password
+          buildToolsVersion: 34.0.0 # <-- Add this line right here
 
       - name: Upload Release APK artifact
         uses: actions/upload-artifact@v4
