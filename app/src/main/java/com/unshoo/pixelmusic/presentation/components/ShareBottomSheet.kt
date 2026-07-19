@@ -636,21 +636,33 @@ fun ShareBottomSheet(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                             onClick = {
                                 captureAndShare { bitmap ->
-                                    val file = saveBitmapToCache(bitmap)
-                                    val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
-                                        android.os.Environment.DIRECTORY_PICTURES
-                                    )
-                                    val destFile = File(downloadsDir, "PixelMusic_${song.title.take(20)}_${System.currentTimeMillis()}.png")
-                                    withContext(Dispatchers.IO) {
-                                        file.copyTo(destFile, overwrite = true)
+                                    scope.launch {
+                                        withContext(Dispatchers.IO) {
+                                            try {
+                                                val resolver = context.contentResolver
+                                                val contentValues = android.content.ContentValues().apply {
+                                                    put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, "PixelMusic_${song.title.take(20)}_${System.currentTimeMillis()}.png")
+                                                    put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                                                    put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/PixelMusic")
+                                                }
+
+                                                val uri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                                                    ?: throw Exception("Failed to create MediaStore entry")
+
+                                                resolver.openOutputStream(uri)?.use { out ->
+                                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                                                }
+
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, context.getString(R.string.share_card_saved), Toast.LENGTH_SHORT).show()
+                                                }
+                                            } catch (e: Exception) {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "Failed to save card", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
                                     }
-                                    android.media.MediaScannerConnection.scanFile(
-                                        context,
-                                        arrayOf(destFile.absolutePath),
-                                        arrayOf("image/png"),
-                                        null
-                                    )
-                                    Toast.makeText(context, context.getString(R.string.share_card_saved), Toast.LENGTH_SHORT).show()
                                 }
                             }
                         )
@@ -701,18 +713,13 @@ fun ShareBottomSheet(
                                         "${context.packageName}.fileprovider",
                                         file
                                     )
-                                    // Include YouTube Music link when sharing a YT song
-                                    val linkSuffix = if (!song.youtubeId.isNullOrEmpty()) {
-                                        "\n🎵 https://music.youtube.com/watch?v=${song.youtubeId}"
-                                    } else {
-                                        "\n$GITHUB_LINK"
-                                    }
+                                    // Only use the song title and your custom PixelMusic link
                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                         type = "image/png"
                                         putExtra(Intent.EXTRA_STREAM, uri)
                                         putExtra(
                                             Intent.EXTRA_TEXT,
-                                            "${song.title} — ${song.displayArtist}$linkSuffix"
+                                            "${song.title}\n🎵 $GITHUB_LINK"
                                         )
                                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     }
