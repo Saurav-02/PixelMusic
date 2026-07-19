@@ -107,7 +107,8 @@ fun SettingsScreen(
         onNavigationIconClick: () -> Unit,
         settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
-
+    val context = androidx.compose.ui.platform.LocalContext.current
+        
     // Animation effects
     val transitionState = remember { MutableTransitionState(false) }
     LaunchedEffect(true) { transitionState.targetState = true }
@@ -263,7 +264,15 @@ fun SettingsScreen(
                             customColors = colors,
                             onClick = {
                                 if (category == SettingsCategory.EQUALIZER) {
-                                    navController.navigateSafely(Screen.Equalizer.route)
+                                    val intent = android.content.Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                                        putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                                        putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC)
+                                    }
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        android.widget.Toast.makeText(context, "System equalizer not available", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
                                 } else {
                                     navController.navigateSafely(Screen.SettingsCategory.createRoute(category.id))
                                 }
