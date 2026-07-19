@@ -364,6 +364,7 @@ class PlayerViewModel @Inject constructor(
     val showNoInternetDialog: SharedFlow<Unit> = _showNoInternetDialog.asSharedFlow()
 
     val stablePlayerState: StateFlow<StablePlayerState> = playbackStateHolder.stablePlayerState
+    val activeAudioSessionId: StateFlow<Int> = dualPlayerEngine.activeAudioSessionId
     val albumArtPaletteStyle: StateFlow<AlbumArtPaletteStyle> = themePreferencesRepository
         .albumArtPaletteStyleFlow
         .stateIn(
