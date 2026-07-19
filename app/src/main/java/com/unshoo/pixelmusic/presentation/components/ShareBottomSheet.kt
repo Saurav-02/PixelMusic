@@ -80,7 +80,7 @@ import androidx.compose.ui.platform.LocalDensity
 import com.snapchat.kit.sdk.SnapCreative
 import com.snapchat.kit.sdk.creative.models.SnapPhotoContent
 
-private const val GITHUB_LINK = "https://github.com/ianshulyadav/PixelMusic"
+private const val GITHUB_LINK = "https://sauravbr.github.io/PixelMusic/"
 private const val SNAPCHAT_PACKAGE = "com.snapchat.android"
 private const val INSTAGRAM_PACKAGE = "com.instagram.android"
 
@@ -1017,7 +1017,7 @@ private fun ShareableCard(
                         modifier = Modifier.size(12.dp)
                     )
                     Text(
-                        text = "PixelMusic",
+                        text = "Made with love by saurav",
                         fontFamily = GoogleSansRounded,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
@@ -1031,7 +1031,7 @@ private fun ShareableCard(
                     )
                 }
                 Text(
-                    text = "github.com/ianshulyadav",
+                    text = "sauravbr.github.io",
                     fontFamily = GoogleSansRounded,
                     fontWeight = FontWeight.Medium,
                     fontSize = 8.sp,
