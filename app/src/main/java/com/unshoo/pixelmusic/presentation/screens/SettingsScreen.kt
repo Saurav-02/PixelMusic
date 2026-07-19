@@ -139,6 +139,7 @@ fun SettingsScreen(
     val maxTopBarHeightPx = with(density) { maxTopBarHeight.toPx() }
 
     val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
+    val audioSessionId by playerViewModel.activeAudioSessionId.collectAsStateWithLifecycle()
     val launchTab = uiState.launchTab
     val useSmoothCorners by settingsViewModel.useSmoothCorners.collectAsStateWithLifecycle()
 
@@ -267,6 +268,10 @@ fun SettingsScreen(
                                     val intent = android.content.Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
                                         putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
                                         putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC)
+                                        
+                                        if (audioSessionId != 0) {
+                                            putExtra(android.media.audiofx.AudioEffect.EXTRA_AUDIO_SESSION, audioSessionId)
+                                        }
                                     }
                                     try {
                                         context.startActivity(intent)
