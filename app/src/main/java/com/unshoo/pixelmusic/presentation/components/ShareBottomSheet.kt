@@ -1517,6 +1517,7 @@ private fun shareToInstagramStory(
         type = "image/png"
         putExtra("interactive_asset_uri", imageUri)
         putExtra("content_url", GITHUB_LINK)
+        putExtra("source_application", "1703718787517231")
         if (topColorHex != null) {
             putExtra("top_background_color", topColorHex)
         }
