@@ -819,6 +819,7 @@ class MainActivity : ComponentActivity() {
                             val intent = Intent(this@MainActivity, com.unshoo.pixelmusic.presentation.telegram.auth.TelegramLoginActivity::class.java)
                             startActivity(intent)
                         }
+                        else -> { }
                     }
                 }
         ) {
