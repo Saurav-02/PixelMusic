@@ -53,7 +53,6 @@ import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.data.model.PlayerInfo
 import com.unshoo.pixelmusic.data.model.PlaybackQueueItemSnapshot
 import com.unshoo.pixelmusic.data.model.PlaybackQueueSnapshot
-import com.unshoo.pixelmusic.data.preferences.EqualizerPreferencesRepository
 import com.unshoo.pixelmusic.data.preferences.ThemePreferencesRepository
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.unshoo.pixelmusic.data.repository.MusicRepository
@@ -78,7 +77,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import com.unshoo.pixelmusic.data.equalizer.EqualizerManager
 import com.unshoo.pixelmusic.data.model.WidgetThemeColors
 import com.unshoo.pixelmusic.data.preferences.AlbumArtColorAccuracy
 import com.unshoo.pixelmusic.data.preferences.AlbumArtPaletteStyle
@@ -441,37 +439,6 @@ class MusicService : MediaLibraryService() {
 
         // Restore equalizer state from preferences and only attach audio effects when
         // the user actually has at least one effect enabled for the current session.
-        serviceScope.launch {
-            val eqEnabled = equalizerPreferencesRepository.equalizerEnabledFlow.first()
-            val presetName = equalizerPreferencesRepository.equalizerPresetFlow.first()
-            val customBands = equalizerPreferencesRepository.equalizerCustomBandsFlow.first()
-            val bassBoostEnabled = equalizerPreferencesRepository.bassBoostEnabledFlow.first()
-            val bassBoostStrength = equalizerPreferencesRepository.bassBoostStrengthFlow.first()
-            val virtualizerEnabled = equalizerPreferencesRepository.virtualizerEnabledFlow.first()
-            val virtualizerStrength = equalizerPreferencesRepository.virtualizerStrengthFlow.first()
-            val loudnessEnabled = equalizerPreferencesRepository.loudnessEnhancerEnabledFlow.first()
-            val loudnessStrength = equalizerPreferencesRepository.loudnessEnhancerStrengthFlow.first()
-
-            equalizerManager.restoreState(
-                eqEnabled, presetName, customBands,
-                bassBoostEnabled, bassBoostStrength,
-                virtualizerEnabled, virtualizerStrength,
-                loudnessEnabled, loudnessStrength
-            )
-
-            val sessionId = engine.getAudioSessionId()
-            if (sessionId != 0) {
-                equalizerManager.attachToAudioSessionIfNeeded(sessionId)
-            }
-
-            // Re-attach equalizer whenever the active audio session changes (e.g. crossfade)
-            engine.activeAudioSessionId.collect { newSessionId ->
-                if (newSessionId != 0) {
-                    equalizerManager.attachToAudioSessionIfNeeded(newSessionId)
-                }
-            }
-        }
-
         serviceScope.launch {
             userPreferencesRepository.keepPlayingInBackgroundFlow.collect { enabled ->
                 keepPlayingInBackground = enabled
