@@ -600,20 +600,6 @@ fun AppNavigation(
                 }
             }
             composable(
-                Screen.Equalizer.route,
-                enterTransition = { enterTransition() },
-                exitTransition = { exitTransition() },
-                popEnterTransition = { popEnterTransition() },
-                popExitTransition = { popExitTransition() },
-            ) {
-                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
-                    EqualizerScreen(
-                        navController = navController,
-                        playerViewModel = playerViewModel
-                    )
-                }
-            }
-            composable(
                 Screen.DeviceCapabilities.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
