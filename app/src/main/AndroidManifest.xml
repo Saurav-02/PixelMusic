@@ -106,7 +106,17 @@
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
-        </activity>
+            <!-- Handle Deep Links from Instagram Stories / Web -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                
+                <data android:scheme="https"
+                      android:host="sauravbr.github.io"
+                      android:pathPrefix="/PixelMusic" />
+            </intent-filter>
+            </activity>
 
         <activity
             android:name=".presentation.telegram.auth.TelegramLoginActivity"
