@@ -1513,12 +1513,15 @@ private fun shareToInstagramStory(
     topColorHex: String? = null,
     bottomColorHex: String? = null
 ) {
+    // Explicitly grant read permission to Instagram
     context.grantUriPermission(INSTAGRAM_PACKAGE, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
     val intent = Intent("com.instagram.share.ADD_TO_STORY").apply {
         type = "image/png"
         putExtra("interactive_asset_uri", imageUri)
         putExtra("content_url", GITHUB_LINK)
         putExtra("source_application", "1703718787517231")
+        
         if (topColorHex != null) {
             putExtra("top_background_color", topColorHex)
         }
@@ -1526,11 +1529,17 @@ private fun shareToInstagramStory(
             putExtra("bottom_background_color", bottomColorHex)
         }
         `package` = INSTAGRAM_PACKAGE
+        
+        // 👇 THE MISSING MAGIC 👇
+        // This forces Android to grant Instagram permission to read the hidden sticker URI
+        clipData = ClipData.newRawUri("", imageUri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
+    
     try {
         context.startActivity(intent)
     } catch (e: Exception) {
+        // If it fails now, it will fall back to a basic photo share
         val fallback = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
             putExtra(Intent.EXTRA_STREAM, imageUri)
