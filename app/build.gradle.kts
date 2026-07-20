@@ -69,7 +69,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "deezer.android.app"
+        applicationId = "com.tencent.qqmusic"
         minSdk = 30
         targetSdk = 37
         versionCode = (project.findProperty("APP_VERSION_CODE") as? String)?.toInt() ?: 1
