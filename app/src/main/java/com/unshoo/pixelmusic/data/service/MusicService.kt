@@ -133,11 +133,7 @@ class MusicService : MediaLibraryService() {
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
     @Inject
-    lateinit var equalizerPreferencesRepository: EqualizerPreferencesRepository
-    @Inject
     lateinit var themePreferencesRepository: ThemePreferencesRepository
-    @Inject
-    lateinit var equalizerManager: EqualizerManager
     @Inject
     lateinit var colorSchemeProcessor: ColorSchemeProcessor
     @Inject
