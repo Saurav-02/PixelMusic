@@ -1513,6 +1513,7 @@ private fun shareToInstagramStory(
     topColorHex: String? = null,
     bottomColorHex: String? = null
 ) {
+    context.grantUriPermission(INSTAGRAM_PACKAGE, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
     val intent = Intent("com.instagram.share.ADD_TO_STORY").apply {
         type = "image/png"
         putExtra("interactive_asset_uri", imageUri)
