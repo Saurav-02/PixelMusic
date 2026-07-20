@@ -59,7 +59,6 @@ import com.unshoo.pixelmusic.presentation.screens.SearchScreen
 import com.unshoo.pixelmusic.presentation.screens.StatsScreen
 import com.unshoo.pixelmusic.presentation.screens.SettingsScreen
 import com.unshoo.pixelmusic.presentation.screens.SettingsCategoryScreen
-import com.unshoo.pixelmusic.presentation.screens.EqualizerScreen
 import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.PlaylistViewModel
 import kotlinx.coroutines.flow.first
