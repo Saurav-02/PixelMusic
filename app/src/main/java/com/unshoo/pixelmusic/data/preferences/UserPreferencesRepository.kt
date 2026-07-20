@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey // Added import
+import androidx.datastore.preferences.core.intPreferencesKey 
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -14,11 +14,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.media3.common.Player
 import com.unshoo.pixelmusic.data.model.PlaybackQueueSnapshot
 import com.unshoo.pixelmusic.data.model.Playlist
-import com.unshoo.pixelmusic.data.model.SortOption // Added import
+import com.unshoo.pixelmusic.data.model.SortOption 
 import com.unshoo.pixelmusic.data.model.FolderSource
 import com.unshoo.pixelmusic.data.model.LyricsSourcePreference
 import com.unshoo.pixelmusic.data.model.TransitionSettings
-import com.unshoo.pixelmusic.data.equalizer.EqualizerPreset // Added import
 import com.unshoo.pixelmusic.data.model.StorageFilter
 import javax.inject.Inject
 import javax.inject.Singleton
