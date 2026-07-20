@@ -428,7 +428,7 @@ private fun SocialLinksRow() {
             modifier = Modifier
                 .weight(1f)
                 .clickable {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("sauravbr.github.io/PixelMusic"))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sauravbr.github.io/PixelMusic"))
                     try { context.startActivity(intent) } catch (_: ActivityNotFoundException) { }
                 },
             shape = AbsoluteSmoothCornerShape(16.dp, 60),
