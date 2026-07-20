@@ -670,7 +670,6 @@ class MainActivity : ComponentActivity() {
                 Screen.EditTransition.route,
                 Screen.Experimental.route,
                 Screen.ArtistSettings.route,
-                Screen.Equalizer.route,
                 Screen.SettingsCategory.route,
                 Screen.DelimiterConfig.route,
                 Screen.PaletteStyle.route,
@@ -815,7 +814,6 @@ class MainActivity : ComponentActivity() {
                         DrawerDestination.Home -> navController.navigateSafely(Screen.Home.route) {
                             popUpTo(Screen.Home.route) { inclusive = true }
                         }
-                        DrawerDestination.Equalizer -> navController.navigateSafely(Screen.Equalizer.route)
                         DrawerDestination.Settings -> navController.navigateSafely(Screen.Settings.route)
                         DrawerDestination.Telegram -> {
                             val intent = Intent(this@MainActivity, com.unshoo.pixelmusic.presentation.telegram.auth.TelegramLoginActivity::class.java)
