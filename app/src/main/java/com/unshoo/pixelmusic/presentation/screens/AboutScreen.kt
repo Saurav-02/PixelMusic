@@ -367,7 +367,7 @@ private fun AboutHeroCard(
 
 @Composable
 private fun SocialLinksRow() {
-    val context = LocalContext.current
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -377,8 +377,7 @@ private fun SocialLinksRow() {
             modifier = Modifier
                 .weight(1f)
                 .clickable {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Saurav124x"))
-                    try { context.startActivity(intent) } catch (_: ActivityNotFoundException) { }
+                    uriHandler.openUri("https://t.me/Saurav124x")
                 },
             shape = AbsoluteSmoothCornerShape(16.dp, 60),
             color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
@@ -428,8 +427,8 @@ private fun SocialLinksRow() {
             modifier = Modifier
                 .weight(1f)
                 .clickable {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sauravbr.github.io/PixelMusic"))
-                    try { context.startActivity(intent) } catch (_: ActivityNotFoundException) { }
+                    // 3. Open the actual repo safely!
+                    uriHandler.openUri("https://github.com/sauravbr/PixelMusic") 
                 },
             shape = AbsoluteSmoothCornerShape(16.dp, 60),
             color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
