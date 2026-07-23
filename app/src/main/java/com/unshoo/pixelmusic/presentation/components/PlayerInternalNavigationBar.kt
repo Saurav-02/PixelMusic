@@ -1,7 +1,6 @@
 package com.unshoo.pixelmusic.presentation.components
 
 import android.os.SystemClock
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -26,7 +25,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
@@ -54,7 +52,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.unshoo.pixelmusic.BottomNavItem
-import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.navigation.navigateToTopLevelSafely
 import kotlinx.collections.immutable.ImmutableList
@@ -135,220 +132,167 @@ fun PlayerInternalNavigationBar(
     val shouldHideLabel = isLargeFont || (isCompactScreen && mainItems.size > 3)
 
     val selectedIndex = mainItems.indexOfFirst { it.screen.route == latestCurrentRoute }
-    val isSearchSelected = latestCurrentRoute == Screen.Search.route
 
-    AnimatedContent(
-        targetState = isSearchSelected,
-        label = "NavBarMorphingAnimation"
-    ) { searchActive ->
-        if (searchActive) {
-            // =========================================================
-            // NEW FLOATING SEARCH BAR (Active State)
-            // =========================================================
-            Surface(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
-                    .height(64.dp), // Matches the height of the pill
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shadowElevation = 8.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = searchItem?.iconResId ?: R.drawable.rounded_search_24),
-                        contentDescription = "Search",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp)
+    // Outer Row handles layout separation
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Original Working Pill (Now uses Modifier.weight(1f) to leave space for Search button)
+        HorizontalFloatingToolbar(
+            modifier = Modifier.weight(1f),
+            expanded = true,
+            colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(
+                toolbarContentColor = MaterialTheme.colorScheme.onSurface,
+                toolbarContainerColor = MaterialTheme.colorScheme.primary
+            ),
+            content = {
+                mainItems.forEachIndexed { index, item ->
+                    val isSelected = selectedIndex == index
+
+                    val itemWidth by animateDpAsState(
+                        targetValue = 48.dp,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        label = "item_width_$index"
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    // PLACEHOLDER for your actual TextField
-                    Text(
-                        text = "Search...", 
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f)
+
+                    val labelWidth by animateDpAsState(
+                        targetValue = if (isSelected && !shouldHideLabel) 80.dp else 0.dp,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        label = "label_width_$index"
                     )
-                    
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_youtube),
-                        contentDescription = "YouTube",
-                        tint = Color.Red,
-                        modifier = Modifier.size(28.dp)
+
+                    val spacerWidth by animateDpAsState(
+                        targetValue = if (index < mainItems.size - 1) 8.dp else 0.dp,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        label = "spacer_width_$index"
                     )
-                }
-            }
-        } else {
-            // =========================================================
-            // ORIGINAL 3-PILL + SEPARATE BUTTON (Inactive State)
-            // =========================================================
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Main Pill heavily constrained by Modifier.weight(1f)
-                HorizontalFloatingToolbar(
-                    modifier = Modifier.weight(1f),
-                    expanded = true,
-                    colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(
-                        toolbarContentColor = MaterialTheme.colorScheme.onSurface,
-                        toolbarContainerColor = MaterialTheme.colorScheme.primary
-                    ),
-                    content = {
-                        mainItems.forEachIndexed { index, item ->
-                            val isSelected = selectedIndex == index
 
-                            val itemWidth by animateDpAsState(
-                                targetValue = 48.dp,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessLow
-                                ),
-                                label = "item_width_$index"
-                            )
-
-                            val labelWidth by animateDpAsState(
-                                targetValue = if (isSelected && !shouldHideLabel) 80.dp else 0.dp,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessLow
-                                ),
-                                label = "label_width_$index"
-                            )
-
-                            val spacerWidth by animateDpAsState(
-                                targetValue = if (index < mainItems.size - 1) 8.dp else 0.dp,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessLow
-                                ),
-                                label = "spacer_width_$index"
-                            )
-
-                            Surface(
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    if (latestNavigationEnabled && latestCurrentRoute != item.screen.route) {
-                                        navController.navigateToTopLevelSafely(item.screen.route)
-                                    }
-                                },
-                                modifier = Modifier
-                                    .width(itemWidth + labelWidth)
-                                    .height(48.dp),
-                                shape = CircleShape,
-                                color = if (isSelected) {
-                                    MaterialTheme.colorScheme.background
-                                } else {
-                                    MaterialTheme.colorScheme.primary
-                                },
-                                contentColor = if (isSelected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.background
-                                }
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 8.dp)
-                                ) {
-                                    val iconRes = if (isSelected && item.selectedIconResId != null && item.selectedIconResId != 0) {
-                                        item.selectedIconResId
-                                    } else {
-                                        item.iconResId
-                                    }
-
-                                    Box(
-                                        modifier = Modifier.size(24.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = iconRes),
-                                            contentDescription = item.label,
-                                            tint = if (isSelected) {
-                                                MaterialTheme.colorScheme.primary
-                                            } else {
-                                                MaterialTheme.colorScheme.background
-                                            },
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-
-                                    AnimatedVisibility(
-                                        visible = isSelected && !shouldHideLabel,
-                                        enter = fadeIn(animationSpec = tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
-                                        exit = fadeOut(animationSpec = tween(150)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
-                                    ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(
-                                                text = item.label,
-                                                style = MaterialTheme.typography.labelLarge,
-                                                maxLines = 1,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                softWrap = false
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (index < mainItems.size - 1) {
-                                Spacer(modifier = Modifier.width(spacerWidth))
-                            }
-                        }
-                    }
-                )
-
-                // Detached Custom Search Surface
-                if (searchItem != null) {
-                    val searchIconRes = searchItem.iconResId
-                    
                     Surface(
                         onClick = {
-                            if (!latestNavigationEnabled) return@Surface
-                            
-                            val now = SystemClock.elapsedRealtime()
-                            val isDoubleTap = now - lastSearchTapTimestamp <= 350L
-                            lastSearchTapTimestamp = now
-
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-
-                            if (!isSearchSelected) {
-                                navController.navigateToTopLevelSafely(searchItem.screen.route)
-                            } else if (isDoubleTap) {
-                                lastSearchTapTimestamp = 0L
-                                onSearchIconDoubleTap()
+                            if (latestNavigationEnabled && latestCurrentRoute != item.screen.route) {
+                                navController.navigateToTopLevelSafely(item.screen.route)
                             }
                         },
-                        modifier = Modifier.size(64.dp), // Matches your original app's FAB footprint exactly
+                        modifier = Modifier
+                            .width(itemWidth + labelWidth)
+                            .height(48.dp),
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        shadowElevation = 8.dp
+                        color = if (isSelected) {
+                            MaterialTheme.colorScheme.background
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
+                        contentColor = if (isSelected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.background
+                        }
                     ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Icon(
-                                painter = painterResource(id = searchIconRes),
-                                contentDescription = searchItem.label,
-                                modifier = Modifier.size(24.dp)
-                            )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            val iconRes = if (isSelected && item.selectedIconResId != null && item.selectedIconResId != 0) {
+                                item.selectedIconResId
+                            } else {
+                                item.iconResId
+                            }
+
+                            Box(
+                                modifier = Modifier.size(24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = iconRes),
+                                    contentDescription = item.label,
+                                    tint = if (isSelected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.background
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+
+                            AnimatedVisibility(
+                                visible = isSelected && !shouldHideLabel,
+                                enter = fadeIn(animationSpec = tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
+                                exit = fadeOut(animationSpec = tween(150)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = item.label,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        maxLines = 1,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        softWrap = false
+                                    )
+                                }
+                            }
                         }
                     }
+
+                    if (index < mainItems.size - 1) {
+                        Spacer(modifier = Modifier.width(spacerWidth))
+                    }
+                }
+            }
+        )
+
+        // Detached Custom Search Surface
+        if (searchItem != null) {
+            val isSearchSelected = latestCurrentRoute == searchItem.screen.route
+            val searchIconRes = if (isSearchSelected && searchItem.selectedIconResId != null && searchItem.selectedIconResId != 0) searchItem.selectedIconResId else searchItem.iconResId
+            
+            Surface(
+                onClick = {
+                    if (!latestNavigationEnabled) return@Surface
+                    
+                    val now = SystemClock.elapsedRealtime()
+                    val isDoubleTap = now - lastSearchTapTimestamp <= 350L
+                    lastSearchTapTimestamp = now
+
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+
+                    if (!isSearchSelected) {
+                        navController.navigateToTopLevelSafely(searchItem.screen.route)
+                    } else if (isDoubleTap) {
+                        lastSearchTapTimestamp = 0L
+                        onSearchIconDoubleTap()
+                    }
+                },
+                modifier = Modifier.size(64.dp), // Matches your original app's FAB footprint exactly
+                shape = CircleShape,
+                color = if (isSearchSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+                contentColor = if (isSearchSelected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onPrimaryContainer,
+                shadowElevation = 8.dp
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        painter = painterResource(id = searchIconRes),
+                        contentDescription = searchItem.label,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
         }
