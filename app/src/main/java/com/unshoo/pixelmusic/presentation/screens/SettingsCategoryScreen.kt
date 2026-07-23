@@ -717,6 +717,15 @@ fun SettingsCategoryScreen(
                                     onSelectionChanged = { settingsViewModel.setAppThemeMode(it) },
                                     leadingIcon = { Icon(Icons.Outlined.LightMode, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
+
+                                SwitchSettingItem(
+                                    title = "AMOLED Black",
+                                    subtitle = "Use pure black for dark theme backgrounds",
+                                    checked = uiState.amoledBlackModeEnabled,
+                                    onCheckedChange = { settingsViewModel.setAmoledBlackMode(it) },
+                                    leadingIcon = { Icon(Icons.Outlined.LightMode, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
+                                
                                 ThemeSelectorItem(
                                     label = stringResource(R.string.setcat_app_font_label),
                                     description = stringResource(R.string.setcat_app_font_desc),
