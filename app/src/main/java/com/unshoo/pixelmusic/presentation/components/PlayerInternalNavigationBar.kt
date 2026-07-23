@@ -1,8 +1,16 @@
 package com.unshoo.pixelmusic.presentation.components
 
 import android.os.SystemClock
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,8 +24,13 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -26,31 +39,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.unshoo.pixelmusic.BottomNavItem
+import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.navigation.navigateToTopLevelSafely
 import kotlinx.collections.immutable.ImmutableList
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 
 internal val NavBarContentHeight = 76.dp
 internal val NavBarCompactContentHeight = 64.dp
@@ -90,8 +97,7 @@ internal fun resolveNavBarSurfaceHeight(
     systemNavBarInset: Dp,
     compactMode: Boolean
 ): Dp {
-    val contentHeight = resolveNavBarContentHeight(compactMode)
-    return contentHeight
+    return resolveNavBarContentHeight(compactMode)
 }
 
 internal fun resolveNavBarOccupiedHeight(
@@ -99,153 +105,250 @@ internal fun resolveNavBarOccupiedHeight(
     compactMode: Boolean
 ): Dp = resolveNavBarContentHeight(compactMode) + systemNavBarInset
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PlayerInternalNavigationBar(
     navController: NavHostController,
     navItems: ImmutableList<BottomNavItem>,
     currentRoute: String?,
     modifier: Modifier = Modifier,
-    navBarStyle: String, // Kept for compatibility so app compiles
+    navBarStyle: String,
     compactMode: Boolean,
     bottomBarPadding: Dp = 0.dp,
     onSearchIconDoubleTap: () -> Unit = {}
 ) {
-    val navBarInsetPadding = sanitizeNavigationBarBottomInset(
-        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    )
-    val pillBottomPadding = (navBarInsetPadding - bottomBarPadding).coerceAtLeast(0.dp) + 12.dp
-
-    // Extract Search to be the detached FAB, keep others in the main pill
-    val searchItem = navItems.find { it.screen.route == Screen.Search.route }
-    val mainItems = navItems.filter { it.screen.route != Screen.Search.route }
-
     val latestCurrentRoute by rememberUpdatedState(currentRoute)
     val latestNavigationEnabled by rememberUpdatedState(currentRoute != null)
     var lastSearchTapTimestamp by remember { mutableStateOf(0L) }
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = pillBottomPadding),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // MAIN PILL
-        Surface(
-            modifier = Modifier.weight(1f).height(64.dp),
-            shape = RoundedCornerShape(percent = 50),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shadowElevation = 8.dp
-        ) {
+    val haptic = LocalHapticFeedback.current
+    val configuration = LocalConfiguration.current
+    val fontScale = LocalDensity.current.fontScale
+    val screenWidth = configuration.screenWidthDp
+
+    // Extract Search logic safely
+    val searchItem = navItems.find { it.screen.route == Screen.Search.route }
+    val mainItems = navItems.filter { it.screen.route != Screen.Search.route }
+
+    val isLargeFont = fontScale > 1.25f
+    val isCompactScreen = screenWidth < 400
+    val shouldHideLabel = isLargeFont || (isCompactScreen && mainItems.size > 3)
+
+    val selectedIndex = mainItems.indexOfFirst { it.screen.route == latestCurrentRoute }
+    val isSearchSelected = latestCurrentRoute == Screen.Search.route
+
+    AnimatedContent(
+        targetState = isSearchSelected,
+        label = "NavBarMorphingAnimation"
+    ) { searchActive ->
+        if (searchActive) {
+            // =========================================================
+            // NEW FLOATING SEARCH BAR (Active State)
+            // =========================================================
+            Surface(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+                    .height(64.dp), // Matches the height of the pill
+                shape = RoundedCornerShape(50),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = searchItem?.iconResId ?: R.drawable.rounded_search_24),
+                        contentDescription = "Search",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    // PLACEHOLDER for your actual TextField
+                    Text(
+                        text = "Search...", 
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_youtube),
+                        contentDescription = "YouTube",
+                        tint = Color.Red,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+        } else {
+            // =========================================================
+            // ORIGINAL 3-PILL + SEPARATE BUTTON (Inactive State)
+            // =========================================================
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                mainItems.forEach { item ->
-                    val isSelected = latestCurrentRoute == item.screen.route
-                    val iconPainterResId = if (isSelected && item.selectedIconResId != null && item.selectedIconResId != 0) item.selectedIconResId else item.iconResId
+                // Main Pill heavily constrained by Modifier.weight(1f)
+                HorizontalFloatingToolbar(
+                    modifier = Modifier.weight(1f),
+                    expanded = true,
+                    colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(
+                        toolbarContentColor = MaterialTheme.colorScheme.onSurface,
+                        toolbarContainerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    content = {
+                        mainItems.forEachIndexed { index, item ->
+                            val isSelected = selectedIndex == index
 
-                    val containerColor by animateColorAsState(
-                        targetValue = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                        label = "color"
-                    )
-                    val contentColor by animateColorAsState(
-                        targetValue = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                        label = "content"
-                    )
+                            val itemWidth by animateDpAsState(
+                                targetValue = 48.dp,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                ),
+                                label = "item_width_$index"
+                            )
 
-                    Surface(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .clickable {
-                                if (latestNavigationEnabled && latestCurrentRoute != item.screen.route) {
-                                    navController.navigateToTopLevelSafely(item.screen.route)
-                                }
-                            },
-                        color = containerColor,
-                        contentColor = contentColor
-                    ) {
-                            Row(
+                            val labelWidth by animateDpAsState(
+                                targetValue = if (isSelected && !shouldHideLabel) 80.dp else 0.dp,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                ),
+                                label = "label_width_$index"
+                            )
+
+                            val spacerWidth by animateDpAsState(
+                                targetValue = if (index < mainItems.size - 1) 8.dp else 0.dp,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                ),
+                                label = "spacer_width_$index"
+                            )
+
+                            Surface(
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    if (latestNavigationEnabled && latestCurrentRoute != item.screen.route) {
+                                        navController.navigateToTopLevelSafely(item.screen.route)
+                                    }
+                                },
                                 modifier = Modifier
-                                    .animateContentSize(
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioNoBouncy,
-                                            stiffness = Spring.StiffnessMediumLow
-                                        )
-                                    )
-                                    // 1. Reduced horizontal padding from 14.dp to 10.dp for more breathing room
-                                    .padding(horizontal = 10.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                    .width(itemWidth + labelWidth)
+                                    .height(48.dp),
+                                shape = CircleShape,
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.background
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                },
+                                contentColor = if (isSelected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.background
+                                }
                             ) {
-                                // 2. Smoothly slides and fades the icon in/out
-                                AnimatedVisibility(
-                                    visible = isSelected,
-                                    enter = expandHorizontally(animationSpec = tween(250)) + fadeIn(animationSpec = tween(250)),
-                                    exit = shrinkHorizontally(animationSpec = tween(250)) + fadeOut(animationSpec = tween(250))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 8.dp)
                                 ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                    val iconRes = if (isSelected && item.selectedIconResId != null && item.selectedIconResId != 0) {
+                                        item.selectedIconResId
+                                    } else {
+                                        item.iconResId
+                                    }
+
+                                    Box(
+                                        modifier = Modifier.size(24.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
                                         Icon(
-                                            painter = painterResource(id = iconPainterResId),
+                                            painter = painterResource(id = iconRes),
                                             contentDescription = item.label,
+                                            tint = if (isSelected) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else {
+                                                MaterialTheme.colorScheme.background
+                                            },
                                             modifier = Modifier.size(24.dp)
                                         )
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                    }
+
+                                    AnimatedVisibility(
+                                        visible = isSelected && !shouldHideLabel,
+                                        enter = fadeIn(animationSpec = tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
+                                        exit = fadeOut(animationSpec = tween(150)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = item.label,
+                                                style = MaterialTheme.typography.labelLarge,
+                                                maxLines = 1,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                softWrap = false
+                                            )
+                                        }
                                     }
                                 }
-                                
-                                // 3. Force text to stay on a single line
-                                Text(
-                                    text = item.label,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Clip
-                                )
+                            }
+
+                            if (index < mainItems.size - 1) {
+                                Spacer(modifier = Modifier.width(spacerWidth))
                             }
                         }
                     }
-                }
-            }
+                )
 
-        // DETACHED SEARCH FAB
-        if (searchItem != null) {
-            val isSearchSelected = latestCurrentRoute == searchItem.screen.route
-            val searchIconRes = if (isSearchSelected && searchItem.selectedIconResId != null && searchItem.selectedIconResId != 0) searchItem.selectedIconResId else searchItem.iconResId
-            
-            Surface(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .clickable {
-                        if (!latestNavigationEnabled) return@clickable
-                        
-                        val now = SystemClock.elapsedRealtime()
-                        val isDoubleTap = now - lastSearchTapTimestamp <= 350L
-                        lastSearchTapTimestamp = now
+                // Detached Custom Search Surface
+                if (searchItem != null) {
+                    val searchIconRes = searchItem.iconResId
+                    
+                    Surface(
+                        onClick = {
+                            if (!latestNavigationEnabled) return@Surface
+                            
+                            val now = SystemClock.elapsedRealtime()
+                            val isDoubleTap = now - lastSearchTapTimestamp <= 350L
+                            lastSearchTapTimestamp = now
 
-                        if (!isSearchSelected) {
-                            navController.navigateToTopLevelSafely(searchItem.screen.route)
-                        } else if (isDoubleTap) {
-                            lastSearchTapTimestamp = 0L
-                            onSearchIconDoubleTap()
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+
+                            if (!isSearchSelected) {
+                                navController.navigateToTopLevelSafely(searchItem.screen.route)
+                            } else if (isDoubleTap) {
+                                lastSearchTapTimestamp = 0L
+                                onSearchIconDoubleTap()
+                            }
+                        },
+                        modifier = Modifier.size(64.dp), // Matches your original app's FAB footprint exactly
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        shadowElevation = 8.dp
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                painter = painterResource(id = searchIconRes),
+                                contentDescription = searchItem.label,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
-                    },
-                shape = CircleShape,
-                color = if (isSearchSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = if (isSearchSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                shadowElevation = 8.dp
-            ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Icon(
-                        painter = painterResource(id = searchIconRes),
-                        contentDescription = searchItem.label,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    }
                 }
             }
         }
