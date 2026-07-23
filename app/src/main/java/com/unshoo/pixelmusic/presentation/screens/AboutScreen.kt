@@ -428,7 +428,7 @@ private fun SocialLinksRow() {
                 .weight(1f)
                 .clickable {
                     // 3. Open the actual repo safely!
-                    uriHandler.openUri("https://github.com/sauravbr/PixelMusic") 
+                    uriHandler.openUri("https://sauravbr.github.io/PixelMusic") 
                 },
             shape = AbsoluteSmoothCornerShape(16.dp, 60),
             color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
