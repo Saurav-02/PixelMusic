@@ -21,6 +21,7 @@ class ThemePreferencesRepository @Inject constructor(
         val APP_THEME_MODE = stringPreferencesKey("app_theme_mode")
         val COLOR_PALETTE_PREFERENCE = stringPreferencesKey("color_palette_preference")
         val APP_FONT_PREFERENCE = stringPreferencesKey("app_font_preference")
+        val AMOLED_BLACK_MODE = androidx.datastore.preferences.core.booleanPreferencesKey("amoled_black_mode")
     }
 
     val appThemeModeFlow: Flow<String> = dataStore.data.map { preferences ->
@@ -55,6 +56,15 @@ class ThemePreferencesRepository @Inject constructor(
     suspend fun setPlayerThemePreference(themeMode: String) =
         dataStore.edit { preferences ->
             preferences[Keys.PLAYER_THEME_PREFERENCE] = themeMode
+        }
+
+    val amoledBlackModeFlow: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[Keys.AMOLED_BLACK_MODE] ?: false
+    }
+
+    suspend fun setAmoledBlackMode(enabled: Boolean) =
+        dataStore.edit { preferences ->
+            preferences[Keys.AMOLED_BLACK_MODE] = enabled
         }
 
     suspend fun setAppThemeMode(themeMode: String) =
