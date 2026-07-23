@@ -291,7 +291,7 @@ class MainActivity : ComponentActivity() {
                 darkTheme = useDarkTheme,
                 dynamicColor = dynamicColorEnabled,
                 colorPalette = colorPalette,
-                useSystemFont = (appFontMode == AppFontMode.SYSTEM)
+                useSystemFont = (appFontMode == AppFontMode.SYSTEM),
                 isAmoledBlack = isAmoledBlackEnabled
             ) {
                 var contentVisible by remember { mutableStateOf(false) }
