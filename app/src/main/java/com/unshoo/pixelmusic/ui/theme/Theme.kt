@@ -366,11 +366,14 @@ fun PixelMusicTheme(
     colorSchemePairOverride: ColorSchemePair? = null,
     colorPalette: String = "SAGE",
     useSystemFont: Boolean = false,
+    isAmoledBlack: Boolean = false, // <-- ADD THIS
     content: @Composable () -> Unit
 ) {
     FontSettings.useSystemFont = useSystemFont
     val context = LocalContext.current
-    val finalColorScheme = when {
+    
+    // 1. Calculate the base scheme like you normally do
+    val baseColorScheme = when {
         colorSchemePairOverride != null -> {
             if (darkTheme) colorSchemePairOverride.dark else colorSchemePairOverride.light
         }
@@ -384,6 +387,22 @@ fun PixelMusicTheme(
         else -> {
             getStaticColorScheme(colorPalette, darkTheme)
         }
+    }
+
+    // 2. Intercept it for AMOLED Black!
+    val finalColorScheme = if (darkTheme && isAmoledBlack) {
+        baseColorScheme.copy(
+            background = Color.Black,
+            surface = Color.Black,
+            surfaceVariant = Color(0xFF0A0A0A),
+            surfaceContainerLowest = Color.Black,
+            surfaceContainerLow = Color(0xFF0A0A0A),
+            surfaceContainer = Color(0xFF141414),
+            surfaceContainerHigh = Color(0xFF1F1F1F),
+            surfaceContainerHighest = Color(0xFF292929)
+        )
+    } else {
+        baseColorScheme
     }
 
     PixelMusicStatusBarStyle(
