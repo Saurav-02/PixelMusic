@@ -66,6 +66,7 @@ data class SettingsUiState(
     val appLanguageTag: String = AppLanguage.SYSTEM.tag,
     val appThemeMode: String = AppThemeMode.FOLLOW_SYSTEM,
     val appFontMode: String = AppFontMode.APP_DEFAULT,
+    val amoledBlackModeEnabled: Boolean = false,
     val playerThemePreference: String = ThemePreference.ALBUM_ART,
     val colorPalette: String = "SAGE",
     val albumArtPaletteStyle: AlbumArtPaletteStyle = AlbumArtPaletteStyle.default,
@@ -729,6 +730,12 @@ class SettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            themePreferencesRepository.amoledBlackModeFlow.collect { enabled ->
+                _uiState.update { it.copy(amoledBlackModeEnabled = enabled) }
+            }
+        }
+
+        viewModelScope.launch {
             userPreferencesRepository.useAnimatedLyricsFlow.collect { enabled ->
                 _uiState.update { it.copy(useAnimatedLyrics = enabled) }
             }
@@ -1104,6 +1111,12 @@ class SettingsViewModel @Inject constructor(
     fun setAppThemeMode(mode: String) {
         viewModelScope.launch {
             themePreferencesRepository.setAppThemeMode(mode)
+        }
+    }
+
+    fun setAmoledBlackMode(enabled: Boolean) {
+        viewModelScope.launch {
+            themePreferencesRepository.setAmoledBlackMode(enabled)
         }
     }
 
