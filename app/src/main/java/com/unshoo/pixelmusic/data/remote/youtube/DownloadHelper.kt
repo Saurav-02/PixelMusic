@@ -149,14 +149,7 @@ object DownloadHelper {
             return@withContext null
         }
     }
-            return@withContext outputFile.absolutePath
-
-        } catch (e: Exception) {
-            UmihiHelper.printe("Download failed for ${song.youtubeId}: ${e.message}")
-            tempFiles.forEach { it.delete() }
-            outputFile.delete()
-            return@withContext null
-        }
+    
     private fun moveToPublicMusicDirectory(context: Context, tempFile: File, fileName: String): Uri? {
         val resolver = context.contentResolver
         val audioCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
