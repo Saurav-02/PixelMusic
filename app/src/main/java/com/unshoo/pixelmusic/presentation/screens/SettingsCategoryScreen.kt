@@ -894,6 +894,37 @@ fun SettingsCategoryScreen(
                         }
                         SettingsCategory.PLAYBACK -> {
                             SettingsSubsection(title = stringResource(R.string.setcat_background_playback)) {
+                                SettingsItem(
+                                    title = "Glowing Wave Screen Saver",
+                                    subtitle = "Set PixelMusic as your system screen saver while charging or docked",
+                                    leadingIcon = { 
+                                        Icon(
+                                            painter = painterResource(R.drawable.rounded_imagesmode_24), 
+                                            contentDescription = null, 
+                                            tint = MaterialTheme.colorScheme.secondary
+                                        ) 
+                                    },
+                                    trailingIcon = { 
+                                        Icon(
+                                            imageVector = Icons.Rounded.ChevronRight, 
+                                            contentDescription = "Open Settings", 
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        ) 
+                                    },
+                                    onClick = {
+                                        val intent = Intent(Settings.ACTION_DREAM_SETTINGS)
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        try {
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(
+                                                context, 
+                                                "Screen saver settings not available on this device.", 
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                )
                                 ThemeSelectorItem(
                                     label = stringResource(R.string.setcat_keep_playing_label),
                                     description = stringResource(R.string.setcat_keep_playing_desc),
