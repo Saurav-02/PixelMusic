@@ -14,6 +14,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
+import android.content.ContentValues
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 
 object DownloadHelper {
     private val client = YoutubeHelper.client
@@ -128,6 +132,23 @@ object DownloadHelper {
                 }
             }
 
+            val safeTitle = song.title.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+            val safeArtist = song.artist.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+            val finalFileName = "$safeTitle - $safeArtist.webm"
+
+            val publicUri = moveToPublicMusicDirectory(context, outputFile, finalFileName)
+
+            outputFile.delete() 
+
+            return@withContext publicUri?.toString()
+
+        } catch (e: Exception) {
+            UmihiHelper.printe("Download failed for ${song.youtubeId}: ${e.message}")
+            tempFiles.forEach { it.delete() }
+            outputFile.delete()
+            return@withContext null
+        }
+    }
             return@withContext outputFile.absolutePath
 
         } catch (e: Exception) {
@@ -135,6 +156,49 @@ object DownloadHelper {
             tempFiles.forEach { it.delete() }
             outputFile.delete()
             return@withContext null
+        }
+    private fun moveToPublicMusicDirectory(context: Context, tempFile: File, fileName: String): Uri? {
+        val resolver = context.contentResolver
+        val audioCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        }
+
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
+            put(MediaStore.Audio.Media.MIME_TYPE, "audio/webm")
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/PixelMusic")
+                put(MediaStore.Audio.Media.IS_PENDING, 1)
+            } else {
+                // Fallback for Android 9 and below
+                val musicDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "PixelMusic")
+                if (!musicDir.exists()) musicDir.mkdirs()
+                put(MediaStore.Audio.Media.DATA, File(musicDir, fileName).absolutePath)
+            }
+        }
+
+        val newUri = resolver.insert(audioCollection, contentValues) ?: return null
+
+        return try {
+            resolver.openOutputStream(newUri)?.use { outputStream ->
+                tempFile.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                contentValues.clear()
+                contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0)
+                resolver.update(newUri, contentValues, null, null)
+            }
+            newUri
+        } catch (e: Exception) {
+            resolver.delete(newUri, null, null)
+            e.printStackTrace()
+            null
         }
     }
 
