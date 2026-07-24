@@ -367,7 +367,9 @@ private fun AboutHeroCard(
 
 @Composable
 private fun SocialLinksRow() {
-    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+    // 1. Swap LocalUriHandler for LocalContext
+    val context = LocalContext.current
+    
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -377,7 +379,14 @@ private fun SocialLinksRow() {
             modifier = Modifier
                 .weight(1f)
                 .clickable {
-                    uriHandler.openUri("https://t.me/Saurav124x")
+                    // 2. Force a native Android intent to bypass any Compose URI overrides
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Saurav124x"))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                        // Handle case where no browser is installed
+                    }
                 },
             shape = AbsoluteSmoothCornerShape(16.dp, 60),
             color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
@@ -427,8 +436,14 @@ private fun SocialLinksRow() {
             modifier = Modifier
                 .weight(1f)
                 .clickable {
-                    // 3. Open the actual repo safely!
-                    uriHandler.openUri("https://sauravbr.github.io/PixelMusic") 
+                    // 2. Force a native Android intent here as well
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sauravbr/PixelMusic"))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                         // Handle case where no browser is installed
+                    }
                 },
             shape = AbsoluteSmoothCornerShape(16.dp, 60),
             color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
