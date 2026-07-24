@@ -437,7 +437,7 @@ private fun SocialLinksRow() {
                 .weight(1f)
                 .clickable {
                     // 2. Force a native Android intent here as well
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sauravbr.github.in/PixelMusic"))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sauravbr.github.io/PixelMusic"))
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     try {
                         context.startActivity(intent)
