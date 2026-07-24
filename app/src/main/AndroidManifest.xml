@@ -369,6 +369,18 @@
         </service>
 
         <service
+    android:name=".presentation.screensaver.GlowingWaveDreamService"
+    android:exported="true"
+    android:icon="@mipmap/ic_launcher"
+    android:label="PixelMusic Wave"
+    android:permission="android.permission.BIND_DREAM_SERVICE">
+    <intent-filter>
+        <action android:name="android.service.dreams.DreamService" />
+        <category android:name="android.intent.category.DEFAULT" />
+    </intent-filter>
+</service>
+
+        <service
             android:name=".data.service.tile.LastPlaylistTileService"
             android:exported="true"
             android:label="@string/tile_last_playlist"
