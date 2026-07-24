@@ -378,6 +378,9 @@
         <action android:name="android.service.dreams.DreamService" />
         <category android:name="android.intent.category.DEFAULT" />
     </intent-filter>
+    <meta-data
+        android:name="android.service.dream"
+        android:resource="@xml/dream_info" />
 </service>
 
         <service
