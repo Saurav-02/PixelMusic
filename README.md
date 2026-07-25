@@ -281,5 +281,5 @@ Commercial use, including but not limited to the sale, redistribution, or publis
 
 The right to sell, sublicense, and distribute the Software for profit is reserved exclusively by the author, Theo Vilardo.
 ```
-
+*Note: All new modifications, UI/UX designs, animations, and features introduced in this fork by Saurav7x are distributed under these same original proprietary license terms.*
 To review the full license stipulations, please check the [LICENSE](LICENSE) file.
