@@ -436,13 +436,13 @@ private fun SocialLinksRow() {
             modifier = Modifier
                 .weight(1f)
                 .clickable {
-                    // 2. Force a native Android intent here as well
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sauravbr.github.io/PixelMusic"))
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    val pkgUri = android.net.Uri.parse("https://github.com/Saurav-02/PixelMusic")
+                    val intent = Intent(Intent.ACTION_VIEW, pkgUri).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
                     try {
                         context.startActivity(intent)
                     } catch (e: ActivityNotFoundException) {
-                         // Handle case where no browser is installed
                     }
                 },
             shape = AbsoluteSmoothCornerShape(16.dp, 60),
