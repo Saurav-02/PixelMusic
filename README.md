@@ -240,11 +240,11 @@ Pixel Music is built using cutting-edge Android development technologies:
 * **keystore.properties** & **vz-pixelmusic.jks** (for release builds).
 
 ### Easy Compile Steps
+```markdown
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/ianshulyadav/PixelMusic.git
-   cd PixelMusic/PixelPlayer
-   ```
+   git clone [https://github.com/Saurav-02/PixelMusic.git](https://github.com/Saurav-02/PixelMusic.git)
+   cd PixelMusic
 2. **Open the project in Android Studio:**
    * Android Studio will sync Gradle dependencies automatically.
 3. **Configure API Keys (Optional but recommended):**
