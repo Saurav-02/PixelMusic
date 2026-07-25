@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>The Ultimate Hybrid Local, Streaming, and Cloud Music Powerhouse for Android</strong><br>
-  An elegant, feature-rich audio system built using Jetpack Compose, Material Design 3, and Media3 ExoPlayer.
+  An elegant, feature-rich audio system redesigned with next-level UI/UX, expressive Material You injections, and Media3 ExoPlayer.
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin 100%"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge" alt="Proprietary License"></a>
   <a href="https://t.me/PixelMusicApp"><img src="https://img.shields.io/badge/Telegram-Join%20Channel-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel"></a>
-  <a href="https://github.com/ianshulyadav/PixelMusic"><img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome"></a>
+  <a href="https://github.com/Saurav-02/PixelMusic"><img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome"></a>
 </p>
 
 > [!NOTE]
