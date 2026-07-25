@@ -22,7 +22,6 @@ object DownloadHelper {
     private val client = YoutubeHelper.client
 
     suspend fun downloadImage(context: Context, imageUrl: String, id: String): File? {
-        // We keep thumbnails internal so they load fast and don't clutter the user's public gallery
         return withContext(Dispatchers.IO) {
             try {
                 val imageDir = UmihiHelper.getDownloadDirectory(context, Constants.Downloads.THUMBNAILS_FOLDER)
@@ -47,14 +46,12 @@ object DownloadHelper {
         connections: Int = 8
     ): String? = withContext(Dispatchers.IO) {
         
-        // 1. Temporary scratchpad just for the chunking process.
-        // We NEVER save the final audio file here.
         val cacheDir = File(context.cacheDir, "PixelMusic_Temp")
         if (!cacheDir.exists()) cacheDir.mkdirs()
         
-        val tempOutputFile = File(cacheDir, "${song.youtubeId}_temp.webm")
+        // Changed to .m4a
+        val tempOutputFile = File(cacheDir, "${song.youtubeId}_temp.m4a")
 
-        // 2. Fetch the stream and chunk it
         val url = YoutubeHelper.getSongPlayerUrl(context, song)
         val total = try {
             val headReq = Request.Builder().url(url).header("Range", "bytes=0-0").build()
@@ -93,11 +90,10 @@ object DownloadHelper {
                 }
             }.awaitAll().also { tempFiles.addAll(it) }
 
-            // 3. Merge chunks into the temp file
             FileOutputStream(tempOutputFile).use { out ->
                 tempFiles.sortedBy { it.name }.forEach { part ->
                     part.inputStream().use { it.copyTo(out) }
-                    part.delete() // Clean up chunk immediately
+                    part.delete()
                 }
             }
         } catch (e: Exception) {
@@ -107,15 +103,13 @@ object DownloadHelper {
             return@withContext null
         }
 
-        // We append a timestamp to the filename to ensure it NEVER collides with an orphaned Android MediaStore entry
         val safeTitle = song.title.replace(Regex("[\\\\/:*?\"<>|]"), "_")
         val safeArtist = song.artist.replace(Regex("[\\\\/:*?\"<>|]"), "_")
-        val finalFileName = "${safeTitle}_${safeArtist}_${System.currentTimeMillis()}.webm"
+        // Changed to .m4a
+        val finalFileName = "${safeTitle}_${safeArtist}_${System.currentTimeMillis()}.m4a"
 
-        // 4. Move the merged file from temp straight to the Public MediaStore
         val publicUriString = writeToPublicMediaStore(context, tempOutputFile, finalFileName)
         
-        // 5. Nuke the temporary workspace file completely so nothing is hidden
         tempOutputFile.delete()
 
         return@withContext publicUriString
@@ -131,14 +125,13 @@ object DownloadHelper {
 
         val contentValues = ContentValues().apply {
             put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
-            put(MediaStore.Audio.Media.MIME_TYPE, "audio/webm")
+            // THE FIX: Changed to audio/mp4 to bypass MediaStore strict checks
+            put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp4")
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Let MediaStore handle the folder creation cleanly
                 put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/PixelMusic")
                 put(MediaStore.Audio.Media.IS_PENDING, 1)
             } else {
-                // Fallback for Android 9 and below
                 val musicDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "PixelMusic")
                 if (!musicDir.exists()) musicDir.mkdirs()
                 put(MediaStore.Audio.Media.DATA, File(musicDir, fileName).absolutePath)
@@ -159,14 +152,13 @@ object DownloadHelper {
                 contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0)
                 resolver.update(newUri, contentValues, null, null)
             } else {
-                // Trigger media scanner on Android 9 and below so it shows in file managers immediately
                 val path = contentValues.getAsString(MediaStore.Audio.Media.DATA)
                 if (path != null) {
-                    MediaScannerConnection.scanFile(context, arrayOf(path), arrayOf("audio/webm"), null)
+                    // Changed scanner mime type to audio/mp4
+                    MediaScannerConnection.scanFile(context, arrayOf(path), arrayOf("audio/mp4"), null)
                 }
             }
             
-            // CRITICAL FIX: Return the "content://" URI string as your database expects, NOT the raw absolute path
             newUri.toString()
             
         } catch (e: Exception) {
@@ -183,7 +175,8 @@ object DownloadHelper {
 
             val safeTitle = songTitle.replace(Regex("[\\\\/:*?\"\\<>|]"), "_")
             val safeArtist = artistName.replace(Regex("[\\\\/:*?\"\\<>|]"), "_")
-            val fileName = "$safeTitle - $safeArtist.webm"
+            // Changed to .m4a
+            val fileName = "$safeTitle - $safeArtist.m4a"
 
             val publicDownloadDir = File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
@@ -200,10 +193,11 @@ object DownloadHelper {
                 }
             }
 
+            // Changed scanner mime type to audio/mp4
             MediaScannerConnection.scanFile(
                 context,
                 arrayOf(destinationFile.absolutePath),
-                arrayOf("audio/webm"),
+                arrayOf("audio/mp4"),
                 null
             )
 
