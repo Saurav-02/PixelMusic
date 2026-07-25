@@ -146,7 +146,20 @@ Key UI/UX visual paradigms adopted from PixelPlayer include:
 * **State-of-the-Art Widgets:** Material 3 Glance home-screen widgets providing deep in-context customization and interactive controls directly from your launcher.
 
 ---
+---
 
+## 🚀 What's New in Saurav-02's Fork
+
+While built on a solid architectural foundation, this specific fork introduces massive overhauls to the visual design, animations, and core audio systems, transforming it into a completely unique experience:
+
+* **🎨 Complete UI/UX Redesign:** A gorgeous new interface featuring custom-crafted micro-animations and physics-based interactions.
+* **✨ Expressive Material You:** Deep, system-level expressive color injection that dynamically completely transforms the app's palette based on your current album artwork.
+* **📸 Social & Export Engine:** Custom-built Instagram Story sharing cards and beautifully formatted download cards for showcasing your music.
+* **🌐 YouTube Music Integration:** Seamless, ad-free YouTube Music streaming built directly into the core player.
+* **💾 Direct Audio Downloading:** A bulletproof, background-capable music downloader that safely saves high-quality tracks directly to your public local storage.
+* **🎛️ System Equalizer Injection:** Advanced hook-ins to the built-in system equalizer for deep, customized audio processing.
+* **...and much more under the hood!**
+* 
 ## ✨ Exhaustive Features List
 
 ### 🎵 1. Premium Audio Architecture
