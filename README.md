@@ -245,6 +245,7 @@ Pixel Music is built using cutting-edge Android development technologies:
    ```bash
    git clone [https://github.com/Saurav-02/PixelMusic.git](https://github.com/Saurav-02/PixelMusic.git)
    cd PixelMusic
+
 2. **Open the project in Android Studio:**
    * Android Studio will sync Gradle dependencies automatically.
 3. **Configure API Keys (Optional but recommended):**
