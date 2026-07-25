@@ -143,7 +143,7 @@ object DownloadHelper {
             return@withContext finalPublicPath
         }
 
-        // Fallback just in case the system completely blocks public access
+        // Complete fallback
         return@withContext outputFile.absolutePath
     }
     
@@ -154,7 +154,7 @@ object DownloadHelper {
         }
         val finalFile = File(publicMusicDir, fileName)
 
-        // Strategy A: Direct Stream Copy (Works natively on Android 11+ and Android 9-)
+        // Strategy A: Direct Stream Copy (For Android 9 and below)
         try {
             tempFile.inputStream().use { input ->
                 finalFile.outputStream().use { output ->
@@ -164,47 +164,63 @@ object DownloadHelper {
             MediaScannerConnection.scanFile(context, arrayOf(finalFile.absolutePath), arrayOf("audio/webm"), null)
             return finalFile.absolutePath
         } catch (e: Exception) {
-            // Strategy B: MediaStore API (Fallback specifically for Android 10 Scoped Storage)
-            try {
-                val resolver = context.contentResolver
-                val audioCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-                } else {
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                }
+            // Permission denied (Android 10+). Proceed to MediaStore.
+        }
 
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
-                    put(MediaStore.Audio.Media.MIME_TYPE, "audio/webm")
-                    
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/PixelMusic")
-                        put(MediaStore.Audio.Media.IS_PENDING, 1)
-                    } else {
-                        put(MediaStore.Audio.Media.DATA, finalFile.absolutePath)
-                    }
-                }
+        // Strategy B: MediaStore API
+        val resolver = context.contentResolver
+        val audioCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        }
 
-                val newUri = resolver.insert(audioCollection, contentValues) ?: return null
+        var finalFileName = fileName
+        var contentValues = createContentValues(finalFileName)
+        var newUri = resolver.insert(audioCollection, contentValues)
 
-                resolver.openOutputStream(newUri)?.use { outputStream ->
-                    tempFile.inputStream().use { inputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                }
+        // THE FIX: If insert fails due to a stale/orphaned database entry, 
+        // append a timestamp to the filename to force the save through!
+        if (newUri == null) {
+            val nameWithoutExt = fileName.substringBeforeLast(".")
+            val ext = fileName.substringAfterLast(".", "webm")
+            finalFileName = "${nameWithoutExt}_${System.currentTimeMillis()}.$ext"
+            contentValues = createContentValues(finalFileName)
+            newUri = resolver.insert(audioCollection, contentValues)
+        }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    contentValues.clear()
-                    contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0)
-                    resolver.update(newUri, contentValues, null, null)
+        // If it still fails, the OS is completely blocking us
+        if (newUri == null) return null
+
+        return try {
+            resolver.openOutputStream(newUri)?.use { outputStream ->
+                tempFile.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
                 }
-                
-                // Return the actual file path so ExoPlayer and the database don't crash
-                return finalFile.absolutePath
-                
-            } catch (fallbackEx: Exception) {
-                fallbackEx.printStackTrace()
-                return null
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                contentValues.clear()
+                contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0)
+                resolver.update(newUri, contentValues, null, null)
+            }
+            
+            // Return the absolute path so ExoPlayer and your Database read it flawlessly
+            File(publicMusicDir, finalFileName).absolutePath
+            
+        } catch (e: Exception) {
+            resolver.delete(newUri, null, null)
+            null
+        }
+    }
+
+    private fun createContentValues(fileName: String): ContentValues {
+        return ContentValues().apply {
+            put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
+            put(MediaStore.Audio.Media.MIME_TYPE, "audio/webm")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/PixelMusic")
+                put(MediaStore.Audio.Media.IS_PENDING, 1)
             }
         }
     }
