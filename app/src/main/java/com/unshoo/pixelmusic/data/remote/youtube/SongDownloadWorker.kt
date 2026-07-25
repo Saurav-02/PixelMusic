@@ -126,7 +126,7 @@ class SongDownloadWorker(
                 Result.failure()
             } catch (e: Exception) {
                 val errorMessage = e.message ?: e.javaClass.simpleName
-            kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 android.widget.Toast.makeText(
                     appContext, 
                     "CRASH REASON: $errorMessage", 
