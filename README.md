@@ -28,7 +28,7 @@
 > **Independent Fork & Attribution Notice:** This repository is an independent, community-driven fork of the excellent open-source project **[PixelPlayer](https://github.com/theovilardo/PixelPlayer)** created by **[Theo Vilardo](https://github.com/theovilardo)**. It is modified and distributed under the terms of the [Proprietary License](LICENSE). We extend our sincere gratitude to Theo Vilardo and all original contributors for their outstanding foundation work.
 
 > [!NOTE]
-> **Fork & Maintainer Notice:** This repository is a heavily modified fork maintained, re-engineered, and redesigned by **Saurav7x**. It is built upon the excellent open-source foundation of **[PixelPlayer](https://github.com/theovilardo/PixelPlayer)** created by **[Theo Vilardo](https://github.com/theovilardo)**. We extend our sincere gratitude to Theo and the original contributors while pushing this fork into a brand new UI/UX and functional direction.
+> **Fork & Maintainer Notice:** This repository is a heavily modified fork maintained, re-engineered, and redesigned by **Saurav**. It is built upon the excellent open-source foundation of **[PixelPlayer](https://github.com/theovilardo/PixelPlayer)** created by **[Theo Vilardo](https://github.com/theovilardo)**. We extend our sincere gratitude to Theo and the original contributors while pushing this fork into a brand new UI/UX and functional direction.
 > 
 
 ---
