@@ -22,29 +22,20 @@ object DownloadHelper {
     private val client = YoutubeHelper.client
 
     suspend fun downloadImage(context: Context, imageUrl: String, id: String): File? {
+        // We keep thumbnails internal so they load fast and don't clutter the user's public gallery
         return withContext(Dispatchers.IO) {
             try {
-                val imageDir =
-                    UmihiHelper.getDownloadDirectory(context, Constants.Downloads.THUMBNAILS_FOLDER)
+                val imageDir = UmihiHelper.getDownloadDirectory(context, Constants.Downloads.THUMBNAILS_FOLDER)
                 val imageFile = File(imageDir, "$id.jpg")
 
-                if (imageFile.exists()) {
-                    return@withContext imageFile
-                }
+                if (imageFile.exists()) return@withContext imageFile
 
                 URL(imageUrl).openStream().use { input ->
-                    imageFile.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
+                    imageFile.outputStream().use { output -> input.copyTo(output) }
                 }
                 imageFile
-
             } catch (e: Exception) {
-                UmihiHelper.printe(
-                    tag = "PlaylistDownloadWorker",
-                    message = "Error Downloading Thumbnail",
-                    exception = e
-                )
+                UmihiHelper.printe("Error Downloading Thumbnail", exception = e)
                 null
             }
         }
@@ -55,119 +46,82 @@ object DownloadHelper {
         song: Song,
         connections: Int = 8
     ): String? = withContext(Dispatchers.IO) {
-
-        val safeTitle = song.title.replace(Regex("[\\\\/:*?\"<>|]"), "_")
-        val safeArtist = song.artist.replace(Regex("[\\\\/:*?\"<>|]"), "_")
-        val finalFileName = "$safeTitle - $safeArtist.webm"
-
-        // 1. Check the PUBLIC folder first
-        val publicMusicDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "PixelMusic")
-        val publicFile = File(publicMusicDir, finalFileName)
         
-        if (publicFile.exists() && publicFile.length() > 0) {
-            return@withContext publicFile.absolutePath
+        // 1. Temporary scratchpad just for the chunking process.
+        // We NEVER save the final audio file here.
+        val cacheDir = File(context.cacheDir, "PixelMusic_Temp")
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+        
+        val tempOutputFile = File(cacheDir, "${song.youtubeId}_temp.webm")
+
+        // 2. Fetch the stream and chunk it
+        val url = YoutubeHelper.getSongPlayerUrl(context, song)
+        val total = try {
+            val headReq = Request.Builder().url(url).header("Range", "bytes=0-0").build()
+            client.newCall(headReq).execute().use { res ->
+                if (!res.isSuccessful) return@withContext null
+                res.headers["Content-Range"]?.substringAfter("/")?.toLongOrNull() ?: return@withContext null
+            }
+        } catch (e: Exception) {
+            UmihiHelper.printe("Failed to get content length: ${e.message}")
+            return@withContext null
         }
 
-        // 2. Setup internal hidden cache for chunk downloading
-        val audioDir = UmihiHelper.getDownloadDirectory(context, Constants.Downloads.AUDIO_FILES_FOLDER)
-        val outputFile = File(audioDir, "${song.youtubeId}.webm")
+        val chunkSize = total / connections
+        val tempFiles = mutableListOf<File>()
 
-        // 3. Download the file if it isn't even in the hidden cache
-        if (!outputFile.exists() || outputFile.length() == 0L) {
-            val url = YoutubeHelper.getSongPlayerUrl(context, song)
-            val total = try {
-                val headReq = Request.Builder()
-                    .url(url)
-                    .header("Range", "bytes=0-0")
-                    .build()
+        try {
+            (0 until connections).map { i ->
+                async {
+                    val start = i * chunkSize
+                    val end = if (i == connections - 1) total - 1 else (start + chunkSize - 1)
+                    val chunkFile = File(cacheDir, "${song.youtubeId}.part$i")
 
-                client.newCall(headReq).execute().use { headRes ->
-                    if (!headRes.isSuccessful) return@withContext null
-                    headRes.headers["Content-Range"]?.substringAfter("/")?.toLongOrNull() ?: return@withContext null
-                }
-            } catch (e: Exception) {
-                UmihiHelper.printe("Failed to get content length: ${e.message}")
-                return@withContext null
-            }
+                    val req = Request.Builder()
+                        .url(url)
+                        .header("Range", "bytes=$start-$end")
+                        .header("User-Agent", Constants.YoutubeApi.USER_AGENT)
+                        .build()
 
-            val chunkSize = total / connections
-            val tempFiles = mutableListOf<File>()
-
-            try {
-                (0 until connections).map { i ->
-                    async {
-                        val start = i * chunkSize
-                        val end = if (i == connections - 1) total - 1 else (start + chunkSize - 1)
-                        val temp = File(audioDir, "${song.youtubeId}.part$i")
-
-                        try {
-                            val req = Request.Builder()
-                                .url(url)
-                                .header("Range", "bytes=$start-$end")
-                                .header("User-Agent", Constants.YoutubeApi.USER_AGENT)
-                                .build()
-
-                            client.newCall(req).execute().use { response ->
-                                if (!response.isSuccessful) throw IOException("Failed to download chunk $i: ${response.code}")
-                                response.body?.byteStream()?.use { input ->
-                                    FileOutputStream(temp).use { output -> input.copyTo(output) }
-                                } ?: throw IOException("Empty response body for chunk $i")
-                            }
-                            temp
-                        } catch (e: Exception) {
-                            temp.delete()
-                            throw e
+                    client.newCall(req).execute().use { response ->
+                        if (!response.isSuccessful) throw IOException("Failed to download chunk $i")
+                        response.body?.byteStream()?.use { input ->
+                            FileOutputStream(chunkFile).use { output -> input.copyTo(output) }
                         }
                     }
-                }.awaitAll().also { tempFiles.addAll(it) }
-
-                FileOutputStream(outputFile).use { out ->
-                    tempFiles.sortedBy { it.name }.forEach { part ->
-                        part.inputStream().use { it.copyTo(out) }
-                        part.delete()
-                    }
+                    chunkFile
                 }
-            } catch (e: Exception) {
-                UmihiHelper.printe("Download failed for ${song.youtubeId}: ${e.message}")
-                tempFiles.forEach { it.delete() }
-                outputFile.delete()
-                return@withContext null
+            }.awaitAll().also { tempFiles.addAll(it) }
+
+            // 3. Merge chunks into the temp file
+            FileOutputStream(tempOutputFile).use { out ->
+                tempFiles.sortedBy { it.name }.forEach { part ->
+                    part.inputStream().use { it.copyTo(out) }
+                    part.delete() // Clean up chunk immediately
+                }
             }
+        } catch (e: Exception) {
+            tempFiles.forEach { it.delete() }
+            tempOutputFile.delete()
+            UmihiHelper.printe("Download failed: ${e.message}")
+            return@withContext null
         }
 
-        // 4. Move the completed file from the hidden cache to the public directory
-        val finalPublicPath = moveToPublicMusicDirectory(context, outputFile, finalFileName)
+        // We append a timestamp to the filename to ensure it NEVER collides with an orphaned Android MediaStore entry
+        val safeTitle = song.title.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+        val safeArtist = song.artist.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+        val finalFileName = "${safeTitle}_${safeArtist}_${System.currentTimeMillis()}.webm"
+
+        // 4. Move the merged file from temp straight to the Public MediaStore
+        val publicUriString = writeToPublicMediaStore(context, tempOutputFile, finalFileName)
         
-        if (finalPublicPath != null) {
-            outputFile.delete() // Wipe the hidden copy to save space
-            return@withContext finalPublicPath
-        }
+        // 5. Nuke the temporary workspace file completely so nothing is hidden
+        tempOutputFile.delete()
 
-        // Complete fallback
-        return@withContext outputFile.absolutePath
+        return@withContext publicUriString
     }
     
-    private fun moveToPublicMusicDirectory(context: Context, tempFile: File, fileName: String): String? {
-        val publicMusicDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "PixelMusic")
-        if (!publicMusicDir.exists()) {
-            publicMusicDir.mkdirs()
-        }
-        val finalFile = File(publicMusicDir, fileName)
-
-        // Strategy A: Direct Stream Copy (For Android 9 and below)
-        try {
-            tempFile.inputStream().use { input ->
-                finalFile.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-            MediaScannerConnection.scanFile(context, arrayOf(finalFile.absolutePath), arrayOf("audio/webm"), null)
-            return finalFile.absolutePath
-        } catch (e: Exception) {
-            // Permission denied (Android 10+). Proceed to MediaStore.
-        }
-
-        // Strategy B: MediaStore API
+    private fun writeToPublicMediaStore(context: Context, tempFile: File, fileName: String): String? {
         val resolver = context.contentResolver
         val audioCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
@@ -175,22 +129,23 @@ object DownloadHelper {
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         }
 
-        var finalFileName = fileName
-        var contentValues = createContentValues(finalFileName)
-        var newUri = resolver.insert(audioCollection, contentValues)
-
-        // THE FIX: If insert fails due to a stale/orphaned database entry, 
-        // append a timestamp to the filename to force the save through!
-        if (newUri == null) {
-            val nameWithoutExt = fileName.substringBeforeLast(".")
-            val ext = fileName.substringAfterLast(".", "webm")
-            finalFileName = "${nameWithoutExt}_${System.currentTimeMillis()}.$ext"
-            contentValues = createContentValues(finalFileName)
-            newUri = resolver.insert(audioCollection, contentValues)
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
+            put(MediaStore.Audio.Media.MIME_TYPE, "audio/webm")
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Let MediaStore handle the folder creation cleanly
+                put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/PixelMusic")
+                put(MediaStore.Audio.Media.IS_PENDING, 1)
+            } else {
+                // Fallback for Android 9 and below
+                val musicDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "PixelMusic")
+                if (!musicDir.exists()) musicDir.mkdirs()
+                put(MediaStore.Audio.Media.DATA, File(musicDir, fileName).absolutePath)
+            }
         }
 
-        // If it still fails, the OS is completely blocking us
-        if (newUri == null) return null
+        val newUri = resolver.insert(audioCollection, contentValues) ?: return null
 
         return try {
             resolver.openOutputStream(newUri)?.use { outputStream ->
@@ -203,25 +158,21 @@ object DownloadHelper {
                 contentValues.clear()
                 contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0)
                 resolver.update(newUri, contentValues, null, null)
+            } else {
+                // Trigger media scanner on Android 9 and below so it shows in file managers immediately
+                val path = contentValues.getAsString(MediaStore.Audio.Media.DATA)
+                if (path != null) {
+                    MediaScannerConnection.scanFile(context, arrayOf(path), arrayOf("audio/webm"), null)
+                }
             }
             
-            // Return the absolute path so ExoPlayer and your Database read it flawlessly
-            File(publicMusicDir, finalFileName).absolutePath
+            // CRITICAL FIX: Return the "content://" URI string as your database expects, NOT the raw absolute path
+            newUri.toString()
             
         } catch (e: Exception) {
             resolver.delete(newUri, null, null)
+            e.printStackTrace()
             null
-        }
-    }
-
-    private fun createContentValues(fileName: String): ContentValues {
-        return ContentValues().apply {
-            put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
-            put(MediaStore.Audio.Media.MIME_TYPE, "audio/webm")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/PixelMusic")
-                put(MediaStore.Audio.Media.IS_PENDING, 1)
-            }
         }
     }
 
