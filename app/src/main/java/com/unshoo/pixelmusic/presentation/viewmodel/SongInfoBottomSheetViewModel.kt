@@ -31,8 +31,6 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SongInfoBottomSheetViewModel @Inject constructor(
-    private val wearPhoneTransferSender: WearPhoneTransferSender,
-    private val transferStateStore: PhoneWatchTransferStateStore,
     private val musicDao: MusicDao,
     private val downloadRepository: com.unshoo.pixelmusic.data.remote.youtube.DownloadRepository,
 ) : ViewModel() {
