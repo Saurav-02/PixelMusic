@@ -89,7 +89,6 @@ import androidx.compose.material3.dynamicLightColorScheme
 import com.unshoo.pixelmusic.data.preferences.ThemePreference
 import com.unshoo.pixelmusic.data.service.auto.AutoMediaBrowseTree
 import com.unshoo.pixelmusic.data.service.wear.buildWearThemePalette
-import com.unshoo.pixelmusic.data.service.wear.WearStatePublisher
 import com.unshoo.pixelmusic.presentation.viewmodel.ColorSchemePair
 import com.unshoo.pixelmusic.utils.ArtworkTransportSanitizer
 import com.unshoo.pixelmusic.utils.MediaItemBuilder
@@ -136,8 +135,6 @@ class MusicService : MediaLibraryService() {
     lateinit var colorSchemeProcessor: ColorSchemeProcessor
     @Inject
     lateinit var autoMediaBrowseTree: AutoMediaBrowseTree
-    @Inject
-    lateinit var wearStatePublisher: WearStatePublisher
     @Inject
     lateinit var replayGainManager: com.unshoo.pixelmusic.data.media.ReplayGainManager
     @Inject
