@@ -312,8 +312,6 @@ dependencies {
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
-    implementation(libs.kuromoji.ipadic)
-    implementation(libs.pinyin4j.core)
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.accompanist.permissions)
     implementation(libs.capturable) {
