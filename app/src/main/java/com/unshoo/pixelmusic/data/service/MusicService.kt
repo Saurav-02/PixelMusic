@@ -88,11 +88,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import com.unshoo.pixelmusic.data.preferences.ThemePreference
 import com.unshoo.pixelmusic.data.service.auto.AutoMediaBrowseTree
-import com.unshoo.pixelmusic.data.service.wear.buildWearThemePalette
 import com.unshoo.pixelmusic.presentation.viewmodel.ColorSchemePair
 import com.unshoo.pixelmusic.utils.ArtworkTransportSanitizer
 import com.unshoo.pixelmusic.utils.MediaItemBuilder
-import com.unshoo.pixelmusic.shared.WearIntents
 import com.unshoo.pixelmusic.di.AppScope
 import com.unshoo.pixelmusic.presentation.viewmodel.ListeningStatsTracker
 import com.unshoo.pixelmusic.data.remote.youtube.AutoQueueManager
@@ -2257,7 +2255,6 @@ class MusicService : MediaLibraryService() {
     private fun getOpenAppPendingIntent(): PendingIntent {
         val intent = Intent(this, MainActivity::class.java).apply {
             setPackage(packageName)
-            action = WearIntents.ACTION_OPEN_PLAYER
             addCategory(Intent.CATEGORY_DEFAULT)
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("ACTION_SHOW_PLAYER", true) // Signal to MainActivity to show the player
@@ -2447,8 +2444,8 @@ class MusicService : MediaLibraryService() {
 
         val shouldUpdateWidgets = oldInfo == null || shouldUpdateWidget(oldInfo, playerInfo)
 
-        if (shouldUpdateWidgets || shouldPublishWear) {
-            lastWidgetPlayerInfo = playerInfo
+        if (shouldUpdateWidgets) {
+    lastWidgetPlayerInfo = playerInfo
         }
 
         if (shouldUpdateWidgets) {
@@ -2640,8 +2637,6 @@ class MusicService : MediaLibraryService() {
                 darkPrevNextIcon = it.dark.primary.toArgb()
             )
         }
-        val wearThemePalette = schemePair?.let { buildWearThemePalette(it.dark) }
-
         val isFavorite = isSongFavorite(mediaId)
         val wearQueueRevision = buildWearQueueRevision(
             timeline = snapshotTimeline,
@@ -2696,8 +2691,6 @@ class MusicService : MediaLibraryService() {
             themeColors = widgetColors,
             isShuffleEnabled = shuffleEnabled,
             repeatMode = repeatMode,
-            wearThemePalette = wearThemePalette,
-            wearQueueRevision = wearQueueRevision,
         )
     }
 
