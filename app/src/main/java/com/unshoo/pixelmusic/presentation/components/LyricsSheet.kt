@@ -308,13 +308,7 @@ fun LyricsSheet(
         lyrics?.synced?.any { !it.translation.isNullOrBlank() } == true
     }
 
-    val hasRomanizedLyrics = remember(lyrics) {
-        val hasSynced = lyrics?.synced?.any { !it.romanization.isNullOrBlank() } == true
-        val hasPlain = lyrics?.plain?.any { line ->
-            MultiLangRomanizer.isScriptThatNeedsRomanization(line)
-        } == true
-        hasSynced || hasPlain
-    }
+    val hasRomanizedLyrics = false
 
     val context = LocalContext.current
 
@@ -1736,31 +1730,13 @@ fun PlainLyricsLine(
     val sanitizedLines = remember(line) { line.split("\n") }
     val primaryText = remember(sanitizedLines) { if (sanitizedLines.isNotEmpty()) sanitizeLyricLineText(sanitizedLines[0]) else "" }
 
-    val isRomanizedScript = remember(primaryText) {
-        MultiLangRomanizer.isScriptThatNeedsRomanization(primaryText)
+    val translationText = remember(sanitizedLines) {
+    if (sanitizedLines.size > 1) {
+        sanitizedLines.drop(1).joinToString("\n") { sanitizeLyricLineText(it) }
+    } else ""
     }
 
-    val translationText = remember(sanitizedLines, primaryText, isRomanizedScript) {
-        if (sanitizedLines.size > 1) {
-            val firstExtra = sanitizedLines[1]
-            val rest = if (sanitizedLines.size > 2) sanitizedLines.drop(2).joinToString("\n") { sanitizeLyricLineText(it) } else ""
-            
-            val isLatin = firstExtra.any { it.code in 32..126 } 
-            val isFirstRomanization = isRomanizedScript && isLatin
-
-            if (isFirstRomanization) rest else sanitizedLines.drop(1).joinToString("\n") { sanitizeLyricLineText(it) }
-        } else ""
-    }
-
-    val romanizationText = remember(sanitizedLines, primaryText, isRomanizedScript) {
-         if (sanitizedLines.size > 1) {
-            val firstExtra = sanitizedLines[1]
-            val isLatin = firstExtra.any { it.code in 32..126 } 
-            val isFirstRomanization = isRomanizedScript && isLatin
-            
-            if (isFirstRomanization) sanitizeLyricLineText(firstExtra) else ""
-        } else ""
-    }
+    val romanizationText = ""
     val textAlign = when (lyricsAlignment) {
         "center" -> TextAlign.Center
         "right" -> TextAlign.Right
