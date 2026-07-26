@@ -536,5 +536,99 @@ private fun CommunitySignalsRow() {
 private fun CreditsCard(
     modifier: Modifier = Modifier,
 ) {
-    
+    val context = LocalContext.current
+    val cardShape = AbsoluteSmoothCornerShape(30.dp, 60)
+
+    Surface(
+        modifier = modifier,
+        shape = cardShape,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        tonalElevation = 2.dp,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .clip(cardShape)
+                .clickable {
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        android.net.Uri.parse("https://www.instagram.com/holy_saurav")
+                    ).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    try {
+                        context.startActivity(intent)
+                    } catch (_: ActivityNotFoundException) {
+                        // Handle fallback if no browser is present
+                    }
+                }
+        ) {
+            // 1. Background Image
+            Image(
+                painter = painterResource(R.drawable.saurav_profile), // Change to your drawable asset name
+                contentDescription = "Saurav",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // 2. Dark Gradient Overlay for optimal text readability
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                            colors = listOf(
+                                androidx.compose.ui.graphics.Color.Transparent,
+                                androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.85f)
+                            ),
+                            startY = 100f
+                        )
+                    )
+            )
+
+            // 3. Text and Instagram Tag
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.Bottom,
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "With love from Saurav",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = androidx.compose.ui.graphics.Color.White
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Glassmorphism-style Instagram pill button
+                Surface(
+                    shape = CircleShape,
+                    color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.2f),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.instagram), // Make sure you have an instagram icon in drawable or use an vector
+                            contentDescription = "Instagram",
+                            tint = androidx.compose.ui.graphics.Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "@holy_saurav",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = androidx.compose.ui.graphics.Color.White
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
