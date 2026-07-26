@@ -1910,7 +1910,6 @@ class MusicService : MediaLibraryService() {
         debouncedWidgetUpdateJob?.cancel()
         stopCastWearSync()
         unregisterHeadsetReconnectMonitor()
-        wearStatePublisher.clearState()
         replayGainJob?.cancel()
         scrobbleManager?.destroy()
         scrobbleManager = null
@@ -2447,7 +2446,6 @@ class MusicService : MediaLibraryService() {
         val oldInfo = lastWidgetPlayerInfo
 
         val shouldUpdateWidgets = oldInfo == null || shouldUpdateWidget(oldInfo, playerInfo)
-        val shouldPublishWear = oldInfo == null || shouldPublishWearState(oldInfo, playerInfo)
 
         if (shouldUpdateWidgets || shouldPublishWear) {
             lastWidgetPlayerInfo = playerInfo
@@ -2455,12 +2453,6 @@ class MusicService : MediaLibraryService() {
 
         if (shouldUpdateWidgets) {
             updateGlanceWidgets(playerInfo)
-        }
-
-        if (shouldPublishWear) {
-            val currentMediaId = resolveCurrentMediaIdForWear()
-            // Publish state to Wear OS watch
-            wearStatePublisher.publishState(currentMediaId, playerInfo)
         }
     }
 
