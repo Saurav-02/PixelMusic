@@ -264,6 +264,7 @@ fun FullPlayerContent(
     var showLyricsSheet by remember { mutableStateOf(false) }
     var showShareSheet by remember { mutableStateOf(false) }
     var showArtistPicker by rememberSaveable { mutableStateOf(false) }
+    val isFullScreenArt by playerViewModel.userPreferencesRepository.fullScreenAlbumArtFlow.collectAsStateWithLifecycle(initialValue = false)
     
     val lyricsSearchUiState by playerViewModel.lyricsSearchUiState.collectAsStateWithLifecycle()
     val playerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
@@ -942,11 +943,37 @@ fun FullPlayerContent(
             animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing),
             label = "orientationAlpha"
         )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer { alpha = contentAlpha }
-        ) {
+        if (isFullScreenArt) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Edge-to-edge background cover
+        SmartImage(
+            model = song.albumArtUriString,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        // Global dark tint to make it act as a background
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)))
+
+        // Top gradient for status bar & top button readability
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(Brush.verticalGradient(
+                colors = listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)
+            ))
+        )
+        // Massive bottom gradient for playback controls & lyrics readability
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.65f)
+            .align(Alignment.BottomCenter)
+            .background(Brush.verticalGradient(
+                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f), Color.Black.copy(alpha = 0.95f))
+            ))
+        )
+    }
+        }{
             if (isLandscape) {
                 FullPlayerLandscapeContent(
                     paddingValues = paddingValues,
