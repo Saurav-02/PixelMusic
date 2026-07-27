@@ -692,7 +692,7 @@ fun SettingsCategoryScreen(
                         }
                         SettingsCategory.APPEARANCE -> {
                             val useSmoothCorners by settingsViewModel.useSmoothCorners.collectAsStateWithLifecycle()
-                            val fullScreenAlbumArt by viewModel.fullScreenAlbumArt.collectAsStateWithLifecycle()
+                            val fullScreenAlbumArt by settingsViewModel.fullScreenAlbumArt.collectAsStateWithLifecycle()
 
                             SettingsSubsection(title = stringResource(R.string.setcat_global_theme)) {
                                 ThemeSelectorItem(
