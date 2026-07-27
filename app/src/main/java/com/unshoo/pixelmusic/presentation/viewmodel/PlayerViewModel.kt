@@ -601,6 +601,12 @@ class PlayerViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ThemePreference.ALBUM_ART
         )
+    val playerDesignStyle: StateFlow<com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle> = userPreferencesRepository.playerDesignStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.DEFAULT
+        )
 
     val navBarCornerRadius: StateFlow<Int> = userPreferencesRepository.navBarCornerRadiusFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 32)
 
