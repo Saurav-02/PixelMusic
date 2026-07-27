@@ -959,57 +959,54 @@ fun FullPlayerContent(
                 .graphicsLayer { alpha = contentAlpha }
         ) {
             if (isImmersive) {
+                // Grab the dynamically extracted background color for this specific song
+                val bgColor = LocalMaterialTheme.current.surface 
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
-                // LAYER 1: Solid base
-Box(
-    modifier = Modifier
-        .fillMaxSize()
-        .background(if (isDarkTheme) Color.Black else Color.White)
-)
-
-// LAYER 2: Blurred album art - Apple Music style
-SmartImage(
-    model = song.albumArtUriString,
-    contentDescription = null,
-    contentScale = ContentScale.Crop,
-    modifier = Modifier
-        .fillMaxSize()
-        // .scale(1.4f)  // DELETE THIS
-        .blur(
-            radius = 20.dp, // Apple Music uses ~16-24dp. 60dp is way too much
-            edgeTreatment = BlurredEdgeTreatment.Unbounded
-        ),
-    // DELETE colorFilter - no saturation boost
-)
-
-// LAYER 3: Very light dimming overlay
-Box(
-    modifier = Modifier
-        .fillMaxSize()
-        .background(
-            (if (isDarkTheme) Color.Black else Color.White).copy(alpha = 0.18f) // 0.18 instead of 0.5
-        )
-)
-
-// LAYER 4: Bottom gradient - keep this, but make it softer
-if (isImmersiveExtended) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.5f) // start gradient higher
-            .align(Alignment.BottomCenter)
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        (if (isDarkTheme) Color.Black else Color.White).copy(alpha = 0.7f),
-                        (if (isDarkTheme) Color.Black else Color.White)
+                
+                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
+                    // LAYER 1: Sharp Album Cover anchored to the top
+                    SmartImage(
+                        model = song.albumArtUriString,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop, 
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f) // Forces a perfect square matching screen width
+                            .align(Alignment.TopCenter)
                     )
-                )
-            )
-    )
-}
-                        
+                    
+                    // LAYER 2: Apple Music Style Gradient Fade
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0.0f to Color.Transparent,
+                                        // Start fading near the bottom of the square artwork
+                                        0.40f to Color.Transparent, 
+                                        0.55f to bgColor.copy(alpha = 0.85f),
+                                        0.65f to bgColor, // Solid background before controls start
+                                        1.0f to bgColor
+                                    )
+                                )
+                            )
+                    )
+
+                    // LAYER 3: Subtle top shadow for status bar / top buttons readability
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(110.dp)
+                        .align(Alignment.TopCenter)
+                        .background(Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = if (isDarkTheme) 0.5f else 0.3f), 
+                                Color.Transparent
+                            )
+                        ))
+                    )
+                }
+            }
 
             if (isLandscape) {
                 FullPlayerLandscapeContent(
