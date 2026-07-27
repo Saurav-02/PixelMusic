@@ -473,7 +473,7 @@ class LyricsRepositoryImpl @Inject constructor(
         return@withContext null
     }
 
-    private fun saveToDbAndCache(song: Song, rawLyrics: String, isSynced: Boolean) {
+    private suspend fun saveToDbAndCache(song: Song, rawLyrics: String, isSynced: Boolean) {
         try {
             lyricsDao.insert(
                 com.unshoo.pixelmusic.data.database.LyricsEntity(
