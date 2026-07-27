@@ -960,68 +960,55 @@ fun FullPlayerContent(
         ) {
             if (isImmersive) {
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
-                
-                Box(modifier = Modifier.fillMaxSize()) {
-                    // LAYER 1: Solid base to prevent transparency gaps
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(if (isDarkTheme) Color.Black else Color.White)
-                    )
+                // LAYER 1: Solid base
+Box(
+    modifier = Modifier
+        .fillMaxSize()
+        .background(if (isDarkTheme) Color.Black else Color.White)
+)
 
-                    // LAYER 2: Scaled, saturated, and heavily blurred image
-                    val saturationMatrix = remember {
-                        androidx.compose.ui.graphics.ColorMatrix().apply {
-                            setToSaturation(1.4f) // Boost saturation by 1.4x to keep colors vivid before blur
-                        }
-                    }
+// LAYER 2: Blurred album art - Apple Music style
+SmartImage(
+    model = song.albumArtUriString,
+    contentDescription = null,
+    contentScale = ContentScale.Crop,
+    modifier = Modifier
+        .fillMaxSize()
+        // .scale(1.4f)  // DELETE THIS
+        .blur(
+            radius = 20.dp, // Apple Music uses ~16-24dp. 60dp is way too much
+            edgeTreatment = BlurredEdgeTreatment.Unbounded
+        ),
+    // DELETE colorFilter - no saturation boost
+)
 
-                    SmartImage(
-                        model = song.albumArtUriString,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop, 
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .scale(1.4f) // Scale by 1.4 to completely overflow container boundaries
-                            .blur(
-                                radius = if (isImmersiveExtended) 60.dp else 40.dp, // Apply 40px to 60px blur radius
-                                edgeTreatment = BlurredEdgeTreatment.Unbounded
-                            ),
-                        colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(saturationMatrix)
-                    )
-                    
-                    // LAYER 3: Dimming Overlay Tint
-                    val overlayOpacity = if (isImmersiveExtended) 0.5f else 0.3f // Opacity between 0.3 and 0.5
-                    val overlayColor = if (isDarkTheme) {
-                        Color.Black.copy(alpha = overlayOpacity) // Black layer for dark mode
-                    } else {
-                        Color.White.copy(alpha = overlayOpacity) // White layer for light mode
-                    }
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(overlayColor)
-                    )
+// LAYER 3: Very light dimming overlay
+Box(
+    modifier = Modifier
+        .fillMaxSize()
+        .background(
+            (if (isDarkTheme) Color.Black else Color.White).copy(alpha = 0.18f) // 0.18 instead of 0.5
+        )
+)
 
-                    // LAYER 4: Cinematic bottom gradient for Immersive Extended
-                    if (isImmersiveExtended) {
-                        val gradientBase = if (isDarkTheme) Color.Black else Color.White
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.65f)
-                            .align(Alignment.BottomCenter)
-                            .background(Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent, 
-                                    gradientBase.copy(alpha = 0.5f), 
-                                    gradientBase.copy(alpha = 0.95f)
-                                )
-                            ))
-                        )
-                    }
-                }
-            }
+// LAYER 4: Bottom gradient - keep this, but make it softer
+if (isImmersiveExtended) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.5f) // start gradient higher
+            .align(Alignment.BottomCenter)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        (if (isDarkTheme) Color.Black else Color.White).copy(alpha = 0.7f),
+                        (if (isDarkTheme) Color.Black else Color.White)
+                    )
+                )
+            )
+    )
+}
                         
 
             if (isLandscape) {
