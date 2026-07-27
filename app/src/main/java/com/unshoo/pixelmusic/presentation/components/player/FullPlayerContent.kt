@@ -1014,12 +1014,12 @@ fun FullPlayerContent(
                 }
             } else if (isImmersiveExtended) {
                 // ==========================================
-                // 2. IMMERSIVE EXTENDED MODE (INDEPENDENT POSITIONING)
+                // 2. IMMERSIVE EXTENDED MODE (TOP HALF ONLY)
                 // ==========================================
                 val bgColor = LocalMaterialTheme.current.surface 
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
-                // Resolve high-resolution URI
+                // 1. Resolve a high-resolution URI for sharp display
                 val highResAlbumArtUri = remember(song.albumArtUriString) {
                     val rawUri = song.albumArtUriString ?: ""
                     when {
@@ -1031,64 +1031,37 @@ fun FullPlayerContent(
                     }
                 }
                 
-                // BoxWithConstraints lets us measure the exact screen size before drawing
-                BoxWithConstraints(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    val screenWidth = maxWidth
-                    val screenHeight = maxHeight
-                    
-                    // --- YOUR INDEPENDENT CALCULATIONS ---
-                    // Example: Make image 85% of screen width, and 45% of screen height
-                    val customImageWidth = screenWidth * 0.85f
-                    val customImageHeight = screenHeight * 0.45f
-                    
-                    // Calculate exact X position (Center it horizontally)
-                    val xPosition = (screenWidth - customImageWidth) / 2
-                    
-                    // Calculate exact Y position (e.g., push it 5% down from the very top of the screen)
-                    val yPosition = screenHeight * 0.05f 
-                    // -------------------------------------
-
-                    // LAYER 1: Full-width blurred background (keeps sides seamless)
+                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
+                    // LAYER 1: Image restricted to the top half
                     SmartImage(
                         model = highResAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop, 
                         modifier = Modifier
-                            .fillMaxSize()
-                            .blur(radius = 50.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.55f) // Restricts the image to slightly over 50% of the screen height
                     )
                     
-                    // LAYER 2: The sharp image, placed absolutely independently
-                    SmartImage(
-                        model = highResAlbumArtUri,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop, 
-                        modifier = Modifier
-                            // 1. Force the exact calculated size
-                            .size(width = customImageWidth, height = customImageHeight)
-                            // 2. Push it to the exact X and Y coordinates on the screen
-                            .offset(x = xPosition, y = yPosition)
-                    )
-                    
-                    // LAYER 3: Gradient Mask to blend the bottom of the custom-placed image
+                    // LAYER 2: Gradient Mask to blend the bottom edge of the image smoothly into the background color
                     Box(
                         modifier = Modifier
-                            // Match the mask's size and position to the image
-                            .size(width = screenWidth, height = customImageHeight + yPosition) 
-                            .offset(x = 0.dp, y = 0.dp)
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.55f) // Matches the image bounds exactly
                             .background(
                                 Brush.verticalGradient(
                                     colorStops = arrayOf(
                                         0.0f to if (isDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.Transparent,
-                                        0.60f to Color.Transparent, 
+                                        0.50f to Color.Transparent, 
                                         0.85f to bgColor.copy(alpha = 0.9f), 
-                                        1.0f to bgColor 
+                                        1.0f to bgColor // Solid background color right at the cut-off point
                                     )
                                 )
                             )
                     )
 
-                    // LAYER 4: Subtle top shadow for status bar
+                    // LAYER 3: Subtle top shadow for status bar and top buttons readability
                     Box(modifier = Modifier
                         .fillMaxWidth()
                         .height(130.dp)
