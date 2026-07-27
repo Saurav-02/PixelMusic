@@ -1009,48 +1009,115 @@ fun FullPlayerContent(
                 }
             } else if (isImmersiveExtended) {
                 // ==========================================
-                // 2. IMMERSIVE EXTENDED MODE (APPLE MUSIC STYLE)
+                // IMMERSIVE EXTENDED MODE (DYNAMIC RATIO & BLUR)
                 // ==========================================
+                
+                // NOTE: You must update these states by listening to your image 
+                // loader's success callback, reading the Bitmap's width/height, 
+                // and running Palette.from(bitmap).generate() for the color.
+                var isPortrait by remember(song.albumArtUriString) { mutableStateOf(false) } 
+                var extractedColor by remember(song.albumArtUriString) { mutableStateOf(Color.Transparent) }
+                
                 val bgColor = LocalMaterialTheme.current.surface 
-                val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
                 Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // LAYER 1: Truly Full-Screen Album Cover with Heavy Blur
-                    SmartImage(
-                        model = song.albumArtUriString,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop, 
-                        modifier = Modifier
-                            .fillMaxSize()
-                            // Apply heavy blur for the true Apple Music frosted background look.
-                            // Note: If you prefer the unblurred image exactly as mocked up 
-                            // in the PDF, simply comment out or remove this .blur() modifier.
-                            .blur(
-                                radius = 80.dp,
-                                edgeTreatment = BlurredEdgeTreatment.Unbounded
-                            )
-                    )
                     
-                    // LAYER 2: Apple Music Style Gradient Mask
-                    // Fades the image smoothly into the background color exactly 
-                    // where the "Final result" controls sit in the PDF reference.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colorStops = arrayOf(
-                                        0.0f to if (isDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.Transparent,
-                                        0.45f to if (isDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.Transparent, // Top area stays visible
-                                        0.65f to bgColor.copy(alpha = 0.9f), // Smooth but rapid fade
-                                        0.75f to bgColor, // Solid background strictly behind the controls
-                                        1.0f to bgColor
+                    if (isPortrait) {
+                        // ---------------------------------------------------
+                        // SCENARIO A: PORTRAIT (Height > Width)
+                        // ---------------------------------------------------
+                        
+                        // LAYER 1: The completely blurred background
+                        SmartImage(
+                            model = song.albumArtUriString,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .blur(radius = 50.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                        )
+                        
+                        // LAYER 2: The sharp image in the middle with blurred edges
+                        SmartImage(
+                            model = song.albumArtUriString,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit, // Keeps it centered and uncropped
+                            modifier = Modifier
+                                .fillMaxSize()
+                                // CompositingStrategy.Offscreen is required for BlendModes to work properly
+                                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                                .drawWithContent {
+                                    drawContent()
+                                    // Draws a radial gradient that erases the edges of the sharp image,
+                                    // smoothly revealing the blurred layer underneath.
+                                    drawRect(
+                                        brush = Brush.radialGradient(
+                                            colors = listOf(Color.Transparent, Color.Black),
+                                            center = Offset(size.width / 2, size.height / 2),
+                                            radius = size.minDimension * 0.6f
+                                        ),
+                                        blendMode = BlendMode.DstOut
+                                    )
+                                }
+                        )
+
+                    } else {
+                        // ---------------------------------------------------
+                        // SCENARIO B: LANDSCAPE / SQUARE (Height <= Width)
+                        // ---------------------------------------------------
+                        
+                        // LAYER 1: The extracted Material You colored block at the bottom
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(0.55f) // Adjust this to perfectly cover your controls
+                                .align(Alignment.BottomCenter)
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent, 
+                                            extractedColor.copy(alpha = 0.8f), 
+                                            extractedColor
+                                        )
                                     )
                                 )
-                            )
-                    )
+                        )
 
-                    // LAYER 3: Subtle top shadow for status bar and top buttons readability
+                        // LAYER 2: Completely blurred background for the top/bottom effect
+                        SmartImage(
+                            model = song.albumArtUriString,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .blur(radius = 50.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                        )
+
+                        // LAYER 3: Sharp center image with top and bottom edges blurred out
+                        SmartImage(
+                            model = song.albumArtUriString,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                                .drawWithContent {
+                                    drawContent()
+                                    // A vertical gradient mask that erases the top and bottom of the sharp image
+                                    drawRect(
+                                        brush = Brush.verticalGradient(
+                                            0.0f to Color.Black,        // Erase top
+                                            0.2f to Color.Transparent,  // Keep middle sharp
+                                            0.8f to Color.Transparent,  // Keep middle sharp
+                                            1.0f to Color.Black         // Erase bottom
+                                        ),
+                                        blendMode = BlendMode.DstOut
+                                    )
+                                }
+                        )
+                    }
+
+                    // LAYER 4: Subtle top shadow for status bar and top buttons readability
                     Box(modifier = Modifier
                         .fillMaxWidth()
                         .height(130.dp)
@@ -1064,7 +1131,6 @@ fun FullPlayerContent(
                     )
                 }
             }
-
             if (isLandscape) {
                 FullPlayerLandscapeContent(
                     paddingValues = paddingValues,
