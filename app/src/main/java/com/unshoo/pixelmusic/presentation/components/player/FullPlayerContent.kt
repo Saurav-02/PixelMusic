@@ -965,18 +965,17 @@ fun FullPlayerContent(
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
                 Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // LAYER 1: Sharp Album Cover anchored to the top
+                    // LAYER 1: Truly Full-Screen Album Cover
                     SmartImage(
                         model = song.albumArtUriString,
                         contentDescription = null,
-                        contentScale = ContentScale.Crop, 
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f) // Forces a perfect square matching screen width
-                            .align(Alignment.TopCenter)
+                        contentScale = ContentScale.Crop, // Fills the entire screen edge-to-edge
+                        modifier = Modifier.fillMaxSize()
                     )
                     
-                    // LAYER 2: Apple Music Style Gradient Fade
+                    // LAYER 2: Apple Music Style Gradient Mask
+                    // Fades the image smoothly into the background color
+                    // right where your controls naturally sit.
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -984,24 +983,23 @@ fun FullPlayerContent(
                                 Brush.verticalGradient(
                                     colorStops = arrayOf(
                                         0.0f to Color.Transparent,
-                                        // Start fading near the bottom of the square artwork
-                                        0.40f to Color.Transparent, 
-                                        0.55f to bgColor.copy(alpha = 0.85f),
-                                        0.65f to bgColor, // Solid background before controls start
+                                        0.35f to Color.Transparent, // Image stays perfectly clear for the top area
+                                        0.60f to bgColor.copy(alpha = 0.85f), // Smooth transition
+                                        0.80f to bgColor, // Solid background exactly behind your controls
                                         1.0f to bgColor
                                     )
                                 )
                             )
                     )
 
-                    // LAYER 3: Subtle top shadow for status bar / top buttons readability
+                    // LAYER 3: Subtle top shadow for status bar and top buttons readability
                     Box(modifier = Modifier
                         .fillMaxWidth()
-                        .height(110.dp)
+                        .height(130.dp)
                         .align(Alignment.TopCenter)
                         .background(Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = if (isDarkTheme) 0.5f else 0.3f), 
+                                Color.Black.copy(alpha = 0.45f), 
                                 Color.Transparent
                             )
                         ))
