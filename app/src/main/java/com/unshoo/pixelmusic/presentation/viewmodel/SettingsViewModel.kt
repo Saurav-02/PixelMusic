@@ -252,8 +252,12 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
-    val fullScreenAlbumArt: StateFlow<Boolean> = userPreferencesRepository.fullScreenAlbumArtFlow
-    .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    val playerDesignStyle: StateFlow<com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle> = userPreferencesRepository.playerDesignStyleFlow
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.DEFAULT
+    )
 
     // AI Provider State
     val aiProvider: StateFlow<String> = aiPreferencesRepository.aiProvider
@@ -347,10 +351,10 @@ class SettingsViewModel @Inject constructor(
     }
 
     // Specific on-change methods for UI binding
-    fun setFullScreenAlbumArt(enabled: Boolean) {
+    fun setPlayerDesignStyle(style: com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle) {
     viewModelScope.launch {
-        userPreferencesRepository.setFullScreenAlbumArt(enabled)
-        }
+        userPreferencesRepository.setPlayerDesignStyle(style)
+    }
     }
     
     fun onGeminiApiKeyChange(apiKey: String) {
