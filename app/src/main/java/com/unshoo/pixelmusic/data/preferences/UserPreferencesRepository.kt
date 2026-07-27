@@ -93,6 +93,12 @@ enum class SearchSource {
     LOCAL, ONLINE
 }
 
+enum class PlayerDesignStyle {
+    DEFAULT, 
+    IMMERSIVE, 
+    IMMERSIVE_EXTENDED
+}
+
 val LanguageCodeToName = mapOf(
     "en" to "English",
     "es" to "Español",
@@ -173,7 +179,7 @@ constructor(
         val CAROUSEL_STYLE = stringPreferencesKey("carousel_style")
         val LIBRARY_NAVIGATION_MODE = stringPreferencesKey("library_navigation_mode")
         val LAUNCH_TAB = stringPreferencesKey("launch_tab")
-        val FULL_SCREEN_ALBUM_ART = booleanPreferencesKey("full_screen_album_art")
+        val PLAYER_DESIGN_STYLE = stringPreferencesKey("player_design_style")
 
         // Transition Settings
         val GLOBAL_TRANSITION_SETTINGS = stringPreferencesKey("global_transition_settings_json")
@@ -2282,14 +2288,20 @@ constructor(
             preferences[PreferencesKeys.GENERATED_PLAYLISTS_RETENTION_PERIOD] = period
         }
     }
-     val fullScreenAlbumArtFlow: Flow<Boolean> =
-    dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.FULL_SCREEN_ALBUM_ART] ?: false
-    }.distinctUntilChanged()
+    val playerDesignStyleFlow: Flow<PlayerDesignStyle> =
+        dataStore.data.map { preferences ->
+            try {
+                PlayerDesignStyle.valueOf(
+                    preferences[PreferencesKeys.PLAYER_DESIGN_STYLE] ?: PlayerDesignStyle.DEFAULT.name
+                )
+            } catch (e: Exception) {
+                PlayerDesignStyle.DEFAULT
+            }
+        }.distinctUntilChanged()
 
-suspend fun setFullScreenAlbumArt(enabled: Boolean) {
-    dataStore.edit { preferences ->
-        preferences[PreferencesKeys.FULL_SCREEN_ALBUM_ART] = enabled
+    suspend fun setPlayerDesignStyle(style: PlayerDesignStyle) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PLAYER_DESIGN_STYLE] = style.name
+        }
     }
-}
 }
