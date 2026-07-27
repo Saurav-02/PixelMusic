@@ -962,40 +962,40 @@ fun FullPlayerContent(
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
                 Box(modifier = Modifier.fillMaxSize()) {
-                    // LAYER 1: The Blurry Background
-                    // We scale this up to 1.4f to push the faded blur edges completely off-screen,
-                    // giving you a true, flawless edge-to-edge full screen blur.
+                    // LAYER 1: Solid base to prevent transparency gaps
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(if (isDarkTheme) Color.Black else Color.White)
+                    )
+
+                    // LAYER 2: Scaled, saturated, and heavily blurred image
+                    val saturationMatrix = remember {
+                        androidx.compose.ui.graphics.ColorMatrix().apply {
+                            setToSaturation(1.4f) // Boost saturation by 1.4x to keep colors vivid before blur
+                        }
+                    }
+
                     SmartImage(
                         model = song.albumArtUriString,
                         contentDescription = null,
                         contentScale = ContentScale.Crop, 
                         modifier = Modifier
                             .fillMaxSize()
-                            .scale(1.4f) 
+                            .scale(1.4f) // Scale by 1.4 to completely overflow container boundaries
                             .blur(
-                                radius = if (isImmersiveExtended) 100.dp else 60.dp, 
+                                radius = if (isImmersiveExtended) 60.dp else 40.dp, // Apply 40px to 60px blur radius
                                 edgeTreatment = BlurredEdgeTreatment.Unbounded
-                            )
-                    )
-
-                    // LAYER 2: The Sharp Album Cover
-                    // We use ContentScale.Fit. This is the magic trick:
-                    // - Square/Portrait images will scale as large as possible.
-                    // - Landscape (16:9) images will letterbox perfectly in the middle, and 
-                    //   the blurry background from Layer 1 will show through the empty space!
-                    SmartImage(
-                        model = song.albumArtUriString,
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit, 
-                        modifier = Modifier.fillMaxSize()
+                            ),
+                        colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(saturationMatrix)
                     )
                     
-                    // LAYER 3: Themed Overlay
-                    // Reduced opacity so the colors stay vibrant like Apple Music
+                    // LAYER 3: Dimming Overlay Tint
+                    val overlayOpacity = if (isImmersiveExtended) 0.5f else 0.3f // Opacity between 0.3 and 0.5
                     val overlayColor = if (isDarkTheme) {
-                        Color.Black.copy(alpha = if (isImmersiveExtended) 0.35f else 0.45f)
+                        Color.Black.copy(alpha = overlayOpacity) // Black layer for dark mode
                     } else {
-                        Color.White.copy(alpha = if (isImmersiveExtended) 0.25f else 0.35f)
+                        Color.White.copy(alpha = overlayOpacity) // White layer for light mode
                     }
                     
                     Box(
@@ -1022,6 +1022,7 @@ fun FullPlayerContent(
                     }
                 }
             }
+                        
 
             if (isLandscape) {
                 FullPlayerLandscapeContent(
