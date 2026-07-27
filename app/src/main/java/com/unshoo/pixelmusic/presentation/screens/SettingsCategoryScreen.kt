@@ -692,6 +692,7 @@ fun SettingsCategoryScreen(
                         }
                         SettingsCategory.APPEARANCE -> {
                             val useSmoothCorners by settingsViewModel.useSmoothCorners.collectAsStateWithLifecycle()
+                            val fullScreenAlbumArt by viewModel.fullScreenAlbumArt.collectAsStateWithLifecycle()
 
                             SettingsSubsection(title = stringResource(R.string.setcat_global_theme)) {
                                 ThemeSelectorItem(
@@ -771,6 +772,13 @@ fun SettingsCategoryScreen(
                                     selectedKey = uiState.playerThemePreference,
                                     onSelectionChanged = { settingsViewModel.setPlayerThemePreference(it) },
                                     leadingIcon = { Icon(Icons.Outlined.PlayCircle, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
+                                // Add this inside the Now Playing subsection:
+                                SettingsToggleItem(
+                                    title = "Full screen album cover",
+                                    subtitle = "Immersive iOS style edge-to-edge album art",
+                                    checked = fullScreenAlbumArt,
+                                    onCheckedChange = { viewModel.setFullScreenAlbumArt(it) }
                                 )
                                 SwitchSettingItem(
                                     title = stringResource(R.string.setcat_show_player_file_info_title),
