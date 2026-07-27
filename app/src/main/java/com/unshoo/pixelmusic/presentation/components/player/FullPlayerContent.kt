@@ -1013,7 +1013,7 @@ fun FullPlayerContent(
                 }
             } else if (isImmersiveExtended) {
                 // ==========================================
-                // 2. IMMERSIVE EXTENDED MODE (TOP HALF ONLY)
+                // 2. IMMERSIVE EXTENDED MODE (BOUNDED WIDTH)
                 // ==========================================
                 val bgColor = LocalMaterialTheme.current.surface 
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
@@ -1031,30 +1031,32 @@ fun FullPlayerContent(
                 }
                 
                 Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // LAYER 1: Image restricted to the top half
+                    // LAYER 1: Image restricted to the top half with a constrained width
                     SmartImage(
                         model = highResAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop, 
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.55f) // Restricts the image to slightly over 50% of the screen height
+                            .fillMaxWidth(0.88f) // <-- Boundary set to 88% of screen width
+                            .fillMaxHeight(0.55f)
+                            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)) // Softens the corners
                     )
                     
-                    // LAYER 2: Gradient Mask to blend the bottom edge of the image smoothly into the background color
+                    // LAYER 2: Gradient Mask (matches the image bounds perfectly)
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.55f) // Matches the image bounds exactly
+                            .fillMaxWidth(0.88f) // <-- Matches the image width boundary
+                            .fillMaxHeight(0.55f)
+                            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
                             .background(
                                 Brush.verticalGradient(
                                     colorStops = arrayOf(
                                         0.0f to if (isDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.Transparent,
                                         0.50f to Color.Transparent, 
                                         0.85f to bgColor.copy(alpha = 0.9f), 
-                                        1.0f to bgColor // Solid background color right at the cut-off point
+                                        1.0f to bgColor 
                                     )
                                 )
                             )
