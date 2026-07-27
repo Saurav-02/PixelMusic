@@ -280,7 +280,10 @@ fun FullPlayerContent(
         }
     }
     
-    val isFullScreenArt by playerViewModel.userPreferencesRepository.fullScreenAlbumArtFlow.collectAsStateWithLifecycle(initialValue = false)
+    val playerDesignStyle by playerViewModel.playerDesignStyle.collectAsStateWithLifecycle()
+    val isImmersive = playerDesignStyle == com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.IMMERSIVE || 
+                      playerDesignStyle == com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.IMMERSIVE_EXTENDED
+    val isImmersiveExtended = playerDesignStyle == com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.IMMERSIVE_EXTENDED
 
     // Single subscription — replaces 11 independent collectAsStateWithLifecycle calls.
     // distinctUntilChanged in the ViewModel ensures this only emits when something
@@ -609,9 +612,9 @@ fun FullPlayerContent(
             repeatModeProvider = repeatModeProvider,
             isFavoriteProvider = isFavoriteProvider,
             onShuffleToggle = onShuffleToggle,
-            onRepeatToggle = onRepeatToggle,
+            onRepeatToggle = onRepeatToggle,           
             onFavoriteToggle = onFavoriteToggle,
-            isFullScreenArt = isFullScreenArt
+            isFullScreenArt = isImmersive
         )
     }
 
@@ -954,7 +957,7 @@ fun FullPlayerContent(
                 .fillMaxSize()
                 .graphicsLayer { alpha = contentAlpha }
         ) {
-            if (isFullScreenArt) {
+            if (isImmersive) {
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -964,14 +967,17 @@ fun FullPlayerContent(
                         contentScale = ContentScale.Crop, // Always crop the background to fill the screen
                         modifier = Modifier
                             .fillMaxSize()
-                            .blur(radius = 80.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                            .blur(
+                                radius = if (isImmersiveExtended) 120.dp else 80.dp, 
+                                edgeTreatment = BlurredEdgeTreatment.Unbounded
+                            )
                     )
                     
                     // Themed overlay so the middle album art and controls pop perfectly
                     val overlayColor = if (isDarkTheme) {
-                        Color.Black.copy(alpha = 0.65f) // Deep dark overlay for dark mode
+                        Color.Black.copy(alpha = if (isImmersiveExtended) 0.45f else 0.65f)
                     } else {
-                        Color.White.copy(alpha = 0.70f) // Frosted glass overlay for light mode
+                        Color.White.copy(alpha = if (isImmersiveExtended) 0.50f else 0.70f)
                     }
                     
                     Box(
@@ -979,6 +985,23 @@ fun FullPlayerContent(
                             .fillMaxSize()
                             .background(overlayColor)
                     )
+
+                    // Cinematic gradient for IMMERSIVE_EXTENDED (creates the "virtual space" effect)
+                    if (isImmersiveExtended) {
+                        val gradientBase = if (isDarkTheme) Color.Black else Color.White
+                        Box(modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.65f)
+                            .align(Alignment.BottomCenter)
+                            .background(Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent, 
+                                    gradientBase.copy(alpha = 0.7f), 
+                                    gradientBase.copy(alpha = 0.95f)
+                                )
+                            ))
+                        )
+                    }
                 }
             }
 
@@ -989,7 +1012,7 @@ fun FullPlayerContent(
                     songMetadataSection = landscapeSongMetadataSection,
                     playerProgressSection = playerProgressSection,
                     controlsSection = controlsSection,
-                    isFullScreenArt = isFullScreenArt
+                    isFullScreenArt = isImmersive
                 )
             } else {
                 FullPlayerPortraitContent(
@@ -998,7 +1021,7 @@ fun FullPlayerContent(
                     songMetadataSection = portraitSongMetadataSection,
                     playerProgressSection = playerProgressSection,
                     controlsSection = controlsSection,
-                    isFullScreenArt = isFullScreenArt
+                    isFullScreenArt = isImmersive
                 )
             }
         }
