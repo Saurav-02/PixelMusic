@@ -278,6 +278,7 @@ fun FullPlayerContent(
             emptyList()
         }
     }
+    val isFullScreenArt by playerViewModel.userPreferencesRepository.fullScreenAlbumArtFlow.collectAsStateWithLifecycle(initialValue = false)
 
     // Single subscription — replaces 11 independent collectAsStateWithLifecycle calls.
     // distinctUntilChanged in the ViewModel ensures this only emits when something
