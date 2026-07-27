@@ -960,62 +960,24 @@ fun FullPlayerContent(
                 .graphicsLayer { alpha = contentAlpha }
         ) {
             if (isImmersive && !isImmersiveExtended) {
-                // STANDARD IMMERSIVE: Blurry background with sharp fitted image
+                // ==========================================
+                // 1. STANDARD IMMERSIVE MODE
+                // ==========================================
+                val bgColor = LocalMaterialTheme.current.surface 
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    // LAYER 1: The Blurry Background
+                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
+                    // LAYER 1: Truly Full-Screen Album Cover
                     SmartImage(
                         model = song.albumArtUriString,
                         contentDescription = null,
-                        contentScale = ContentScale.Crop, 
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .scale(1.4f) 
-                            .blur(
-                                radius = 60.dp, 
-                                edgeTreatment = BlurredEdgeTreatment.Unbounded
-                            )
-                    )
-
-                    // LAYER 2: The Sharp Album Cover
-                    SmartImage(
-                        model = song.albumArtUriString,
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit, 
+                        contentScale = ContentScale.Crop, // Fills the entire screen edge-to-edge
                         modifier = Modifier.fillMaxSize()
                     )
                     
-                    // LAYER 3: Themed Overlay
-                    val overlayColor = if (isDarkTheme) {
-                        Color.Black.copy(alpha = 0.45f)
-                    } else {
-                        Color.White.copy(alpha = 0.35f)
-                    }
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(overlayColor)
-                    )
-                }
-            } else if (isImmersiveExtended) {
-                // IMMERSIVE EXTENDED: PDF-style sharp image fading into background color
-                val bgColor = LocalMaterialTheme.current.surface 
-                
-                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // LAYER 1: Sharp Album Cover filling the top 65%
-                    SmartImage(
-                        model = song.albumArtUriString,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop, 
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.65f) // Stretches down without messing with aspect ratio
-                            .align(Alignment.TopCenter)
-                    )
-                    
-                    // LAYER 2: PDF Style Gradient Fade
+                    // LAYER 2: Apple Music Style Gradient Mask
+                    // Fades the image smoothly into the background color
+                    // right where your controls naturally sit.
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -1024,7 +986,8 @@ fun FullPlayerContent(
                                     colorStops = arrayOf(
                                         0.0f to Color.Transparent,
                                         0.35f to Color.Transparent, // Image stays perfectly clear for the top area
-                                        0.65f to bgColor, // Solid background exactly where the image ends
+                                        0.60f to bgColor.copy(alpha = 0.85f), // Smooth transition
+                                        0.80f to bgColor, // Solid background exactly behind your controls
                                         1.0f to bgColor
                                     )
                                 )
@@ -1032,6 +995,52 @@ fun FullPlayerContent(
                     )
 
                     // LAYER 3: Subtle top shadow for status bar and top buttons readability
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(130.dp)
+                        .align(Alignment.TopCenter)
+                        .background(Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.45f), 
+                                Color.Transparent
+                            )
+                        ))
+                    )
+                }
+            } else if (isImmersiveExtended) {
+                // ==========================================
+                // 2. IMMERSIVE EXTENDED MODE
+                // ==========================================
+                // You can freely edit this block without affecting the standard Immersive mode above!
+                val bgColor = LocalMaterialTheme.current.surface 
+                val isDarkTheme = LocalPixelMusicDarkTheme.current
+                
+                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
+                    // I've pasted the exact same working code here as a baseline.
+                    // Start making your Immersive Extended modifications right here:
+                    SmartImage(
+                        model = song.albumArtUriString,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop, 
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0.0f to Color.Transparent,
+                                        0.35f to Color.Transparent, 
+                                        0.60f to bgColor.copy(alpha = 0.85f), 
+                                        0.80f to bgColor, 
+                                        1.0f to bgColor
+                                    )
+                                )
+                            )
+                    )
+
                     Box(modifier = Modifier
                         .fillMaxWidth()
                         .height(130.dp)
