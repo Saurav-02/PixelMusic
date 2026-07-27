@@ -1813,7 +1813,6 @@ private fun FullPlayerPortraitContent(
         controlsSection()
     }
 }
-
 @Composable
 private fun FullPlayerLandscapeContent(
     paddingValues: PaddingValues,
@@ -1825,14 +1824,19 @@ private fun FullPlayerLandscapeContent(
 ) {
     Row(
         modifier = Modifier
-            // ... modifiers
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(
+                horizontal = 24.dp,
+                vertical = 0.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (isFullScreenArt) {
             Spacer(Modifier.fillMaxHeight().weight(1f))
         } else {
             albumCoverSection(Modifier.fillMaxHeight().weight(1f))
-        }{
-        albumCoverSection(Modifier.fillMaxHeight().weight(1f))
+        }
         Spacer(Modifier.width(9.dp))
         Column(
             modifier = Modifier
