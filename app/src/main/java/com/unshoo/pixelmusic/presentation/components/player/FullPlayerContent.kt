@@ -959,23 +959,63 @@ fun FullPlayerContent(
                 .fillMaxSize()
                 .graphicsLayer { alpha = contentAlpha }
         ) {
-            if (isImmersive) {
-                // Grab the dynamically extracted background color for this specific song
-                val bgColor = LocalMaterialTheme.current.surface 
+            if (isImmersive && !isImmersiveExtended) {
+                // STANDARD IMMERSIVE: Blurry background with sharp fitted image
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
-                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // LAYER 1: Truly Full-Screen Album Cover
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // LAYER 1: The Blurry Background
                     SmartImage(
                         model = song.albumArtUriString,
                         contentDescription = null,
-                        contentScale = ContentScale.Crop, // Fills the entire screen edge-to-edge
+                        contentScale = ContentScale.Crop, 
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .scale(1.4f) 
+                            .blur(
+                                radius = 60.dp, 
+                                edgeTreatment = BlurredEdgeTreatment.Unbounded
+                            )
+                    )
+
+                    // LAYER 2: The Sharp Album Cover
+                    SmartImage(
+                        model = song.albumArtUriString,
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit, 
                         modifier = Modifier.fillMaxSize()
                     )
                     
-                    // LAYER 2: Apple Music Style Gradient Mask
-                    // Fades the image smoothly into the background color
-                    // right where your controls naturally sit.
+                    // LAYER 3: Themed Overlay
+                    val overlayColor = if (isDarkTheme) {
+                        Color.Black.copy(alpha = 0.45f)
+                    } else {
+                        Color.White.copy(alpha = 0.35f)
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(overlayColor)
+                    )
+                }
+            } else if (isImmersiveExtended) {
+                // IMMERSIVE EXTENDED: PDF-style sharp image fading into background color
+                val bgColor = LocalMaterialTheme.current.surface 
+                
+                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
+                    // LAYER 1: Sharp Album Cover filling the top 65%
+                    SmartImage(
+                        model = song.albumArtUriString,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop, 
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.65f) // Stretches down without messing with aspect ratio
+                            .align(Alignment.TopCenter)
+                    )
+                    
+                    // LAYER 2: PDF Style Gradient Fade
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -984,8 +1024,7 @@ fun FullPlayerContent(
                                     colorStops = arrayOf(
                                         0.0f to Color.Transparent,
                                         0.35f to Color.Transparent, // Image stays perfectly clear for the top area
-                                        0.60f to bgColor.copy(alpha = 0.85f), // Smooth transition
-                                        0.80f to bgColor, // Solid background exactly behind your controls
+                                        0.65f to bgColor, // Solid background exactly where the image ends
                                         1.0f to bgColor
                                     )
                                 )
