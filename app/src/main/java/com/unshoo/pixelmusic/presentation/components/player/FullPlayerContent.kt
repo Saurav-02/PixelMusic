@@ -1009,38 +1009,48 @@ fun FullPlayerContent(
                 }
             } else if (isImmersiveExtended) {
                 // ==========================================
-                // 2. IMMERSIVE EXTENDED MODE
+                // 2. IMMERSIVE EXTENDED MODE (APPLE MUSIC STYLE)
                 // ==========================================
-                // You can freely edit this block without affecting the standard Immersive mode above!
                 val bgColor = LocalMaterialTheme.current.surface 
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
                 Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // I've pasted the exact same working code here as a baseline.
-                    // Start making your Immersive Extended modifications right here:
+                    // LAYER 1: Truly Full-Screen Album Cover with Heavy Blur
                     SmartImage(
                         model = song.albumArtUriString,
                         contentDescription = null,
                         contentScale = ContentScale.Crop, 
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
+                            // Apply heavy blur for the true Apple Music frosted background look.
+                            // Note: If you prefer the unblurred image exactly as mocked up 
+                            // in the PDF, simply comment out or remove this .blur() modifier.
+                            .blur(
+                                radius = 80.dp,
+                                edgeTreatment = BlurredEdgeTreatment.Unbounded
+                            )
                     )
                     
+                    // LAYER 2: Apple Music Style Gradient Mask
+                    // Fades the image smoothly into the background color exactly 
+                    // where the "Final result" controls sit in the PDF reference.
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
                                 Brush.verticalGradient(
                                     colorStops = arrayOf(
-                                        0.0f to Color.Transparent,
-                                        0.35f to Color.Transparent, 
-                                        0.60f to bgColor.copy(alpha = 0.85f), 
-                                        0.80f to bgColor, 
+                                        0.0f to if (isDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.Transparent,
+                                        0.45f to if (isDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.Transparent, // Top area stays visible
+                                        0.65f to bgColor.copy(alpha = 0.9f), // Smooth but rapid fade
+                                        0.75f to bgColor, // Solid background strictly behind the controls
                                         1.0f to bgColor
                                     )
                                 )
                             )
                     )
 
+                    // LAYER 3: Subtle top shadow for status bar and top buttons readability
                     Box(modifier = Modifier
                         .fillMaxWidth()
                         .height(130.dp)
