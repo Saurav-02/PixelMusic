@@ -252,6 +252,9 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    val fullScreenAlbumArt: StateFlow<Boolean> = userPreferencesRepository.fullScreenAlbumArtFlow
+    .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     // AI Provider State
     val aiProvider: StateFlow<String> = aiPreferencesRepository.aiProvider
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "GEMINI")
@@ -344,6 +347,12 @@ class SettingsViewModel @Inject constructor(
     }
 
     // Specific on-change methods for UI binding
+    fun setFullScreenAlbumArt(enabled: Boolean) {
+    viewModelScope.launch {
+        userPreferencesRepository.setFullScreenAlbumArt(enabled)
+        }
+    }
+    
     fun onGeminiApiKeyChange(apiKey: String) {
         viewModelScope.launch {
             aiPreferencesRepository.setApiKey(AiProvider.GEMINI, apiKey)
