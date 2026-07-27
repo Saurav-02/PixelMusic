@@ -3,6 +3,7 @@ package com.unshoo.pixelmusic.presentation.components.player
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.offset
 import android.net.Uri
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
