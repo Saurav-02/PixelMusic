@@ -173,6 +173,7 @@ constructor(
         val CAROUSEL_STYLE = stringPreferencesKey("carousel_style")
         val LIBRARY_NAVIGATION_MODE = stringPreferencesKey("library_navigation_mode")
         val LAUNCH_TAB = stringPreferencesKey("launch_tab")
+        val FULL_SCREEN_ALBUM_ART = booleanPreferencesKey("full_screen_album_art")
 
         // Transition Settings
         val GLOBAL_TRANSITION_SETTINGS = stringPreferencesKey("global_transition_settings_json")
@@ -2281,4 +2282,14 @@ constructor(
             preferences[PreferencesKeys.GENERATED_PLAYLISTS_RETENTION_PERIOD] = period
         }
     }
+     val fullScreenAlbumArtFlow: Flow<Boolean> =
+    dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.FULL_SCREEN_ALBUM_ART] ?: false
+    }.distinctUntilChanged()
+
+suspend fun setFullScreenAlbumArt(enabled: Boolean) {
+    dataStore.edit { preferences ->
+        preferences[PreferencesKeys.FULL_SCREEN_ALBUM_ART] = enabled
+    }
+}
 }
