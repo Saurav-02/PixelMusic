@@ -1013,12 +1013,12 @@ fun FullPlayerContent(
                 }
             } else if (isImmersiveExtended) {
                 // ==========================================
-                // 2. IMMERSIVE EXTENDED MODE (BOUNDED WIDTH)
+                // 2. IMMERSIVE EXTENDED MODE (INDEPENDENT POSITIONING)
                 // ==========================================
                 val bgColor = LocalMaterialTheme.current.surface 
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
-                // 1. Resolve a high-resolution URI for sharp display
+                // Resolve high-resolution URI
                 val highResAlbumArtUri = remember(song.albumArtUriString) {
                     val rawUri = song.albumArtUriString ?: ""
                     when {
@@ -1030,31 +1030,56 @@ fun FullPlayerContent(
                     }
                 }
                 
-                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // LAYER 1: Image restricted to the top half with a constrained width
+                // BoxWithConstraints lets us measure the exact screen size before drawing
+                BoxWithConstraints(modifier = Modifier.fillMaxSize().background(bgColor)) {
+                    val screenWidth = maxWidth
+                    val screenHeight = maxHeight
+                    
+                    // --- YOUR INDEPENDENT CALCULATIONS ---
+                    // Example: Make image 85% of screen width, and 45% of screen height
+                    val customImageWidth = screenWidth * 0.85f
+                    val customImageHeight = screenHeight * 0.45f
+                    
+                    // Calculate exact X position (Center it horizontally)
+                    val xPosition = (screenWidth - customImageWidth) / 2
+                    
+                    // Calculate exact Y position (e.g., push it 5% down from the very top of the screen)
+                    val yPosition = screenHeight * 0.05f 
+                    // -------------------------------------
+
+                    // LAYER 1: Full-width blurred background (keeps sides seamless)
                     SmartImage(
                         model = highResAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop, 
                         modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth(0.88f) // <-- Boundary set to 88% of screen width
-                            .fillMaxHeight(0.55f)
-                            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)) // Softens the corners
+                            .fillMaxSize()
+                            .blur(radius = 50.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
                     )
                     
-                    // LAYER 2: Gradient Mask (matches the image bounds perfectly)
+                    // LAYER 2: The sharp image, placed absolutely independently
+                    SmartImage(
+                        model = highResAlbumArtUri,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop, 
+                        modifier = Modifier
+                            // 1. Force the exact calculated size
+                            .size(width = customImageWidth, height = customImageHeight)
+                            // 2. Push it to the exact X and Y coordinates on the screen
+                            .offset(x = xPosition, y = yPosition)
+                    )
+                    
+                    // LAYER 3: Gradient Mask to blend the bottom of the custom-placed image
                     Box(
                         modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth(0.88f) // <-- Matches the image width boundary
-                            .fillMaxHeight(0.55f)
-                            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                            // Match the mask's size and position to the image
+                            .size(width = screenWidth, height = customImageHeight + yPosition) 
+                            .offset(x = 0.dp, y = 0.dp)
                             .background(
                                 Brush.verticalGradient(
                                     colorStops = arrayOf(
                                         0.0f to if (isDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.Transparent,
-                                        0.50f to Color.Transparent, 
+                                        0.60f to Color.Transparent, 
                                         0.85f to bgColor.copy(alpha = 0.9f), 
                                         1.0f to bgColor 
                                     )
@@ -1062,7 +1087,7 @@ fun FullPlayerContent(
                             )
                     )
 
-                    // LAYER 3: Subtle top shadow for status bar and top buttons readability
+                    // LAYER 4: Subtle top shadow for status bar
                     Box(modifier = Modifier
                         .fillMaxWidth()
                         .height(130.dp)
