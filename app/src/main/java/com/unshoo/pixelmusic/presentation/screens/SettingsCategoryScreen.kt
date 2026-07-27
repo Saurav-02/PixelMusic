@@ -692,7 +692,7 @@ fun SettingsCategoryScreen(
                         }
                         SettingsCategory.APPEARANCE -> {
                             val useSmoothCorners by settingsViewModel.useSmoothCorners.collectAsStateWithLifecycle()
-                            val fullScreenAlbumArt by settingsViewModel.fullScreenAlbumArt.collectAsStateWithLifecycle()
+                            val playerDesignStyle by playerViewModel.playerDesignStyle.collectAsStateWithLifecycle()
 
                             SettingsSubsection(title = stringResource(R.string.setcat_global_theme)) {
                                 ThemeSelectorItem(
@@ -773,13 +773,30 @@ fun SettingsCategoryScreen(
                                     onSelectionChanged = { settingsViewModel.setPlayerThemePreference(it) },
                                     leadingIcon = { Icon(Icons.Outlined.PlayCircle, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
-                                    SwitchSettingItem(
-        title = "Full screen album cover",
-        subtitle = "Immersive iOS style edge-to-edge album background",
-        checked = fullScreenAlbumArt,
-        onCheckedChange = { settingsViewModel.setFullScreenAlbumArt(it) },
-        leadingIcon = { Icon(painterResource(R.drawable.rounded_imagesmode_24), null, tint = MaterialTheme.colorScheme.secondary) }
-    )
+                                    ThemeSelectorItem(
+    label = "Player Design Style",
+    description = "Choose the layout and style of the Now Playing screen",
+    options = mapOf(
+        com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.DEFAULT.name to "Default",
+        com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.IMMERSIVE.name to "Immersive",
+        com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.IMMERSIVE_EXTENDED.name to "Immersive Extended"
+    ),
+    selectedKey = playerDesignStyle.name,
+    onSelectionChanged = { key ->
+        coroutineScope.launch {
+            playerViewModel.userPreferencesRepository.setPlayerDesignStyle(
+                com.unshoo.pixelmusic.data.preferences.PlayerDesignStyle.valueOf(key)
+            )
+        }
+    },
+    leadingIcon = { 
+        Icon(
+            painterResource(R.drawable.rounded_imagesmode_24), 
+            contentDescription = null, 
+            tint = MaterialTheme.colorScheme.secondary
+        ) 
+    }
+)
                                 SwitchSettingItem(
                                     title = stringResource(R.string.setcat_show_player_file_info_title),
                                     subtitle = stringResource(R.string.setcat_show_player_file_info_subtitle),
