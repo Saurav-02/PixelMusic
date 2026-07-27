@@ -773,13 +773,13 @@ fun SettingsCategoryScreen(
                                     onSelectionChanged = { settingsViewModel.setPlayerThemePreference(it) },
                                     leadingIcon = { Icon(Icons.Outlined.PlayCircle, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
-                                // Add this inside the Now Playing subsection:
-                                SettingsToggleItem(
-                                    title = "Full screen album cover",
-                                    subtitle = "Immersive iOS style edge-to-edge album art",
-                                    checked = fullScreenAlbumArt,
-                                    onCheckedChange = { viewModel.setFullScreenAlbumArt(it) }
-                                )
+                                    SwitchSettingItem(
+        title = "Full screen album cover",
+        subtitle = "Immersive iOS style edge-to-edge album background",
+        checked = fullScreenAlbumArt,
+        onCheckedChange = { settingsViewModel.setFullScreenAlbumArt(it) },
+        leadingIcon = { Icon(painterResource(R.drawable.rounded_imagesmode_24), null, tint = MaterialTheme.colorScheme.secondary) }
+    )
                                 SwitchSettingItem(
                                     title = stringResource(R.string.setcat_show_player_file_info_title),
                                     subtitle = stringResource(R.string.setcat_show_player_file_info_subtitle),
