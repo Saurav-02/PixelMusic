@@ -1396,7 +1396,8 @@ fun FullPlayerContent(
         }
     }
 }
-
+}
+}
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
