@@ -264,8 +264,6 @@ fun FullPlayerContent(
     var showLyricsSheet by remember { mutableStateOf(false) }
     var showShareSheet by remember { mutableStateOf(false) }
     var showArtistPicker by rememberSaveable { mutableStateOf(false) }
-    val isFullScreenArt by playerViewModel.userPreferencesRepository.fullScreenAlbumArtFlow.collectAsStateWithLifecycle(initialValue = false)
-    
     val lyricsSearchUiState by playerViewModel.lyricsSearchUiState.collectAsStateWithLifecycle()
     val playerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
     val lyricsLines = remember(playerState.lyrics) {
