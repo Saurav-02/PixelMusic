@@ -171,6 +171,7 @@ import com.unshoo.pixelmusic.presentation.components.ToggleSegmentButton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.draw.scale
 
 private const val PREVIOUS_TRACK_RESTART_THRESHOLD_MS = 10_000L
 private const val SKIP_COMMAND_GUARD_MS = 96L
@@ -1395,8 +1396,6 @@ fun FullPlayerContent(
             }
         }
     }
-}
-}
 }
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
