@@ -961,23 +961,40 @@ fun FullPlayerContent(
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
                 Box(modifier = Modifier.fillMaxSize()) {
+                    // LAYER 1: The Blurry Background
+                    // We scale this up to 1.4f to push the faded blur edges completely off-screen,
+                    // giving you a true, flawless edge-to-edge full screen blur.
                     SmartImage(
                         model = song.albumArtUriString,
                         contentDescription = null,
-                        contentScale = ContentScale.Crop, // Always crop the background to fill the screen
+                        contentScale = ContentScale.Crop, 
                         modifier = Modifier
                             .fillMaxSize()
+                            .scale(1.4f) 
                             .blur(
-                                radius = if (isImmersiveExtended) 120.dp else 80.dp, 
+                                radius = if (isImmersiveExtended) 100.dp else 60.dp, 
                                 edgeTreatment = BlurredEdgeTreatment.Unbounded
                             )
                     )
+
+                    // LAYER 2: The Sharp Album Cover
+                    // We use ContentScale.Fit. This is the magic trick:
+                    // - Square/Portrait images will scale as large as possible.
+                    // - Landscape (16:9) images will letterbox perfectly in the middle, and 
+                    //   the blurry background from Layer 1 will show through the empty space!
+                    SmartImage(
+                        model = song.albumArtUriString,
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit, 
+                        modifier = Modifier.fillMaxSize()
+                    )
                     
-                    // Themed overlay so the middle album art and controls pop perfectly
+                    // LAYER 3: Themed Overlay
+                    // Reduced opacity so the colors stay vibrant like Apple Music
                     val overlayColor = if (isDarkTheme) {
-                        Color.Black.copy(alpha = if (isImmersiveExtended) 0.45f else 0.65f)
+                        Color.Black.copy(alpha = if (isImmersiveExtended) 0.35f else 0.45f)
                     } else {
-                        Color.White.copy(alpha = if (isImmersiveExtended) 0.50f else 0.70f)
+                        Color.White.copy(alpha = if (isImmersiveExtended) 0.25f else 0.35f)
                     }
                     
                     Box(
@@ -986,7 +1003,7 @@ fun FullPlayerContent(
                             .background(overlayColor)
                     )
 
-                    // Cinematic gradient for IMMERSIVE_EXTENDED (creates the "virtual space" effect)
+                    // LAYER 4: Cinematic bottom gradient for Immersive Extended
                     if (isImmersiveExtended) {
                         val gradientBase = if (isDarkTheme) Color.Black else Color.White
                         Box(modifier = Modifier
@@ -996,7 +1013,7 @@ fun FullPlayerContent(
                             .background(Brush.verticalGradient(
                                 colors = listOf(
                                     Color.Transparent, 
-                                    gradientBase.copy(alpha = 0.7f), 
+                                    gradientBase.copy(alpha = 0.5f), 
                                     gradientBase.copy(alpha = 0.95f)
                                 )
                             ))
@@ -1776,7 +1793,11 @@ private fun FullPlayerPortraitContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceAround
     ) {
-        albumCoverSection(Modifier)
+        if (isFullScreenArt) {
+            Spacer(modifier = Modifier.weight(1f))
+        } else {
+            albumCoverSection(Modifier)
+        }
 
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -1803,14 +1824,13 @@ private fun FullPlayerLandscapeContent(
 ) {
     Row(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .padding(
-                horizontal = 24.dp,
-                vertical = 0.dp
-            ),
-        verticalAlignment = Alignment.CenterVertically
+            // ... modifiers
     ) {
+        if (isFullScreenArt) {
+            Spacer(Modifier.fillMaxHeight().weight(1f))
+        } else {
+            albumCoverSection(Modifier.fillMaxHeight().weight(1f))
+        }{
         albumCoverSection(Modifier.fillMaxHeight().weight(1f))
         Spacer(Modifier.width(9.dp))
         Column(
