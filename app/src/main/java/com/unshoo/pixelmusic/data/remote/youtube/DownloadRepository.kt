@@ -119,33 +119,55 @@ class DownloadRepository(appContext: Context) {
 
     suspend fun isSongDownloaded(youtubeId: String): Boolean {
         val song = localSongRepository.getSong(youtubeId)
-        
-        // Get the saved file path from the database
         val path = song?.audioFilePath
         
-        // If there's no path and it's not marked as downloaded, return false
         if (path.isNullOrBlank() && song?.downloaded != true) {
             return false
         }
         
-        // If we have a path, verify the file ACTUALLY exists on the device storage
         if (!path.isNullOrBlank()) {
             return try {
                 if (path.startsWith("content://")) {
-                    // For public MediaStore downloads
                     val uri = android.net.Uri.parse(path)
-                    val cursor = _appContext.contentResolver.query(uri, null, null, null, null)
-                    val exists = cursor != null && cursor.moveToFirst()
+                    var actuallyExists = false
+                    
+                    // 1. Try to get the actual physical path from MediaStore
+                    val cursor = _appContext.contentResolver.query(
+                        uri, 
+                        arrayOf(android.provider.MediaStore.MediaColumns.DATA), 
+                        null, null, null
+                    )
+                    
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val physicalPath = cursor.getString(0)
+                        if (physicalPath != null) {
+                            actuallyExists = File(physicalPath).exists()
+                        }
+                    }
                     cursor?.close()
-                    exists
+                    
+                    // 2. Fallback: try opening a file descriptor
+                    if (!actuallyExists) {
+                        try {
+                            val afd = _appContext.contentResolver.openAssetFileDescriptor(uri, "r")
+                            afd?.close()
+                            actuallyExists = true
+                        } catch (e: Exception) {
+                            actuallyExists = false
+                        }
+                    }
+                    
+                    actuallyExists
                 } else {
-                    // For private file path downloads
                     File(path).exists()
                 }
             } catch (e: Exception) {
                 false
             }
         }
+        
+        return song?.downloaded == true
+    }
         
         // Fallback to database value just in case
         return song?.downloaded == true
