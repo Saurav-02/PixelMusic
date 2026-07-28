@@ -1037,7 +1037,6 @@ fun FullPlayerContent(
             ))
         )
     }
-            }
             } else if (isImmersiveExtended) {
                 // ==========================================
                 // 2. IMMERSIVE EXTENDED MODE (TOP HALF ONLY)
