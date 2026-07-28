@@ -1468,7 +1468,7 @@ class PlayerViewModel @Inject constructor(
         val isRemotePlaybackActive: Boolean = false,
         val selectedRouteName: String? = null,
         val isBluetoothEnabled: Boolean = false,
-        val bluetoothName: String? = null
+        val bluetoothName: String? = null,
         val aodScreenEnabled: Boolean = false
     )
 
