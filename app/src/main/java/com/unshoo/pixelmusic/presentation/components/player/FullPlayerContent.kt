@@ -974,12 +974,22 @@ fun FullPlayerContent(
     val bgColor = LocalMaterialTheme.current.surface
     val isDarkTheme = LocalPixelMusicDarkTheme.current
     val context = LocalContext.current
+    val highResAlbumArtUri = remember(song.albumArtUriString) {
+    val rawUri = song.albumArtUriString ?: ""
+    when {
+        rawUri.contains("ggpht.com") || rawUri.contains("googleusercontent.com") -> {
+            rawUri.replace(Regex("=w\\d+-h\\d+"), "=w1200-h1200")
+                  .replace(Regex("=s\\d+"), "=s1200")
+        }
+        else -> rawUri
+    }
+    }
 
     // Material-You style wash extracted from the cover art. Falls back to
     // the normal surface color while loading or if extraction fails.
     var extractedColor by remember { mutableStateOf(bgColor) }
-    LaunchedEffect(song.albumArtUriString, isDarkTheme) {
-        extractedColor = extractDominantColor(context, song.albumArtUriString, bgColor, isDarkTheme)
+    LaunchedEffect(highResAlbumArtUri, isDarkTheme) {
+    extractedColor = extractDominantColor(context, highResAlbumArtUri, bgColor, isDarkTheme)
     }
     val washColor by animateColorAsState(
                     targetValue = androidx.compose.ui.graphics.lerp(bgColor, extractedColor, 0.5f),
