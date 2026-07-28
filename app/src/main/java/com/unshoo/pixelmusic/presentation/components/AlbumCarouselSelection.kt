@@ -170,7 +170,7 @@ fun AlbumCarouselSection(
                         Modifier
                             .fillMaxSize()
                             .aspectRatio(1f)
-                            .combinedclickable(
+                            .combinedClickable(
                                 enabled = isFocusedItem && song.albumId != -1L,
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
