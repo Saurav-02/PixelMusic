@@ -1008,7 +1008,7 @@ fun FullPlayerContent(
                                     .heightIn(max = maxImageHeight)
                             ) {
                                 SmartImage(
-                                    model = song.albumArtUriString,
+                                    model = highResAlbumArtUri,
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.fillMaxSize()
