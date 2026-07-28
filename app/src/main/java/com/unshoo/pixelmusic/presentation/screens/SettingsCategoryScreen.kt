@@ -669,7 +669,17 @@ fun SettingsCategoryScreen(
                                 )
                             }
 
-                            SettingsSubsection(title = stringResource(R.string.setcat_music_storage_limit_title)) {
+                            SettingsSubsection(title = "Download Management") {
+                                ThemeSelectorItem(
+                                    label = "Download Audio Quality",
+                                    description = "Select the default audio quality for offline music downloads.",
+                                    options = StreamingAudioQuality.entries.associate { it.name to it.label },
+                                    selectedKey = uiState.downloadAudioQuality.name,
+                                    onSelectionChanged = { key ->
+                                        settingsViewModel.setDownloadAudioQuality(StreamingAudioQuality.valueOf(key))
+                                    },
+                                    leadingIcon = { Icon(Icons.Rounded.Download, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
                                 SliderSettingsItem(
                                     label = stringResource(R.string.setcat_music_storage_limit_desc),
                                     value = storageLimitDraft,
