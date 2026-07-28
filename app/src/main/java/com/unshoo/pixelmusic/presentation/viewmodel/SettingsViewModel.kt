@@ -123,6 +123,7 @@ data class SettingsUiState(
     val isSafeTokenLimitEnabled: Boolean = true,
     val streamingAudioQualityWifi: StreamingAudioQuality = StreamingAudioQuality.HIGH,
     val streamingAudioQualityMobile: StreamingAudioQuality = StreamingAudioQuality.HIGH,
+    val downloadAudioQuality: StreamingAudioQuality = StreamingAudioQuality.HIGH,
     val forceHighQualityOnMobile: Boolean = false,
     val albumArtQualityMobile: AlbumArtQuality = AlbumArtQuality.LOW,
     val cacheLikedSongsOffline: Boolean = false,
@@ -838,6 +839,12 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(streamingAudioQualityMobile = quality) }
             }
         }
+        
+        viewModelScope.launch {
+            userPreferencesRepository.downloadAudioQualityFlow.collect { quality ->
+                _uiState.update { it.copy(downloadAudioQuality = quality) }
+            }
+        }
 
         viewModelScope.launch {
             userPreferencesRepository.forceHighQualityOnMobileFlow.collect { enabled ->
@@ -1396,6 +1403,12 @@ class SettingsViewModel @Inject constructor(
     fun setStreamingAudioQualityMobile(quality: StreamingAudioQuality) {
         viewModelScope.launch {
             userPreferencesRepository.setStreamingAudioQualityMobile(quality)
+        }
+    }
+
+    fun setDownloadAudioQuality(quality: StreamingAudioQuality) {
+        viewModelScope.launch {
+            userPreferencesRepository.setDownloadAudioQuality(quality)
         }
     }
 
