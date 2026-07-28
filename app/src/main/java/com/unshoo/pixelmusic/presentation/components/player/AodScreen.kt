@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.delay
+import com.unshoo.pixelmusic.presentation.components.SmartImage
 
 @Composable
 fun AodScreen(
