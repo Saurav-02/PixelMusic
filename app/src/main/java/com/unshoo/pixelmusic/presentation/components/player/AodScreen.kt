@@ -1,30 +1,24 @@
 package com.unshoo.pixelmusic.presentation.components.player
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,8 +31,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import kotlinx.coroutines.delay
-import kotlin.math.cos
-import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -94,22 +86,9 @@ fun AodScreen(
             }
         }
 
-        // Material You expressive seed color, extracted from the album art (used for
-        // the frame border, inner ring, and progress bar).
         var glowColor by remember { mutableStateOf(Color(0xFF888888)) }
         LaunchedEffect(highResAlbumArtUri) {
             glowColor = extractDominantColor(context, highResAlbumArtUri, Color(0xFF888888), isDarkTheme = true)
-        }
-
-        // Multi-color aurora sourced directly from the app's Material You expressive
-        // color scheme (dynamic color from the system wallpaper), not synthetic hues.
-        val colorScheme = MaterialTheme.colorScheme
-        val glowPalette = remember(colorScheme) {
-            listOf(
-                colorScheme.primary,
-                colorScheme.secondary,
-                colorScheme.tertiary
-            )
         }
 
         var positionMs by remember { mutableLongStateOf(currentPositionProvider()) }
@@ -120,39 +99,17 @@ fun AodScreen(
             }
         }
 
-        // --- Slow, ambient animation values ---
-        // Everything below is intentionally slow (7-22s cycles) so the AOD glow feels
-        // like a calm, breathing aurora rather than a pulsing/flashing effect.
         val infiniteTransition = rememberInfiniteTransition(label = "aodGlow")
-
         val glowScale by infiniteTransition.animateFloat(
-            initialValue = 0.92f, targetValue = 1.10f,
-            animationSpec = infiniteRepeatable(
-                tween(9000, easing = FastOutSlowInEasing),
-                RepeatMode.Reverse
-            ),
+            initialValue = 0.90f, targetValue = 1.15f,
+            animationSpec = infiniteRepeatable(tween(4000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
             label = "glowScale"
         )
         val glowAlpha by infiniteTransition.animateFloat(
-            initialValue = 0.35f, targetValue = 0.7f,
-            animationSpec = infiniteRepeatable(
-                tween(7000, easing = FastOutSlowInEasing),
-                RepeatMode.Reverse
-            ),
+            initialValue = 0.55f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(3000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
             label = "glowAlpha"
         )
-        // Slow orbit angle that drifts the three color blobs around the art.
-        val orbitAngle by infiniteTransition.animateFloat(
-            initialValue = 0f, targetValue = 360f,
-            animationSpec = infiniteRepeatable(
-                tween(22000, easing = LinearEasing),
-                RepeatMode.Restart
-            ),
-            label = "orbitAngle"
-        )
-
-        val density = LocalDensity.current
-        val orbitRadiusPx = with(density) { 46.dp.toPx() }
 
         Box(
             modifier = Modifier
@@ -170,92 +127,28 @@ fun AodScreen(
                 modifier = Modifier.padding(horizontal = 32.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-
-                    // 1. Wide, slow-breathing background bloom (single soft radial wash).
-                    Canvas(
+                    // Ambient glow: an oversized, heavily blurred, UNCLIPPED copy
+                    // of the same artwork sitting behind the sharp one. No clip
+                    // here on purpose — clipping this layer is what was cutting
+                    // the glow off right at its own edge before. The size gap
+                    // between this (420dp) and the sharp image (240dp) is what
+                    // gives the blur actual room to visibly bleed outward.
+                    SmartImage(
+                        model = highResAlbumArtUri,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        targetSize = coil.size.Size.ORIGINAL,
                         modifier = Modifier
                             .size(420.dp)
                             .graphicsLayer {
                                 scaleX = glowScale
                                 scaleY = glowScale
-                                compositingStrategy = CompositingStrategy.Offscreen
+                                alpha = glowAlpha
                             }
-                    ) {
-                        val radius = size.minDimension / 2f
-                        drawCircle(
-                            brush = Brush.radialGradient(
-                                0.0f to glowColor.copy(alpha = glowAlpha * 0.6f),
-                                0.5f to glowColor.copy(alpha = glowAlpha * 0.3f),
-                                1.0f to Color.Transparent,
-                                center = center,
-                                radius = radius
-                            ),
-                            radius = radius,
-                            center = center,
-                            blendMode = BlendMode.Screen
-                        )
-                    }
-
-                    // 2. Slow orbiting Material You colored blobs sitting OUTSIDE the
-                    // album art — produces the soft multi-color aurora bleeding out
-                    // from behind the cover, drifting very slowly.
-                    glowPalette.forEachIndexed { index, color ->
-                        val phase = orbitAngle + index * 120f
-                        val radians = Math.toRadians(phase.toDouble())
-                        val offsetX = (cos(radians) * orbitRadiusPx).toFloat()
-                        val offsetY = (sin(radians) * orbitRadiusPx).toFloat()
-
-                        Box(
-                            modifier = Modifier
-                                .size(220.dp)
-                                .graphicsLayer {
-                                    translationX = offsetX
-                                    translationY = offsetY
-                                    alpha = glowAlpha
-                                    scaleX = glowScale
-                                    scaleY = glowScale
-                                    compositingStrategy = CompositingStrategy.Offscreen
-                                }
-                                .blur(60.dp)
-                                .background(
-                                    brush = Brush.radialGradient(
-                                        0.0f to color,
-                                        0.6f to color.copy(alpha = 0.5f),
-                                        1.0f to Color.Transparent
-                                    ),
-                                    shape = androidx.compose.foundation.shape.CircleShape
-                                )
-                        )
-                    }
-
-                    // 3. Blurry glowing rounded frame around the art (soft neon bleed,
-                    // synced to the same slow pulse).
-                    Box(
-                        modifier = Modifier
-                            .size(256.dp)
-                            .border(
-                                width = 8.dp,
-                                color = glowColor.copy(alpha = 0.85f),
-                                shape = RoundedCornerShape(32.dp)
-                            )
-                            .blur(20.dp)
-                            .graphicsLayer {
-                                alpha = glowAlpha * 0.9f + 0.1f
-                            }
+                            .blur(radius = 80.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
                     )
 
-                    // 4. Crisp inner accent ring to frame the art sharply against the blur.
-                    Box(
-                        modifier = Modifier
-                            .size(242.dp)
-                            .border(
-                                width = 1.dp,
-                                color = glowColor.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(25.dp)
-                            )
-                    )
-
-                    // 5. Album Art
+                    // The sharp, in-focus art on top
                     SmartImage(
                         model = highResAlbumArtUri,
                         contentDescription = null,
@@ -289,7 +182,6 @@ fun AodScreen(
                 val totalMs = totalDurationProvider()
                 val progress = if (totalMs > 0) (positionMs.toFloat() / totalMs.toFloat()).coerceIn(0f, 1f) else 0f
 
-                // Material You Expressive Wavy Progress Bar
                 LinearWavyProgressIndicator(
                     progress = { progress },
                     modifier = Modifier
