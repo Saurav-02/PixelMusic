@@ -1,6 +1,7 @@
 package com.unshoo.pixelmusic.presentation.components.player
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.animateColorAsState
 import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.offset
@@ -1777,6 +1778,34 @@ private fun predictSkipPreviousCarouselIndex(
         safeCurrentIndex > 0 -> safeCurrentIndex - 1
         repeatMode == Player.REPEAT_MODE_ALL -> queue.lastIndex
         else -> null
+    }
+}
+
+suspend fun extractDominantColor(
+    context: Context,
+    uriString: String?,
+    fallback: Color,
+    isDarkTheme: Boolean
+): Color = withContext(Dispatchers.IO) {
+    if (uriString.isNullOrBlank()) return@withContext fallback
+    try {
+        val request = coil.request.ImageRequest.Builder(context)
+            .data(uriString)
+            .allowHardware(false) // Palette needs a software bitmap
+            .size(160, 160)       // small = fast, plenty for color extraction
+            .build()
+        val result = context.imageLoader.execute(request)
+        val bitmap = (result.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+            ?: return@withContext fallback
+        val palette = androidx.palette.graphics.Palette.from(bitmap).generate()
+        val swatch = if (isDarkTheme) {
+            palette.darkMutedSwatch ?: palette.dominantSwatch ?: palette.mutedSwatch
+        } else {
+            palette.lightMutedSwatch ?: palette.mutedSwatch ?: palette.dominantSwatch
+        }
+        swatch?.let { Color(it.rgb) } ?: fallback
+    } catch (e: Exception) {
+        fallback
     }
 }
 
