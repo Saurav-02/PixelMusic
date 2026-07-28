@@ -1,6 +1,7 @@
 package com.unshoo.pixelmusic.presentation.components.player
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.animation.animateColorAsState
 import android.content.Context
 import android.content.res.Configuration
@@ -981,63 +982,63 @@ fun FullPlayerContent(
         extractedColor = extractDominantColor(context, song.albumArtUriString, bgColor, isDarkTheme)
     }
     val washColor by animateColorAsState(
-        targetValue = androidx.compose.ui.graphics.lerp(bgColor, extractedColor, 0.5f),
-        animationSpec = tween(500),
-        label = "immersiveWashColor"
-    )
-
-    Box(modifier = Modifier.fillMaxSize().background(washColor)) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // LAYER 1: Cover art at its OWN natural aspect ratio, anchored to the
-            // top. No cropping, no forced fillMaxSize — height is whatever the
-            // image dictates for a given width.
-            Box {
-                SmartImage(
-                    model = song.albumArtUriString,
-                    contentDescription = null,
-                    contentScale = ContentScale.FillWidth,
-                    modifier = Modifier.fillMaxWidth()
+                    targetValue = androidx.compose.ui.graphics.lerp(bgColor, extractedColor, 0.5f),
+                    animationSpec = tween(500),
+                    label = "immersiveWashColor"
                 )
-                // LAYER 2: Fade overlay, sized to match the image exactly via
-                // matchParentSize() — so it always dissolves right at the image's
-                // bottom edge, whether the art is tall, square, or wide.
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colorStops = arrayOf(
-                                    0.0f to Color.Transparent,
-                                    0.55f to Color.Transparent,
-                                    0.80f to washColor.copy(alpha = 0.85f),
-                                    1.0f to washColor
+
+                Box(modifier = Modifier.fillMaxSize().background(washColor)) {   // ADD THIS
+                    Column(modifier = Modifier.fillMaxSize()) {                  // ADD THIS
+                        BoxWithConstraints {
+                            val maxImageHeight = maxHeight * 0.42f
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = maxImageHeight)
+                            ) {
+                                SmartImage(
+                                    model = song.albumArtUriString,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
                                 )
-                            )
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colorStops = arrayOf(
+                                                    0.0f to Color.Transparent,
+                                                    0.55f to Color.Transparent,
+                                                    0.80f to washColor.copy(alpha = 0.85f),
+                                                    1.0f to washColor
+                                                )
+                                            )
+                                        )
+                                )
+                            }
+                        }
+
+                        // LAYER 3: Everything below the image is solid wash color
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .background(washColor)
                         )
-                )
-            }
+                    }   // ADD THIS — closes Column
 
-            // LAYER 3: Everything below the image is solid wash color — this is
-            // what the controls sit on top of, completely independent of the
-            // image's height.
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .background(washColor)
-            )
-        }
-
-        // LAYER 4: Subtle top shadow for status bar readability
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(130.dp)
-            .align(Alignment.TopCenter)
-            .background(Brush.verticalGradient(
-                colors = listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent)
-            ))
-        )
-    }
+                    // LAYER 4: Subtle top shadow for status bar readability
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(130.dp)
+                        .align(Alignment.TopCenter)
+                        .background(Brush.verticalGradient(
+                            colors = listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent)
+                        ))
+                    )
+                }   // ADD THIS — closes outer Box
             } else if (isImmersiveExtended) {
                 // ==========================================
                 // 2. IMMERSIVE EXTENDED MODE (TOP HALF ONLY)
