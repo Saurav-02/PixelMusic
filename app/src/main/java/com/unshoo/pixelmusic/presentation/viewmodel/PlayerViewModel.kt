@@ -4069,20 +4069,7 @@ class PlayerViewModel @Inject constructor(
                                         val url = com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper.getSongPlayerUrl(context, ytSong)
                                         com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper.streamUrlLruCache.put("${youtubeId}_high", url)
 
-                                        // If on WiFi, download audio file for permanent cache
-                                        if (connectivityStateHolder.isMeteredNetwork.value == false) {
-                                            val audioPath = com.unshoo.pixelmusic.data.remote.youtube.DownloadHelper.downloadAudio(context, ytSong)
-                                            if (audioPath != null) {
-                                                // Update local YouTube DB
-                                                val ytDb = com.unshoo.pixelmusic.data.database.youtube.AppDatabase.getInstance(context)
-                                                ytDb.songRepository().updateAudioPath(youtubeId, audioPath)
-
-                                                // Update unified DB
-                                                val mainId = -(15_000_000_000_000L + youtubeId.hashCode().toLong().absoluteValue)
-                                                musicRepository.updateSongFilePath(mainId, audioPath)
-                                            }
-                                        }
-                                    } catch (e: Exception) {
+                                        catch (e: Exception) {
                                         Timber.e(e, "Failed to pre-cache recently played song $youtubeId")
                                     }
                                 }
