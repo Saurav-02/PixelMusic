@@ -965,53 +965,78 @@ fun FullPlayerContent(
                 .graphicsLayer { alpha = contentAlpha }
         ) {
             if (isImmersive && !isImmersiveExtended) {
-                // ==========================================
-                // 1. STANDARD IMMERSIVE MODE
-                // ==========================================
-                val bgColor = LocalMaterialTheme.current.surface 
-                val isDarkTheme = LocalPixelMusicDarkTheme.current
-                
-                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // LAYER 1: Truly Full-Screen Album Cover
-                    SmartImage(
-                        model = song.albumArtUriString,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop, // Fills the entire screen edge-to-edge
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    
-                    // LAYER 2: Apple Music Style Gradient Mask
-                    // Fades the image smoothly into the background color
-                    // right where your controls naturally sit.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colorStops = arrayOf(
-                                        0.0f to Color.Transparent,
-                                        0.35f to Color.Transparent, // Image stays perfectly clear for the top area
-                                        0.60f to bgColor.copy(alpha = 0.85f), // Smooth transition
-                                        0.80f to bgColor, // Solid background exactly behind your controls
-                                        1.0f to bgColor
-                                    )
+    // ==========================================
+    // 1. STANDARD IMMERSIVE MODE
+    // ==========================================
+    val bgColor = LocalMaterialTheme.current.surface
+    val isDarkTheme = LocalPixelMusicDarkTheme.current
+    val context = LocalContext.current
+
+    // Material-You style wash extracted from the cover art. Falls back to
+    // the normal surface color while loading or if extraction fails.
+    var extractedColor by remember { mutableStateOf(bgColor) }
+    LaunchedEffect(song.albumArtUriString, isDarkTheme) {
+        extractedColor = extractDominantColor(context, song.albumArtUriString, bgColor, isDarkTheme)
+    }
+    val washColor by animateColorAsState(
+        targetValue = lerp(bgColor, extractedColor, 0.5f), // blended so contrast stays safe
+        animationSpec = tween(500),
+        label = "immersiveWashColor"
+    )
+
+    Box(modifier = Modifier.fillMaxSize().background(washColor)) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // LAYER 1: Cover art at its OWN natural aspect ratio, anchored to the
+            // top. No cropping, no forced fillMaxSize — height is whatever the
+            // image dictates for a given width.
+            Box {
+                SmartImage(
+                    model = song.albumArtUriString,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                // LAYER 2: Fade overlay, sized to match the image exactly via
+                // matchParentSize() — so it always dissolves right at the image's
+                // bottom edge, whether the art is tall, square, or wide.
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colorStops = arrayOf(
+                                    0.0f to Color.Transparent,
+                                    0.55f to Color.Transparent,
+                                    0.80f to washColor.copy(alpha = 0.85f),
+                                    1.0f to washColor
                                 )
                             )
-                    )
+                        )
+                )
+            }
 
-                    // LAYER 3: Subtle top shadow for status bar and top buttons readability
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .height(130.dp)
-                        .align(Alignment.TopCenter)
-                        .background(Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.45f), 
-                                Color.Transparent
-                            )
-                        ))
-                    )
-                }
+            // LAYER 3: Everything below the image is solid wash color — this is
+            // what the controls sit on top of, completely independent of the
+            // image's height.
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .background(washColor)
+            )
+        }
+
+        // LAYER 4: Subtle top shadow for status bar readability
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(130.dp)
+            .align(Alignment.TopCenter)
+            .background(Brush.verticalGradient(
+                colors = listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent)
+            ))
+        )
+    }
+            }
             } else if (isImmersiveExtended) {
                 // ==========================================
                 // 2. IMMERSIVE EXTENDED MODE (TOP HALF ONLY)
