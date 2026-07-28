@@ -24,6 +24,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import coil.imageLoader
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.slideInVertically
@@ -980,7 +981,7 @@ fun FullPlayerContent(
         extractedColor = extractDominantColor(context, song.albumArtUriString, bgColor, isDarkTheme)
     }
     val washColor by animateColorAsState(
-        targetValue = lerp(bgColor, extractedColor, 0.5f), // blended so contrast stays safe
+        targetValue = androidx.compose.ui.graphics.lerp(bgColor, extractedColor, 0.5f),
         animationSpec = tween(500),
         label = "immersiveWashColor"
     )
