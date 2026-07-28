@@ -1098,6 +1098,10 @@ fun FullPlayerContent(
                             .align(Alignment.TopCenter)
                             .fillMaxWidth()
                             .fillMaxHeight(0.55f) // Restricts the image to slightly over 50% of the screen height
+                            .combinedClickable(              // ADD THIS
+                                onClick = {},
+                                onLongClick = { if (aodScreenEnabled) showAodScreen = true }
+                            )
                     )
                     
                     // LAYER 2: Gradient Mask to blend the bottom edge of the image smoothly into the background color
