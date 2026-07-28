@@ -4068,8 +4068,7 @@ class PlayerViewModel @Inject constructor(
                                         // Pre-resolve and cache the stream URL in LRU cache
                                         val url = com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper.getSongPlayerUrl(context, ytSong)
                                         com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper.streamUrlLruCache.put("${youtubeId}_high", url)
-
-                                        catch (e: Exception) {
+                                    } catch (e: Exception) {
                                         Timber.e(e, "Failed to pre-cache recently played song $youtubeId")
                                     }
                                 }
