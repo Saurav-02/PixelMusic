@@ -4,6 +4,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
@@ -43,6 +44,7 @@ fun AlbumCarouselSection(
     requestedScrollIndex: Int? = null,
     onSongSelected: (Song) -> Unit,
     onAlbumClick: (Song) -> Unit = {},
+    onAlbumLongPress: (Song) -> Unit = {},
     modifier: Modifier = Modifier,
     carouselStyle: String = CarouselStyle.NO_PEEK,
     itemSpacing: Dp = 8.dp,
@@ -168,11 +170,12 @@ fun AlbumCarouselSection(
                         Modifier
                             .fillMaxSize()
                             .aspectRatio(1f)
-                            .clickable(
+                            .combinedclickable(
                                 enabled = isFocusedItem && song.albumId != -1L,
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = { onAlbumClick(song) }
+                                onClick = { onAlbumClick(song) },
+                                onLongClick = { onAlbumLongPress(song) }
                             )
                     ) { // Enforce 1:1 aspect ratio for the item itself
                         OptimizedAlbumArt(
