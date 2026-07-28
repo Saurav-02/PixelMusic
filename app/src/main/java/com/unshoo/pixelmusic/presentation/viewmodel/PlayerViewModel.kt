@@ -750,6 +750,9 @@ class PlayerViewModel @Inject constructor(
     val albumArtQuality: StateFlow<AlbumArtQuality> = userPreferencesRepository.albumArtQualityFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AlbumArtQuality.MEDIUM)
 
+    val aodScreenEnabled: StateFlow<Boolean> = userPreferencesRepository.aodScreenEnabledFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     fun setLyricsSyncOffset(songId: String, offsetMs: Int) {
         lyricsStateHolder.setSyncOffset(songId, offsetMs)
     }
@@ -1466,6 +1469,7 @@ class PlayerViewModel @Inject constructor(
         val selectedRouteName: String? = null,
         val isBluetoothEnabled: Boolean = false,
         val bluetoothName: String? = null
+        val aodScreenEnabled: Boolean = false
     )
 
     // Intermediate combine #1: 5 settings flows
@@ -1519,9 +1523,10 @@ class PlayerViewModel @Inject constructor(
 
     val fullPlayerSlice: StateFlow<FullPlayerSlice> = combine(
         fullPlayerSlicePart1,
-        fullPlayerSlicePart2
-    ) { p1, p2 ->
-        FullPlayerSlice(
+        fullPlayerSlicePart2,
+        aodScreenEnabled
+    ) { p1, p2 aodEnabled ->
+        FullPlayval dailyMixSongs: StateFlow\u003CImmutableList\u003CSong>> = dailyMixStateHolder.dailyMixSongserSlice(
             currentSongArtists = p1.currentSongArtists,
             lyricsSyncOffset = p1.lyricsSyncOffset,
             albumArtQuality = p1.albumArtQuality,
@@ -1533,7 +1538,8 @@ class PlayerViewModel @Inject constructor(
             isRemotePlaybackActive = p2.isRemotePlaybackActive,
             selectedRouteName = p2.selectedRouteName,
             isBluetoothEnabled = p2.isBluetoothEnabled,
-            bluetoothName = p2.bluetoothName
+            bluetoothName = p2.bluetoothName,
+            aodScreenEnabled = aodEnabled
         )
     }
         .distinctUntilChanged()
