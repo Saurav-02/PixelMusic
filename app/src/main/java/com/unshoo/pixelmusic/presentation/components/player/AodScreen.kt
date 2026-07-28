@@ -3,10 +3,11 @@ package com.unshoo.pixelmusic.presentation.components.player
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -25,9 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import kotlinx.coroutines.delay
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.unshoo.pixelmusic.presentation.components.SmartImage
+import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AodScreen(
     songTitle: String,
@@ -47,9 +54,27 @@ fun AodScreen(
     ) {
         val context = LocalContext.current
         val view = LocalView.current
-        DisposableEffect(Unit) {
+        
+        // Access the specific window holding the Dialog to hide the status bar
+        val dialogWindow = (view.parent as? DialogWindowProvider)?.window
+
+        DisposableEffect(dialogWindow) {
             view.keepScreenOn = true
-            onDispose { view.keepScreenOn = false }
+            
+            dialogWindow?.let { window ->
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                val insetsController = WindowInsetsControllerCompat(window, view)
+                insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            }
+
+            onDispose { 
+                view.keepScreenOn = false 
+                dialogWindow?.let { window ->
+                    val insetsController = WindowInsetsControllerCompat(window, view)
+                    insetsController.show(WindowInsetsCompat.Type.systemBars())
+                }
+            }
         }
 
         val highResAlbumArtUri = remember(albumArtUriString) {
@@ -65,6 +90,7 @@ fun AodScreen(
 
         var glowColor by remember { mutableStateOf(Color(0xFF888888)) }
         LaunchedEffect(highResAlbumArtUri) {
+            // Keep your existing dominant color extraction
             glowColor = extractDominantColor(context, highResAlbumArtUri, Color(0xFF888888), isDarkTheme = true)
         }
 
@@ -72,19 +98,19 @@ fun AodScreen(
         LaunchedEffect(Unit) {
             while (true) {
                 positionMs = currentPositionProvider()
-                delay(500)
+                delay(100) // Lowered delay for smoother wavy progress updates
             }
         }
 
         val infiniteTransition = rememberInfiniteTransition(label = "aodGlow")
         val glowScale by infiniteTransition.animateFloat(
-            initialValue = 0.94f, targetValue = 1.08f,
-            animationSpec = infiniteRepeatable(tween(3200, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+            initialValue = 0.90f, targetValue = 1.15f,
+            animationSpec = infiniteRepeatable(tween(4000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
             label = "glowScale"
         )
         val glowAlpha by infiniteTransition.animateFloat(
-            initialValue = 0.35f, targetValue = 0.75f,
-            animationSpec = infiniteRepeatable(tween(2600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+            initialValue = 0.25f, targetValue = 0.85f,
+            animationSpec = infiniteRepeatable(tween(3000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
             label = "glowAlpha"
         )
 
@@ -92,18 +118,22 @@ fun AodScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onDismiss
-                ),
+                .pointerInput(Unit) {
+                    // Replaced standard click with double-tap gesture
+                    detectTapGestures(
+                        onDoubleTap = { onDismiss() }
+                    )
+                },
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            ) {
                 Box(contentAlignment = Alignment.Center) {
                     Canvas(
                         modifier = Modifier
-                            .size(340.dp)
+                            .size(400.dp) // Increased canvas size for a wider, richer bloom
                             .graphicsLayer {
                                 scaleX = glowScale
                                 scaleY = glowScale
@@ -111,12 +141,18 @@ fun AodScreen(
                             }
                     ) {
                         val radius = size.minDimension / 2f
+                        // Multi-stop gradient for a smoother, richer glow effect
                         drawCircle(
                             brush = Brush.radialGradient(
-                                colors = listOf(glowColor.copy(alpha = glowAlpha), glowColor.copy(alpha = 0f)),
-                                center = center, radius = radius
+                                0.0f to glowColor.copy(alpha = glowAlpha),
+                                0.5f to glowColor.copy(alpha = glowAlpha * 0.5f),
+                                1.0f to Color.Transparent,
+                                center = center, 
+                                radius = radius
                             ),
-                            radius = radius, center = center, blendMode = BlendMode.Plus
+                            radius = radius, 
+                            center = center, 
+                            blendMode = BlendMode.Screen // Screen blend mode makes the glow look more like natural light
                         )
                     }
 
@@ -125,28 +161,44 @@ fun AodScreen(
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         targetSize = coil.size.Size.ORIGINAL,
-                        modifier = Modifier.size(220.dp).clip(RoundedCornerShape(24.dp))
+                        modifier = Modifier
+                            .size(240.dp) // Slightly larger art to match the rich vibe
+                            .clip(RoundedCornerShape(24.dp))
                     )
                 }
 
-                Spacer(Modifier.height(32.dp))
-                Text(songTitle, color = Color.White.copy(alpha = 0.75f), fontWeight = FontWeight.Medium, fontSize = 16.sp)
-                Spacer(Modifier.height(4.dp))
-                Text(artistName, color = Color.White.copy(alpha = 0.4f), fontSize = 13.sp)
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(48.dp))
+                
+                Text(
+                    text = songTitle, 
+                    color = Color.White.copy(alpha = 0.9f), 
+                    fontWeight = FontWeight.SemiBold, 
+                    fontSize = 20.sp,
+                    maxLines = 1
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = artistName, 
+                    color = Color.White.copy(alpha = 0.5f), 
+                    fontSize = 15.sp,
+                    maxLines = 1
+                )
+                
+                Spacer(Modifier.height(36.dp))
 
                 val totalMs = totalDurationProvider()
                 val progress = if (totalMs > 0) (positionMs.toFloat() / totalMs.toFloat()).coerceIn(0f, 1f) else 0f
-                Box(
-                    modifier = Modifier.width(120.dp).height(2.dp)
-                        .clip(RoundedCornerShape(1.dp))
-                        .background(Color.White.copy(alpha = 0.15f))
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(progress).fillMaxHeight()
-                            .background(glowColor.copy(alpha = 0.9f))
-                    )
-                }
+                
+                // Material You Expressive Wavy Progress Bar
+                LinearWavyProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f) // Takes up 60% of the screen width
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(50)),
+                    color = glowColor, // Extracted dynamic color
+                    trackColor = glowColor.copy(alpha = 0.2f)
+                )
             }
         }
     }
