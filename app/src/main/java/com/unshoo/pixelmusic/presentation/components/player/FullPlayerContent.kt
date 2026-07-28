@@ -400,6 +400,18 @@ fun FullPlayerContent(
         }
     }
 
+    if (showAodScreen) {
+    AodScreen(
+        songTitle = song.title,
+        artistName = song.artist,
+        albumArtUriString = song.albumArtUriString,
+        isPlayingProvider = isPlayingProvider,
+        currentPositionProvider = currentPositionProvider,
+        totalDurationProvider = totalDurationProvider,
+        onDismiss = { showAodScreen = false }
+    )
+    }
+
     if (showFetchLyricsDialog) {
         MaterialTheme(
             colorScheme = LocalMaterialTheme.current,
