@@ -4,7 +4,6 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
@@ -12,9 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -89,8 +87,8 @@ fun AodScreen(
 
         var glowColor by remember { mutableStateOf(Color(0xFF888888)) }
         LaunchedEffect(highResAlbumArtUri) {
-            // Note: Assuming extractDominantColor is handled elsewhere in your codebase
-            glowColor = Color(0xFF888888) // Replace with your extractDominantColor logic
+            // Assuming extractDominantColor is handled elsewhere in your codebase
+            glowColor = extractDominantColor(context, highResAlbumArtUri, Color(0xFF888888), isDarkTheme = true)
         }
 
         var positionMs by remember { mutableLongStateOf(currentPositionProvider()) }
@@ -103,12 +101,12 @@ fun AodScreen(
 
         val infiniteTransition = rememberInfiniteTransition(label = "aodGlow")
         val glowScale by infiniteTransition.animateFloat(
-            initialValue = 0.90f, targetValue = 1.15f,
+            initialValue = 0.90f, targetValue = 1.2f,
             animationSpec = infiniteRepeatable(tween(4000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
             label = "glowScale"
         )
         val glowAlpha by infiniteTransition.animateFloat(
-            initialValue = 0.55f, targetValue = 1f,
+            initialValue = 0.40f, targetValue = 0.85f,
             animationSpec = infiniteRepeatable(tween(3000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
             label = "glowAlpha"
         )
@@ -126,24 +124,26 @@ fun AodScreen(
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth() // Removed 32.dp horizontal padding here to unconstrain the glow image
+                modifier = Modifier.fillMaxWidth() 
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    // Ambient glow
-                    SmartImage(
-                        model = highResAlbumArtUri,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        targetSize = coil.size.Size.ORIGINAL,
+                    // Ambient radial glow animation
+                    Box(
                         modifier = Modifier
-                            .requiredSize(420.dp) // Switched to requiredSize to ignore parent width boundaries
+                            .requiredSize(380.dp) // Larger than the album art to allow the glow to show
                             .graphicsLayer {
                                 scaleX = glowScale
                                 scaleY = glowScale
                                 alpha = glowAlpha
                             }
-                            .clip(CircleShape) // Clipped to a circle before blur for a smooth, radial aura
-                            .blur(radius = 80.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        glowColor.copy(alpha = 0.7f), // Solid color in the center
+                                        Color.Transparent             // Fading to transparent at the edges
+                                    )
+                                )
+                            )
                     )
 
                     // The sharp, in-focus art on top
@@ -160,7 +160,6 @@ fun AodScreen(
 
                 Spacer(Modifier.height(48.dp))
 
-                // Moved the 32.dp horizontal padding directly to the text elements
                 Text(
                     text = songTitle,
                     color = Color.White.copy(alpha = 0.9f),
