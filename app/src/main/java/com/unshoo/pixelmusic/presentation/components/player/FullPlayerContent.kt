@@ -576,6 +576,8 @@ fun FullPlayerContent(
             currentMediaItemIndex = currentQueueIndex ?: currentMediaItemIndex,
             carouselStyle = carouselStyle,
             loadingTweaks = loadingTweaks,
+            aodScreenEnabled = aodScreenEnabled,           // ADD THIS
+            onEnterAodScreen = { showAodScreen = true },
             isSheetDragGestureActive = isSheetDragGestureActive,
             expansionFractionProvider = expansionFractionProvider,
             currentSheetState = currentSheetState,
@@ -1530,6 +1532,8 @@ private fun FullPlayerAlbumCoverSection(
     requestedScrollIndex: Int?,
     onSongSelected: (Song) -> Unit,
     onAlbumClick: (Song) -> Unit,
+    aodScreenEnabled: Boolean,        // ADD THIS
+    onEnterAodScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val shouldDelay = loadingTweaks.delayAll || loadingTweaks.delayAlbumCarousel
@@ -1605,6 +1609,7 @@ private fun FullPlayerAlbumCoverSection(
                     }
                 },
                 onAlbumClick = onAlbumClick,
+                onAlbumLongPress = { if (aodScreenEnabled) onEnterAodScreen() },
                 carouselStyle = carouselStyle,
                 modifier = Modifier
                     .height(carouselHeight)
