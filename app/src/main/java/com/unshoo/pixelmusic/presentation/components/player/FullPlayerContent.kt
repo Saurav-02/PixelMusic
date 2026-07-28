@@ -299,6 +299,7 @@ fun FullPlayerContent(
     // distinctUntilChanged in the ViewModel ensures this only emits when something
     // actually changed, batching multiple rapid updates into one recomposition.
     val fullPlayerSlice by playerViewModel.fullPlayerSlice.collectAsStateWithLifecycle()
+    val aodScreenEnabled = fullPlayerSlice.aodScreenEnabled
     val currentSongArtists = fullPlayerSlice.currentSongArtists
     val lyricsSyncOffset = fullPlayerSlice.lyricsSyncOffset
     val albumArtQuality = fullPlayerSlice.albumArtQuality
@@ -318,6 +319,7 @@ fun FullPlayerContent(
     }
 
     var showFetchLyricsDialog by remember { mutableStateOf(false) }
+    var showAodScreen by remember { mutableStateOf(false) }
     var totalDrag by remember { mutableStateOf(0f) }
 
     val context = LocalContext.current
@@ -1006,6 +1008,10 @@ fun FullPlayerContent(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(max = maxImageHeight)
+                                    .combinedClickable(              // ADD THIS
+                                        onClick = {},
+                                        onLongClick = { if (aodScreenEnabled) showAodScreen = true }
+                                     )
                             ) {
                                 SmartImage(
                                     model = highResAlbumArtUri,
