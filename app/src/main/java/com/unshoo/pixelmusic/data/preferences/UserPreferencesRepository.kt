@@ -306,6 +306,7 @@ constructor(
         val STREAMING_AUDIO_QUALITY_MOBILE = stringPreferencesKey("streaming_audio_quality_mobile")
         val FORCE_HIGH_QUALITY_ON_MOBILE = booleanPreferencesKey("force_high_quality_on_mobile")
         val ALBUM_ART_QUALITY_MOBILE = stringPreferencesKey("album_art_quality_mobile")
+        val DOWNLOAD_AUDIO_QUALITY = stringPreferencesKey("download_audio_quality")
         val CACHE_LIKED_SONGS_OFFLINE = booleanPreferencesKey("cache_liked_songs_offline")
         val STORAGE_LIMIT_MB = intPreferencesKey("storage_limit_mb") // 0 = unlimited
         val FOLDER_ARTWORK_PREFERENCE = stringPreferencesKey("folder_artwork_preference")
@@ -955,6 +956,18 @@ constructor(
                 preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_MOBILE]
             )
         }
+    val downloadAudioQualityFlow: Flow<StreamingAudioQuality> =
+        dataStore.data.map { preferences ->
+            StreamingAudioQuality.fromName(
+                preferences[PreferencesKeys.DOWNLOAD_AUDIO_QUALITY]
+            )
+        }
+
+    suspend fun setDownloadAudioQuality(quality: StreamingAudioQuality) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DOWNLOAD_AUDIO_QUALITY] = quality.name
+        }
+    }
 
     suspend fun setStreamingAudioQualityMobile(quality: StreamingAudioQuality) {
         dataStore.edit { preferences ->
