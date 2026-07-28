@@ -160,6 +160,7 @@ fun SmartImage(
         } else {
             ImageRequest.Builder(context)
                 .data(model)
+                .memoryCacheKey("$model|$requestTargetSize")
                 .crossfade(crossfadeDurationMillis)
                 .diskCachePolicy(if (useDiskCache) CachePolicy.ENABLED else CachePolicy.DISABLED)
                 .memoryCachePolicy(if (useMemoryCache) CachePolicy.ENABLED else CachePolicy.DISABLED)
