@@ -1525,7 +1525,7 @@ class PlayerViewModel @Inject constructor(
         fullPlayerSlicePart1,
         fullPlayerSlicePart2,
         aodScreenEnabled
-    ) { p1, p2 aodEnabled ->
+    ) { p1, p2, aodEnabled ->
             FullPlayerSlice(
             currentSongArtists = p1.currentSongArtists,
             lyricsSyncOffset = p1.lyricsSyncOffset,
