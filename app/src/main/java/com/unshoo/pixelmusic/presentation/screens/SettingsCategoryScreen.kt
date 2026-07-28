@@ -938,6 +938,13 @@ fun SettingsCategoryScreen(
                                     onSelectionChanged = { settingsViewModel.setKeepPlayingInBackground(it.toBoolean()) },
                                     leadingIcon = { Icon(Icons.Rounded.MusicNote, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
+                                SwitchSettingItem(
+                                    title = "AOD Screen",
+                                    subtitle = "Long-press the album art in Now Playing for a glowing, AMOLED-friendly ambient view. Tap anywhere to exit.",
+                                    checked = uiState.aodScreenEnabled,
+                                    onCheckedChange = { settingsViewModel.setAodScreenEnabled(it) },
+                                    leadingIcon = { Icon(Icons.Outlined.DarkMode, null, tint = MaterialTheme.colorScheme.secondary) }
+                                 )
                                 SettingsItem(
                                     title = stringResource(R.string.setcat_battery_optimization_title),
                                     subtitle = stringResource(R.string.setcat_battery_optimization_subtitle),
