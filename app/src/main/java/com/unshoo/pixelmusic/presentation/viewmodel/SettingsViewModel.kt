@@ -79,6 +79,7 @@ data class SettingsUiState(
     val libraryNavigationMode: String = LibraryNavigationMode.TAB_ROW,
     val launchTab: String = LaunchTab.HOME,
     val keepPlayingInBackground: Boolean = true,
+    val aodScreenEnabled: Boolean = false,
     val disableCastAutoplay: Boolean = false,
     val resumeOnHeadsetReconnect: Boolean = false,
     val showQueueHistory: Boolean = true,
@@ -229,7 +230,8 @@ private sealed interface SettingsUiUpdate {
         val lastfmUseNowPlaying: Boolean,
         val scrobbleDelayPercent: Float,
         val scrobbleMinSongDuration: Int,
-        val scrobbleDelaySeconds: Int
+        val scrobbleDelaySeconds: Int,
+        val aodScreenEnabled: Boolean
     ) : SettingsUiUpdate
 }
 
@@ -666,7 +668,8 @@ class SettingsViewModel @Inject constructor(
                 userPreferencesRepository.lastfmUseNowPlayingFlow,
                 userPreferencesRepository.scrobbleDelayPercentFlow,
                 userPreferencesRepository.scrobbleMinSongDurationFlow,
-                userPreferencesRepository.scrobbleDelaySecondsFlow
+                userPreferencesRepository.scrobbleDelaySecondsFlow,
+                userPreferencesRepository.aodScreenEnabledFlow
             ) { values ->
                 SettingsUiUpdate.Group2(
                     keepPlayingInBackground = values[0] as Boolean,
@@ -697,12 +700,14 @@ class SettingsViewModel @Inject constructor(
                     lastfmUseNowPlaying = values[25] as Boolean,
                     scrobbleDelayPercent = values[26] as Float,
                     scrobbleMinSongDuration = values[27] as Int,
-                    scrobbleDelaySeconds = values[28] as Int
+                    scrobbleDelaySeconds = values[28] as Int,
+                    aodScreenEnabled = values[29] as Boolean
                 )
             }.collect { update ->
                 _uiState.update { state ->
                     state.copy(
                         keepPlayingInBackground = update.keepPlayingInBackground,
+                        aodScreenEnabled = update.aodScreenEnabled,
                         disableCastAutoplay = update.disableCastAutoplay,
                         resumeOnHeadsetReconnect = update.resumeOnHeadsetReconnect,
                         showQueueHistory = update.showQueueHistory,
@@ -1191,6 +1196,12 @@ class SettingsViewModel @Inject constructor(
     fun setKeepPlayingInBackground(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setKeepPlayingInBackground(enabled)
+        }
+    }
+
+    fun setAodScreenEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAodScreenEnabled(enabled)
         }
     }
 
