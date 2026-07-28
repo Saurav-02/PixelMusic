@@ -168,10 +168,6 @@ class DownloadRepository(appContext: Context) {
         
         return song?.downloaded == true
     }
-        
-        // Fallback to database value just in case
-        return song?.downloaded == true
-    }
 
     suspend fun deleteSong(youtubeId: String) {
         val audioDir =
