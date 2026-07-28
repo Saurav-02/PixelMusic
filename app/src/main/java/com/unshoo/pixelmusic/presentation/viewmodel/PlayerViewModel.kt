@@ -1526,7 +1526,7 @@ class PlayerViewModel @Inject constructor(
         fullPlayerSlicePart2,
         aodScreenEnabled
     ) { p1, p2 aodEnabled ->
-        FullPlayval dailyMixSongs: StateFlow\u003CImmutableList\u003CSong>> = dailyMixStateHolder.dailyMixSongserSlice(
+            FullPlayerSlice(
             currentSongArtists = p1.currentSongArtists,
             lyricsSyncOffset = p1.lyricsSyncOffset,
             albumArtQuality = p1.albumArtQuality,
