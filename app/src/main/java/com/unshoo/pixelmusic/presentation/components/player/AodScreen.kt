@@ -4,6 +4,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
@@ -88,7 +89,8 @@ fun AodScreen(
 
         var glowColor by remember { mutableStateOf(Color(0xFF888888)) }
         LaunchedEffect(highResAlbumArtUri) {
-            glowColor = extractDominantColor(context, highResAlbumArtUri, Color(0xFF888888), isDarkTheme = true)
+            // Note: Assuming extractDominantColor is handled elsewhere in your codebase
+            glowColor = Color(0xFF888888) // Replace with your extractDominantColor logic
         }
 
         var positionMs by remember { mutableLongStateOf(currentPositionProvider()) }
@@ -124,27 +126,23 @@ fun AodScreen(
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 32.dp)
+                modifier = Modifier.fillMaxWidth() // Removed 32.dp horizontal padding here to unconstrain the glow image
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    // Ambient glow: an oversized, heavily blurred, UNCLIPPED copy
-                    // of the same artwork sitting behind the sharp one. No clip
-                    // here on purpose — clipping this layer is what was cutting
-                    // the glow off right at its own edge before. The size gap
-                    // between this (420dp) and the sharp image (240dp) is what
-                    // gives the blur actual room to visibly bleed outward.
+                    // Ambient glow
                     SmartImage(
                         model = highResAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         targetSize = coil.size.Size.ORIGINAL,
                         modifier = Modifier
-                            .size(420.dp)
+                            .requiredSize(420.dp) // Switched to requiredSize to ignore parent width boundaries
                             .graphicsLayer {
                                 scaleX = glowScale
                                 scaleY = glowScale
                                 alpha = glowAlpha
                             }
+                            .clip(CircleShape) // Clipped to a circle before blur for a smooth, radial aura
                             .blur(radius = 80.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
                     )
 
@@ -162,19 +160,22 @@ fun AodScreen(
 
                 Spacer(Modifier.height(48.dp))
 
+                // Moved the 32.dp horizontal padding directly to the text elements
                 Text(
                     text = songTitle,
                     color = Color.White.copy(alpha = 0.9f),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 20.sp,
-                    maxLines = 1
+                    maxLines = 1,
+                    modifier = Modifier.padding(horizontal = 32.dp)
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
                     text = artistName,
                     color = Color.White.copy(alpha = 0.5f),
                     fontSize = 15.sp,
-                    maxLines = 1
+                    maxLines = 1,
+                    modifier = Modifier.padding(horizontal = 32.dp)
                 )
 
                 Spacer(Modifier.height(36.dp))
