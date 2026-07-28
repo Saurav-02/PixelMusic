@@ -192,6 +192,7 @@ constructor(
         val FOLDERS_SOURCE = stringPreferencesKey("folders_source")
         val FOLDER_BACK_GESTURE_NAVIGATION = booleanPreferencesKey("folder_back_gesture_navigation")
         val USE_SMOOTH_CORNERS = booleanPreferencesKey("use_smooth_corners")
+        val AOD_SCREEN_ENABLED = booleanPreferencesKey("aod_screen_enabled")
         val KEEP_PLAYING_IN_BACKGROUND = booleanPreferencesKey("keep_playing_in_background")
         val IS_CROSSFADE_ENABLED = booleanPreferencesKey("is_crossfade_enabled")
         val HI_FI_MODE_ENABLED = booleanPreferencesKey("hi_fi_mode_enabled")
@@ -1077,6 +1078,12 @@ constructor(
                 preferences[PreferencesKeys.KEEP_PLAYING_IN_BACKGROUND] ?: true
             }
 
+    val aodScreenEnabledFlow: Flow<Boolean> =
+            dataStore.data.map { preferences ->
+                preferences[PreferencesKeys.AOD_SCREEN_ENABLED] ?: false
+            }
+        
+
     val disableCastAutoplayFlow: Flow<Boolean> =
             dataStore.data.map { preferences ->
                 preferences[PreferencesKeys.DISABLE_CAST_AUTOPLAY] ?: false
@@ -1555,6 +1562,12 @@ constructor(
     suspend fun setKeepPlayingInBackground(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.KEEP_PLAYING_IN_BACKGROUND] = enabled
+        }
+    }
+    
+    suspend fun setAodScreenEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AOD_SCREEN_ENABLED] = enabled
         }
     }
 
