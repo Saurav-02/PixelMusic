@@ -1011,6 +1011,7 @@ fun FullPlayerContent(
                                     model = highResAlbumArtUri,
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
+                                    targetSize = coil.size.Size.ORIGINAL,
                                     modifier = Modifier.fillMaxSize()
                                 )
                                 Box(
@@ -1074,6 +1075,7 @@ fun FullPlayerContent(
                         model = highResAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop, 
+                        targetSize = coil.size.Size.ORIGINAL,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .fillMaxWidth()
