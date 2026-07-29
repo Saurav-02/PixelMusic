@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unshoo.pixelmusic.data.gdrive.GDriveRepository
 import com.unshoo.pixelmusic.data.repository.MusicRepository
-import com.unshoo.pixelmusic.data.telegram.TelegramRepository
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -20,10 +19,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.drinkless.tdlib.TdApi
 
 enum class ExternalServiceAccount {
-    TELEGRAM,
     GOOGLE_DRIVE,
     YOUTUBE,
     LASTFM
@@ -45,7 +42,6 @@ data class AccountsUiState(
 
 @HiltViewModel
 class AccountsViewModel @Inject constructor(
-    private val telegramRepository: TelegramRepository,
     private val musicRepository: MusicRepository,
     private val gDriveRepository: GDriveRepository,
     private val datastoreRepository: com.unshoo.pixelmusic.data.remote.youtube.DatastoreRepository,
@@ -63,15 +59,6 @@ class AccountsViewModel @Inject constructor(
     }
 
     private val loggingOutServices = MutableStateFlow<Set<ExternalServiceAccount>>(emptySet())
-
-    private val telegramStateFlow = combine(
-        telegramRepository.authorizationState
-            .map { it is TdApi.AuthorizationStateReady }
-            .distinctUntilChanged(),
-        musicRepository.getAllTelegramChannels().map { it.size }
-    ) { connected, channelCount ->
-        connected to channelCount
-    }
 
     private val gDriveStateFlow = combine(
         gDriveRepository.isLoggedInFlow,
@@ -95,64 +82,28 @@ class AccountsViewModel @Inject constructor(
         Triple(session.isNotEmpty(), username, enabled)
     }
 
-    private val telegramUsernameFlow = telegramRepository.authorizationState
-        .map { state ->
-            if (state is TdApi.AuthorizationStateReady) {
-                try {
-                    kotlinx.coroutines.withTimeoutOrNull(5000) {
-                        val me = telegramRepository.getMe()
-                        me?.firstName?.trim()?.takeIf { it.isNotEmpty() }
-                    }
-                } catch (e: Exception) {
-                    null
-                }
-            } else {
-                null
-            }
-        }
-        .onStart { emit(null) }
-
     val uiState: StateFlow<AccountsUiState> = combine(
         combine(
             listOf(
-                telegramStateFlow,
                 gDriveStateFlow,
                 youtubeStateFlow,
                 lastfmStateFlow
             )
         ) { it.toList() },
         loggingOutServices,
-        datastoreRepository.ytUsername,
-        telegramUsernameFlow
-    ) { states, activeLogouts, ytName, tgName ->
-        val (telegramConnected, telegramChannelCount) = states[0] as Pair<Boolean, Int>
-        val (gDriveConnected, gDriveFolderCount) = states[1] as Pair<Boolean, Int>
-        val (youtubeConnected, youtubePlaylistCount) = states[2] as Pair<Boolean, Int>
-        val (lastfmConnected, lastfmUsername, lastfmScrobbleEnabled) = states[3] as Triple<Boolean, String, Boolean>
+        datastoreRepository.ytUsername
+    ) { states, activeLogouts, ytName ->
+        val (gDriveConnected, gDriveFolderCount) = states[0] as Pair<Boolean, Int>
+        val (youtubeConnected, youtubePlaylistCount) = states[1] as Pair<Boolean, Int>
+        val (lastfmConnected, lastfmUsername, lastfmScrobbleEnabled) = states[2] as Triple<Boolean, String, Boolean>
 
         val calculatedUserName = when {
             gDriveConnected && !gDriveRepository.userDisplayName.isNullOrBlank() -> gDriveRepository.userDisplayName
             youtubeConnected && ytName.isNotBlank() -> ytName
-            telegramConnected && !tgName.isNullOrBlank() -> tgName
             else -> null
         }
 
         val connectedAccounts = buildList {
-            if (telegramConnected) {
-                add(
-                    ExternalAccountUiModel(
-                        service = ExternalServiceAccount.TELEGRAM,
-                        title = "Telegram",
-                        accountLabel = if (!tgName.isNullOrBlank()) tgName else "Active Telegram session",
-                        syncedContentLabel = formatCount(
-                            count = telegramChannelCount,
-                            singular = "synced channel",
-                            plural = "synced channels"
-                        ),
-                        isLoggingOut = ExternalServiceAccount.TELEGRAM in activeLogouts
-                    )
-                )
-            }
             if (gDriveConnected) {
                 add(
                     ExternalAccountUiModel(
@@ -201,7 +152,6 @@ class AccountsViewModel @Inject constructor(
         }
 
         val disconnectedServices = buildList {
-            if (!telegramConnected) add(ExternalServiceAccount.TELEGRAM)
             if (!gDriveConnected) add(ExternalServiceAccount.GOOGLE_DRIVE)
             if (!youtubeConnected) add(ExternalServiceAccount.YOUTUBE)
             if (!lastfmConnected) add(ExternalServiceAccount.LASTFM)
@@ -222,11 +172,6 @@ class AccountsViewModel @Inject constructor(
             try {
                 runCatching {
                     when (service) {
-                        ExternalServiceAccount.TELEGRAM -> {
-                            telegramRepository.logout()
-                            telegramRepository.clearMemoryCache()
-                            musicRepository.clearTelegramData()
-                        }
                         ExternalServiceAccount.GOOGLE_DRIVE -> gDriveRepository.logout()
                         ExternalServiceAccount.YOUTUBE -> {
                             datastoreRepository.saveCookies(com.unshoo.pixelmusic.data.model.youtube.Cookies(""))
