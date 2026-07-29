@@ -12,7 +12,6 @@ import com.unshoo.pixelmusic.data.model.SearchHistoryItem
 import com.unshoo.pixelmusic.data.model.SearchResultItem
 import com.unshoo.pixelmusic.data.model.Song
 import kotlinx.coroutines.flow.Flow
-import com.unshoo.pixelmusic.data.database.TelegramChannelEntity
 
 interface MusicRepository {
     /**
@@ -172,7 +171,6 @@ interface MusicRepository {
      * @return Lista de objetos Song.
      */
     suspend fun getAllSongsOnce(): List<Song>
-    suspend fun getTelegramSongsOnce(): List<Song>
 
     /**
      * Returns one representative song per unique album art URI for maintenance tools that
