@@ -423,15 +423,6 @@ class MusicService : MediaLibraryService() {
         initializeCastWearSync()
         registerHeadsetReconnectMonitor()
 
-        serviceScope.launch {
-            musicRepository.telegramRepository.downloadCompleted.collect {
-                if (isCurrentWidgetArtworkBackedByTelegram()) {
-                    invalidateCachedWidgetArtwork()
-                    requestWidgetAndWearRefreshWithFollowUp()
-                }
-            }
-        }
-
         // Restore equalizer state from preferences and only attach audio effects when
         // the user actually has at least one effect enabled for the current session.
         serviceScope.launch {
