@@ -1073,7 +1073,6 @@ class PlayerViewModel @Inject constructor(
             val uriStr = currentItem.uri
             if (uriStr.isNotBlank() && (
                 uriStr.startsWith("youtube://") ||
-                uriStr.startsWith("telegram:") ||
                 uriStr.startsWith("gdrive:")
             )) {
                 launch(Dispatchers.IO) {
@@ -4416,7 +4415,6 @@ class PlayerViewModel @Inject constructor(
             val startingUri = MediaItemBuilder.playbackUri(effectiveStartSong)
             val scheme = startingUri.scheme
             if (
-                scheme == "telegram" ||
                 scheme == "netease" ||
                 scheme == "qqmusic" ||
                 scheme == "navidrome" ||
@@ -4488,7 +4486,6 @@ class PlayerViewModel @Inject constructor(
         val originalUri = mediaItem.localConfiguration?.uri ?: return mediaItem
         val scheme = originalUri.scheme
         if (
-            scheme != "telegram" &&
             scheme != "netease" &&
             scheme != "qqmusic" &&
             scheme != "navidrome" &&
