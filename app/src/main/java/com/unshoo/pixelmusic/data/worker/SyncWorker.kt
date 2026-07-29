@@ -31,8 +31,6 @@ import com.unshoo.pixelmusic.data.database.MusicDao
 import com.unshoo.pixelmusic.data.database.SongArtistCrossRef
 import com.unshoo.pixelmusic.data.database.SongEntity
 import com.unshoo.pixelmusic.data.database.SourceType
-import com.unshoo.pixelmusic.data.database.TelegramDao // Added
-import com.unshoo.pixelmusic.data.database.TelegramSongEntity
 import com.unshoo.pixelmusic.data.database.FavoritesDao
 import com.unshoo.pixelmusic.data.database.FavoritesEntity
 import com.unshoo.pixelmusic.data.database.resolveAlbumArtUri
@@ -85,7 +83,6 @@ constructor(
         private val musicDao: MusicDao,
         private val userPreferencesRepository: UserPreferencesRepository,
         private val lyricsRepository: LyricsRepository,
-        private val telegramDao: TelegramDao,
         private val playlistPreferencesRepository: PlaylistPreferencesRepository,
         private val youtubeDatastoreRepository: com.unshoo.pixelmusic.data.remote.youtube.DatastoreRepository,
         private val favoritesDao: FavoritesDao
@@ -388,7 +385,6 @@ constructor(
                     // Sync cloud songs into the unified songs table.
                     // OPT #7: Guard each source to avoid opening Room transactions when
                     // the user hasn't configured that cloud provider.
-                    val hasTelegramChannels = telegramDao.getAllChannels().first().isNotEmpty()
                     val isYoutubeConnected = youtubeDatastoreRepository.cookies.first().toRawCookie().isNotEmpty()
                     
                     val needsActiveCloudSync = hasTelegramChannels || isYoutubeConnected
@@ -399,12 +395,6 @@ constructor(
                                 PROGRESS_PHASE to SyncProgress.SyncPhase.SYNCING_CLOUD.ordinal
                             )
                         )
-                    }
-
-                    if (hasTelegramChannels) {
-                        syncTelegramData()
-                    } else {
-                        Log.d(TAG, "Skipping Telegram sync — no channels configured.")
                     }
 
                     if (isYoutubeConnected) {
@@ -1409,30 +1399,6 @@ constructor(
                         .setConstraints(heavySyncConstraints)
                         .build()
     }
-    
-    // Logic to sync Telegram songs into main DB with Unified Library Support
-    private suspend fun syncTelegramData() {
-        Log.i(TAG, "Syncing Telegram songs to main database (Unified Mode)...")
-        try {
-            val rawTelegramSongs = telegramDao.getAllTelegramSongs().first()
-            val telegramSongs = rawTelegramSongs
-                .groupBy { "${it.title.lowercase().trim()}|${it.artist.lowercase().trim()}" }
-                .map { (_, group) ->
-                    group.maxWithOrNull(
-                        compareBy<TelegramSongEntity> { it.filePath.isNotEmpty() && java.io.File(it.filePath).exists() }
-                            .thenBy { it.dateAdded }
-                    ) ?: group.first()
-                }
-            val channels = telegramDao.getAllChannels().first().associateBy { it.chatId }
-            val existingUnifiedTelegramIds = musicDao.getAllTelegramSongIds()
-            
-            if (telegramSongs.isEmpty()) { 
-                if (existingUnifiedTelegramIds.isNotEmpty()) {
-                    musicDao.clearAllTelegramSongs()
-                }
-                Log.d(TAG, "No Telegram songs to sync.")
-                return 
-            }
 
             // 1. Pre-load Local Data for Merging
             val existingArtists = musicDao.getAllArtistsListRaw().associate { it.name.trim().lowercase() to it.id }
