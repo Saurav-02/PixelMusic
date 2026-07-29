@@ -817,10 +817,6 @@ class MainActivity : ComponentActivity() {
                             popUpTo(Screen.Home.route) { inclusive = true }
                         }
                         DrawerDestination.Settings -> navController.navigateSafely(Screen.Settings.route)
-                        DrawerDestination.Telegram -> {
-                            val intent = Intent(this@MainActivity, com.unshoo.pixelmusic.presentation.telegram.auth.TelegramLoginActivity::class.java)
-                            startActivity(intent)
-                        }
                         else -> { }
                     }
                 }
