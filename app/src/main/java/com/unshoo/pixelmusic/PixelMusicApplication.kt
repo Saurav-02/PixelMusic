@@ -15,7 +15,6 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.unshoo.pixelmusic.data.repository.ArtistImageRepository
-import com.unshoo.pixelmusic.data.telegram.TelegramRepository
 import com.unshoo.pixelmusic.presentation.viewmodel.LibraryStateHolder
 import com.unshoo.pixelmusic.presentation.viewmodel.ThemeStateHolder
 import com.unshoo.pixelmusic.utils.AlbumArtCacheManager
