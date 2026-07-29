@@ -319,9 +319,6 @@ dependencies {
         exclude(group = "androidx.compose.ui")
     }
 
-    // Projects
-    implementation(project(":shared"))
-
 
 
     // Testing (Unit)
