@@ -289,7 +289,6 @@ class PlayerViewModel @Inject constructor(
 
     private val dualPlayerEngine: DualPlayerEngine,
     private val appShortcutManager: AppShortcutManager,
-    private val telegramCacheManagerProvider: Lazy<com.unshoo.pixelmusic.data.telegram.TelegramCacheManager>,
     private val listeningStatsTracker: ListeningStatsTracker,
     private val dailyMixStateHolder: DailyMixStateHolder,
     private val lyricsStateHolder: LyricsStateHolder,
@@ -446,39 +445,6 @@ class PlayerViewModel @Inject constructor(
         connectivityStateHolder.offlinePlaybackBlocked.collect {
             Timber.w("Received offline blocked event. Showing dialog.")
             _showNoInternetDialog.emit(Unit)
-        }
-    }
-
-    private var telegramPlaybackObserversStarted = false
-
-    private fun ensureTelegramPlaybackObserversStarted() {
-        if (telegramPlaybackObserversStarted) return
-        telegramPlaybackObserversStarted = true
-
-        val telegramCacheManager = telegramCacheManagerProvider.get()
-        val telegramRepository = musicRepository.telegramRepository
-
-        viewModelScope.launch {
-            launch {
-                telegramCacheManager.embeddedArtUpdated.collect { updatedArtUri ->
-                    refreshArtwork(updatedArtUri)
-                }
-            }
-
-            launch {
-                telegramRepository.downloadCompleted.collect {
-                    val currentSong = playbackStateHolder.stablePlayerState.value.currentSong
-                    if (currentSong != null && currentSong.contentUriString.startsWith("telegram:")) {
-                        val uri = Uri.parse(currentSong.contentUriString)
-                        val chatId = uri.host?.toLongOrNull()
-                        val messageId = uri.pathSegments.firstOrNull()?.toLongOrNull()
-
-                        if (chatId != null && messageId != null) {
-                            refreshArtwork("telegram_art://$chatId/$messageId")
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -4011,22 +3977,6 @@ class PlayerViewModel @Inject constructor(
                             }
                         }
                         
-                        // Offline check for Telegram songs
-                        if (song?.contentUriString?.startsWith("telegram:") == true) {
-                            ensureTelegramPlaybackObserversStarted()
-                            val isOnline = connectivityStateHolder.isOnline.value
-                            if (!isOnline) {
-                                val fileId = song.telegramFileId
-                                if (fileId != null) {
-                                    val isCached = musicRepository.telegramRepository.isFileCached(fileId)
-                                    if (!isCached) {
-                                        playerCtrl.pause()
-                                        _showNoInternetDialog.emit(Unit)
-                                    }
-                                }
-                            }
-                        }
-
                         val resolvedDuration = if (song != null) {
                             playbackStateHolder.resolveDurationForPlaybackState(
                                 reportedDurationMs = playerCtrl.duration,
@@ -4208,28 +4158,6 @@ class PlayerViewModel @Inject constructor(
             // Adjust startSong if it was filtered out
             val validStartSong =
                 validSongs.firstOrNull { it.id == startSong.id } ?: validSongs.first()
-
-            // Offline check for the starting song if it is a Telegram song
-            if (validStartSong.contentUriString.startsWith("telegram:")) {
-                ensureTelegramPlaybackObserversStarted()
-                val isOnline = connectivityStateHolder.isOnline.value
-                val fileId = validStartSong.telegramFileId
-                
-                Timber.d("Offline Check: fileId=$fileId, contentUri=${validStartSong.contentUriString}, isOnline=$isOnline")
-
-                if (!isOnline) {
-                     if (fileId != null) {
-                          val isCached = musicRepository.telegramRepository.isFileCached(fileId)
-                          Timber.d("Offline Check: isCached=$isCached")
-                          throwIfDirectPlaybackRequestIsStale(requestToken)
-                          if (!isCached) {
-                              Timber.w("Blocked playback: Offline and not cached.")
-                              _showNoInternetDialog.tryEmit(Unit)
-                              return@launch
-                          }
-                     }
-                }
-            }
 
             // Store the original order so we can "unshuffle" later if the user turns shuffle off
             queueStateHolder.setOriginalQueueOrder(validSongs)
