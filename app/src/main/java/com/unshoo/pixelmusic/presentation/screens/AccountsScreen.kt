@@ -241,9 +241,7 @@ fun AccountsScreen(
                             )
                         },
                         onLogout = { viewModel.logout(account.service) },
-                        painter = if (account.service == ExternalServiceAccount.TELEGRAM) {
-                            painterResource(R.drawable.telegram)
-                        } else null
+                        painter = null
                     )
                 }
             }
