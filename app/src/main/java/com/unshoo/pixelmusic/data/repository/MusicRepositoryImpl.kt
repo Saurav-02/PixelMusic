@@ -103,9 +103,6 @@ class MusicRepositoryImpl @Inject constructor(
     private val searchHistoryDao: SearchHistoryDao,
     private val musicDao: MusicDao,
     private val lyricsRepository: LyricsRepository,
-    private val telegramDao: TelegramDao,
-    private val telegramCacheManagerProvider: Lazy<com.unshoo.pixelmusic.data.telegram.TelegramCacheManager>,
-    private val telegramRepositoryProvider: Lazy<com.unshoo.pixelmusic.data.telegram.TelegramRepository>,
     private val songRepository: SongRepository,
     private val favoritesDao: FavoritesDao,
     private val artistImageRepository: ArtistImageRepository,
@@ -131,12 +128,6 @@ class MusicRepositoryImpl @Inject constructor(
     @Volatile private var prefetchJob: Job? = null
     @Volatile private var currentSongArtistPrefetchJob: Job? = null
     @Volatile private var currentSongArtistPrefetchSongId: Long? = null
-    @Volatile private var telegramDownloadSyncObserverStarted = false
-    private val telegramCacheManager: com.unshoo.pixelmusic.data.telegram.TelegramCacheManager
-        get() = telegramCacheManagerProvider.get()
-    override val telegramRepository: com.unshoo.pixelmusic.data.telegram.TelegramRepository
-        get() = telegramRepositoryProvider.get()
-
     private fun normalizePath(path: String): String =
         runCatching { File(path).canonicalPath }.getOrElse { File(path).absolutePath }
 
@@ -155,19 +146,6 @@ class MusicRepositoryImpl @Inject constructor(
         )
         CachedDirFilter(dirs, apply)
     }.stateIn(repositoryScope, SharingStarted.Eagerly, CachedDirFilter())
-
-    private fun ensureTelegramDownloadSyncObserverStarted() {
-        if (telegramDownloadSyncObserverStarted) return
-        telegramDownloadSyncObserverStarted = true
-
-        repositoryScope.launch {
-            telegramRepository.songFileUpdated.collect {
-                androidx.work.WorkManager.getInstance(context).enqueue(
-                    com.unshoo.pixelmusic.data.worker.SyncWorker.incrementalSyncWork()
-                )
-            }
-        }
-    }
 
     private fun List<Artist>.missingImageCandidates(): List<Pair<Long, String>> =
         asSequence()
