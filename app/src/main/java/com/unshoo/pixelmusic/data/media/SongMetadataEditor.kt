@@ -435,7 +435,6 @@ class SongMetadataEditor(
                 )
             }
 
-             else {
                 val mediaStoreSuccess = updateMediaStoreMetadata(
                     songId = songId,
                     title = newTitle,
@@ -449,7 +448,6 @@ class SongMetadataEditor(
                 if (!mediaStoreSuccess) {
                     Timber.w("MediaStore update failed, but file was updated for songId: $songId")
                 }
-            }
 
             var storedCoverArtUri: String? = null
             updateSongArtistMetadata(
