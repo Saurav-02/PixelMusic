@@ -331,7 +331,7 @@ class LyricsRepositoryImpl @Inject constructor(
             }
 
             // Check if LRCLIB gave us a SYNCED match
-            val rankedLrcLib = rankRemoteLyricsMatches(song = song, responses = results, mode = RemoteLyricsMatchMode.AUTOMATIC)
+            val rankedLrcLib = rankRemoteLyricsMatches(song = song, responses = results, mode = RemoteLyricsMatchMode.AUTOMATIC),primaryArtist = primaryArtist
             val bestLrcLibSynced = rankedLrcLib.firstOrNull { hasSyncedLyrics(it.response) }?.response
 
             if (bestLrcLibSynced != null) {
@@ -498,6 +498,7 @@ class LyricsRepositoryImpl @Inject constructor(
         song: Song,
         responses: List<LrcLibResponse>,
         mode: RemoteLyricsMatchMode
+        primaryArtist: String
     ): List<RemoteLyricsMatch> {
         val songDurationSeconds = song.duration / 1000.0
         if (songDurationSeconds <= 0.0) return emptyList()
@@ -509,6 +510,7 @@ class LyricsRepositoryImpl @Inject constructor(
                     response = response,
                     mode = mode,
                     songDurationSeconds = songDurationSeconds
+                    primaryArtist = primaryArtist
                 ) ?: return@mapNotNull null
                 RemoteLyricsMatch(response, score)
             }
@@ -523,7 +525,8 @@ class LyricsRepositoryImpl @Inject constructor(
         song: Song,
         response: LrcLibResponse,
         mode: RemoteLyricsMatchMode,
-        songDurationSeconds: Double
+        songDurationSeconds: Double,
+        primaryArtist: String
     ): Int? {
         if (!hasLyrics(response) || response.duration <= 0.0) return null
         if (!variantDescriptorsCompatible(song, response)) return null
@@ -1180,7 +1183,8 @@ class LyricsRepositoryImpl @Inject constructor(
                 val rankedMatches = rankRemoteLyricsMatches(
                     song = song,
                     responses = uniqueResults,
-                    mode = RemoteLyricsMatchMode.CANDIDATE
+                    mode = RemoteLyricsMatchMode.CANDIDATE,
+                    primaryArtist = primaryArtist
                 )
                 val results = rankedMatches.mapNotNull { match ->
                     val response = match.response
