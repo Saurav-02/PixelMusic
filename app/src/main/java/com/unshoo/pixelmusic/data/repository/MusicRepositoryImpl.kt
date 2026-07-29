@@ -398,14 +398,6 @@ class MusicRepositoryImpl @Inject constructor(
         )?.toSong()
     }
 
-    override suspend fun saveTelegramSongs(songs: List<Song>) {
-        // Feature removed
-    }
-
-    override suspend fun replaceTelegramSongsForChannel(chatId: Long, songs: List<Song>) {
-        // Feature removed
-    }
-
     /**
      * Compute allowed parent directories by subtracting blocked dirs from all known dirs.
      * Returns Pair(allowedDirs, applyFilter) for use with Room DAO filtered queries.
