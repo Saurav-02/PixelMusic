@@ -844,10 +844,7 @@ class MusicRepositoryImpl @Inject constructor(
             applyDirectoryFilter = applyDirectoryFilter
         ).first().map { it.toSong() }
     }
-
-     override suspend fun getTelegramSongsOnce(): List<Song> = emptyList()
-
-
+    
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getDistinctAlbumArtSongs(): Flow<List<Song>> {
         return combine(
