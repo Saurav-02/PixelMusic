@@ -2404,15 +2404,6 @@ class MusicService : MediaLibraryService() {
         )
     }
 
-    private suspend fun resolveCurrentMediaIdForWear(): String? {
-        val remoteSongId = resolveCastRemoteSnapshot()?.songId
-        if (!remoteSongId.isNullOrBlank()) {
-            return remoteSongId
-        }
-        val player = engine.masterPlayer
-        return withContext(Dispatchers.Main) { player.currentMediaItem?.mediaId }
-    }
-
     private var lastWidgetPlayerInfo: PlayerInfo? = null
 
     private fun shouldUpdateWidget(old: PlayerInfo, new: PlayerInfo): Boolean {
@@ -2428,14 +2419,9 @@ class MusicService : MediaLibraryService() {
         if (old.isShuffleEnabled != new.isShuffleEnabled) return true
         if (old.repeatMode != new.repeatMode) return true
         if (old.totalDurationMs != new.totalDurationMs) return true
-        if (old.wearThemePalette != new.wearThemePalette) return true
 
         val drift = kotlin.math.abs(old.currentPositionMs - new.currentPositionMs)
         return drift > 3000L
-    }
-
-    private fun shouldPublishWearState(old: PlayerInfo, new: PlayerInfo): Boolean {
-        return shouldUpdateWidget(old, new) || old.wearQueueRevision != new.wearQueueRevision
     }
 
     private suspend fun processWidgetUpdateInternal() {
@@ -2453,33 +2439,6 @@ class MusicService : MediaLibraryService() {
         }
     }
 
-    private fun buildWearQueueRevision(
-        timeline: Timeline,
-        currentIndex: Int,
-        currentMediaId: String?,
-    ): String {
-        val remoteClient = observedCastSession?.remoteMediaClient
-            ?: castSessionManager?.currentCastSession?.remoteMediaClient
-        val remoteStatus = remoteClient?.mediaStatus
-        val remoteQueueItems = remoteStatus?.queueItems.orEmpty()
-        if (remoteQueueItems.isNotEmpty()) {
-            val remoteCurrentIndex = remoteQueueItems.indexOfFirst {
-                it.itemId == remoteStatus?.currentItemId
-            }.takeIf { it >= 0 } ?: 0
-            val remoteTokens = remoteQueueItems.map { item ->
-                item.customData
-                    ?.optString("songId")
-                    ?.takeIf { it.isNotBlank() }
-                    ?: item.media?.contentId
-                    ?: item.itemId.toString()
-            }
-            return encodeWearQueueRevision(remoteTokens, remoteStatus?.currentItemId ?: 0)
-        }
-
-        if (timeline.isEmpty) {
-            return currentMediaId.orEmpty()
-        }
-
         val window = Timeline.Window()
         val tokens = buildList(timeline.windowCount) {
             for (index in 0 until timeline.windowCount) {
@@ -2496,18 +2455,6 @@ class MusicService : MediaLibraryService() {
         }
         val safeCurrentIndex = currentIndex.coerceIn(0, (timeline.windowCount - 1).coerceAtLeast(0))
         return encodeWearQueueRevision(tokens, safeCurrentIndex)
-    }
-
-    private fun encodeWearQueueRevision(queueTokens: List<String>, currentIndex: Int): String {
-        if (queueTokens.isEmpty()) return ""
-        return buildString {
-            append(currentIndex)
-            append('|')
-            queueTokens.forEachIndexed { index, token ->
-                if (index > 0) append(',')
-                append(token)
-            }
-        }.hashCode().toString()
     }
 
     private suspend fun buildPlayerInfo(): PlayerInfo {
@@ -2638,11 +2585,6 @@ class MusicService : MediaLibraryService() {
             )
         }
         val isFavorite = isSongFavorite(mediaId)
-        val wearQueueRevision = buildWearQueueRevision(
-            timeline = snapshotTimeline,
-            currentIndex = snapshotWindowIndex,
-            currentMediaId = mediaId,
-        )
 
         val queueItems = mutableListOf<com.unshoo.pixelmusic.data.model.QueueItem>()
         // Reuse snapshotTimeline / snapshotWindowIndex captured at the top — no extra main-thread hop
@@ -3028,8 +2970,6 @@ class MusicService : MediaLibraryService() {
             lyrics = null,
             isLoadingLyrics = false,
             queue = queue.take(WIDGET_QUEUE_PREVIEW_LIMIT),
-            wearThemePalette = null,
-            wearQueueRevision = "",
         )
     }
 
