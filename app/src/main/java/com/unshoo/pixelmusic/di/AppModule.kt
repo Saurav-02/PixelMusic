@@ -538,10 +538,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideArtistImageRepository(
-        deezerApiService: DeezerApiService,
-        musicDao: MusicDao,
-        userPreferencesRepository: UserPreferencesRepository
-    ): ArtistImageRepository {
-        return ArtistImageRepository(deezerApiService, musicDao, userPreferencesRepository)
+    deezerApiService: DeezerApiService,
+    musicDao: MusicDao
+          ): ArtistImageRepository {
+      return ArtistImageRepository(deezerApiService, musicDao)
     }
 }
