@@ -324,12 +324,6 @@ object AppModule {
         )
     }
 
-    @Singleton
-    @Provides
-    fun provideTelegramDao(database: PixelMusicDatabase): com.unshoo.pixelmusic.data.database.TelegramDao {
-        return database.telegramDao()
-    }
-
     @Provides
     @Singleton
     fun provideFolderTreeBuilder(): FolderTreeBuilder {
@@ -345,7 +339,6 @@ object AppModule {
         searchHistoryDao: SearchHistoryDao,
         musicDao: MusicDao,
         lyricsRepository: LyricsRepository,
-        telegramDao: com.unshoo.pixelmusic.data.database.TelegramDao,
         songRepository: SongRepository,
         favoritesDao: FavoritesDao,
         artistImageRepository: ArtistImageRepository,
@@ -359,7 +352,6 @@ object AppModule {
             searchHistoryDao = searchHistoryDao,
             musicDao = musicDao,
             lyricsRepository = lyricsRepository,
-            telegramDao = telegramDao,
             songRepository = songRepository,
             favoritesDao = favoritesDao,
             artistImageRepository = artistImageRepository,
@@ -381,10 +373,9 @@ object AppModule {
     fun provideSongMetadataEditor(
         @ApplicationContext context: Context,
         musicDao: MusicDao,
-        telegramDao: com.unshoo.pixelmusic.data.database.TelegramDao,
         userPreferencesRepository: UserPreferencesRepository
     ): SongMetadataEditor {
-        return SongMetadataEditor(context, musicDao, telegramDao, userPreferencesRepository)
+         return SongMetadataEditor(context, musicDao, userPreferencesRepository)
     }
 
     /**
