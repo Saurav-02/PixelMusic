@@ -4424,9 +4424,6 @@ class PlayerViewModel @Inject constructor(
                 scheme == "gdrive" ||
                 scheme == "youtube"
             ) {
-                if (scheme == "telegram") {
-                    ensureTelegramPlaybackObserversStarted()
-                }
                 if (scheme == "youtube") {
                     val videoId = startingUri.toString().substringAfter("youtube://")
                     val ytSong = try {
@@ -4502,35 +4499,9 @@ class PlayerViewModel @Inject constructor(
             return mediaItem
         }
 
-        if (scheme == "telegram") {
-            ensureTelegramPlaybackObserversStarted()
-        }
-
         var finalUri = originalUri
         if (scheme == "youtube") {
-            // First check if preferTelegramAlternative is enabled
-            val preferTelegram = userPreferencesRepository.preferTelegramAlternativeFlow.first()
-            if (preferTelegram) {
-                val normalizedTitle = song.title.normalizeMetadataText()
-                val normalizedArtist = song.artist.normalizeMetadataText()
-                if (!normalizedTitle.isNullOrBlank() && !normalizedArtist.isNullOrBlank()) {
-                    val telegramSongs = musicRepository.getTelegramSongsOnce()
-                    val matchingTelegram = telegramSongs.firstOrNull {
-                        val tTitle = it.title.normalizeMetadataText()
-                        val tArtist = it.artist.normalizeMetadataText()
-                        !tTitle.isNullOrBlank() && !tArtist.isNullOrBlank() &&
-                                tTitle.equals(normalizedTitle, ignoreCase = true) &&
-                                tArtist.equals(normalizedArtist, ignoreCase = true)
-                    }
-                    if (matchingTelegram != null && matchingTelegram.contentUriString.startsWith("telegram://")) {
-                        Log.i("PlayerViewModel", "Substituting YouTube song with matching Telegram alternative: ${matchingTelegram.title} by ${matchingTelegram.artist}")
-                        ensureTelegramPlaybackObserversStarted()
-                        finalUri = Uri.parse(matchingTelegram.contentUriString)
-                    }
-                }
-            }
-
-            if (finalUri.scheme == "youtube") {
+        if (finalUri.scheme == "youtube") {
                 val videoId = finalUri.toString().substringAfter("youtube://")
                 val ytSong = try {
                     com.unshoo.pixelmusic.data.database.youtube.AppDatabase.getInstance(context).songRepository().getSong(videoId)
@@ -4542,10 +4513,6 @@ class PlayerViewModel @Inject constructor(
                     return mediaItem.buildUpon().setUri(Uri.fromFile(java.io.File(ytSong.audioFilePath))).build()
                 }
             }
-        }
-
-        if (finalUri.scheme == "telegram") {
-            ensureTelegramPlaybackObserversStarted()
         }
 
         val resolvedUri = dualPlayerEngine.resolveCloudUri(finalUri)
