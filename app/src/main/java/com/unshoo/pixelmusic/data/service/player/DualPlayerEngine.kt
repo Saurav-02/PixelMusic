@@ -35,7 +35,6 @@ import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.mp4.Mp4Extractor
 import com.unshoo.pixelmusic.data.model.TransitionSettings
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
-import com.unshoo.pixelmusic.data.telegram.TelegramRepository
 import com.unshoo.pixelmusic.utils.envelope
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -783,7 +782,6 @@ class DualPlayerEngine @Inject constructor(
         val deferred = activeResolutions.getOrPut(uriString) {
             scope.async(Dispatchers.IO) {
                 val resolved: Uri? = when (uri.scheme) {
-                    "telegram" -> resolveTelegramUriAsync(uri, uriString)
                     "gdrive" -> resolveGDriveUriAsync(uriString)
                     "youtube" -> resolveYoutubeUriAsync(uriString)
                     else -> null
@@ -808,31 +806,6 @@ class DualPlayerEngine @Inject constructor(
             activeResolutions.remove(uriString)
         }
     }
-
-    private suspend fun resolveTelegramUriAsync(uri: Uri, uriString: String): Uri? = withContext(Dispatchers.IO) {
-        val pathSegments = uri.pathSegments
-        val fileId = if (pathSegments.isNotEmpty()) {
-            telegramRepository.resolveTelegramUri(uriString)?.first
-        } else {
-            uri.host?.toIntOrNull()
-        } ?: return@withContext null
-
-        val fileInfo = telegramRepository.getFile(fileId)
-        if (fileInfo?.local?.isDownloadingCompleted == true && fileInfo.local.path.isNotEmpty()) {
-            return@withContext Uri.fromFile(File(fileInfo.local.path))
-        }
-
-        if (!connectivityStateHolder.isOnline.value) {
-            connectivityStateHolder.triggerOfflineBlockedEvent()
-            return@withContext null
-        }
-
-        if (!telegramStreamProxy.ensureReady(5_000L)) return@withContext null
-        val proxyUrl = telegramStreamProxy.getProxyUrl(fileId, 0L)
-        if (proxyUrl.isNotEmpty()) Uri.parse(proxyUrl) else null
-    }
-
-
 
     private suspend fun resolveGDriveUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
         if (!connectivityStateHolder.isOnline.value) {
