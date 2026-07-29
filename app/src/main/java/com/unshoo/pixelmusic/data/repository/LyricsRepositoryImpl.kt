@@ -331,7 +331,7 @@ class LyricsRepositoryImpl @Inject constructor(
             }
 
             // Check if LRCLIB gave us a SYNCED match
-            val rankedLrcLib = rankRemoteLyricsMatches(song = song, responses = results, mode = RemoteLyricsMatchMode.AUTOMATIC), primaryArtist = primaryArtist
+            val rankedLrcLib = rankRemoteLyricsMatches(song = song, responses = results, mode = RemoteLyricsMatchMode.AUTOMATIC, primaryArtist = primaryArtist)
             val bestLrcLibSynced = rankedLrcLib.firstOrNull { hasSyncedLyrics(it.response) }?.response
 
             if (bestLrcLibSynced != null) {
