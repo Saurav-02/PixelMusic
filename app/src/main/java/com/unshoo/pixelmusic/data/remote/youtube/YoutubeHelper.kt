@@ -499,27 +499,51 @@ object YoutubeHelper {
      * Checks the in-memory LRU cache first, then falls back to local file if available,
      * then resolves from YouTube.
      */
-    private suspend fun getTargetBitrateCeiling(context: Context): Int {
+    private suspend fun getTargetBitrateCeiling(context: Context, forDownload: Boolean = false): Int {
         return try {
             val entryPoint = dagger.hilt.android.EntryPointAccessors.fromApplication(
                 context.applicationContext,
                 YoutubeHelperEntryPoint::class.java
             )
-            val connectivityStateHolder = entryPoint.connectivityStateHolder()
             val userPreferencesRepository = entryPoint.userPreferencesRepository()
 
-            val isMetered = connectivityStateHolder.isMeteredNetwork.value
-            val forceHigh = userPreferencesRepository.forceHighQualityOnMobileFlow.first()
-
-            val targetQuality = if (isMetered && !forceHigh) {
-                userPreferencesRepository.streamingAudioQualityMobileFlow.first()
+            if (forDownload) {
+                val targetQuality = userPreferencesRepository.downloadAudioQualityFlow.first()
+                if (targetQuality == StreamingAudioQuality.HIGH) 0 else targetQuality.maxBitrateKbps
             } else {
-                userPreferencesRepository.streamingAudioQualityWifiFlow.first()
+                val connectivityStateHolder = entryPoint.connectivityStateHolder()
+                val isMetered = connectivityStateHolder.isMeteredNetwork.value
+                val forceHigh = userPreferencesRepository.forceHighQualityOnMobileFlow.first()
+
+                val targetQuality = if (isMetered && !forceHigh) {
+                    userPreferencesRepository.streamingAudioQualityMobileFlow.first()
+                } else {
+                    userPreferencesRepository.streamingAudioQualityWifiFlow.first()
+                }
+                if (targetQuality == StreamingAudioQuality.HIGH) 0 else targetQuality.maxBitrateKbps
             }
-            if (targetQuality == StreamingAudioQuality.HIGH) 0 else targetQuality.maxBitrateKbps
         } catch (e: Exception) {
             0
         }
+    }
+
+    suspend fun getDownloadUrl(context: Context, song: Song): String {
+        val videoId = song.youtubeId
+        val maxBitrate = getTargetBitrateCeiling(context, forDownload = true)
+        val cacheKey = if (maxBitrate > 0) "${videoId}_q$maxBitrate" else "${videoId}_high"
+
+        val cachedQuality = streamUrlLruCache.get(cacheKey)
+        if (cachedQuality != null && isYoutubeUrlValid(cachedQuality)) {
+            return cachedQuality
+        }
+
+        val result = getSongUrlFromYoutube(context, song, lowQuality = false, maxBitrateKbps = maxBitrate)
+        val newUri = result.first
+        streamUrlLruCache.put(cacheKey, newUri)
+        result.second?.let { streamMimeTypeLruCache.put(cacheKey, it) }
+        result.third?.let { streamBitrateLruCache.put(cacheKey, it) }
+        
+        return newUri
     }
 
     suspend fun getSongPlayerUrl(

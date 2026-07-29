@@ -750,6 +750,9 @@ class PlayerViewModel @Inject constructor(
     val albumArtQuality: StateFlow<AlbumArtQuality> = userPreferencesRepository.albumArtQualityFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AlbumArtQuality.MEDIUM)
 
+    val aodScreenEnabled: StateFlow<Boolean> = userPreferencesRepository.aodScreenEnabledFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     fun setLyricsSyncOffset(songId: String, offsetMs: Int) {
         lyricsStateHolder.setSyncOffset(songId, offsetMs)
     }
@@ -1465,7 +1468,8 @@ class PlayerViewModel @Inject constructor(
         val isRemotePlaybackActive: Boolean = false,
         val selectedRouteName: String? = null,
         val isBluetoothEnabled: Boolean = false,
-        val bluetoothName: String? = null
+        val bluetoothName: String? = null,
+        val aodScreenEnabled: Boolean = false
     )
 
     // Intermediate combine #1: 5 settings flows
@@ -1519,9 +1523,10 @@ class PlayerViewModel @Inject constructor(
 
     val fullPlayerSlice: StateFlow<FullPlayerSlice> = combine(
         fullPlayerSlicePart1,
-        fullPlayerSlicePart2
-    ) { p1, p2 ->
-        FullPlayerSlice(
+        fullPlayerSlicePart2,
+        aodScreenEnabled
+    ) { p1, p2, aodEnabled ->
+            FullPlayerSlice(
             currentSongArtists = p1.currentSongArtists,
             lyricsSyncOffset = p1.lyricsSyncOffset,
             albumArtQuality = p1.albumArtQuality,
@@ -1533,7 +1538,8 @@ class PlayerViewModel @Inject constructor(
             isRemotePlaybackActive = p2.isRemotePlaybackActive,
             selectedRouteName = p2.selectedRouteName,
             isBluetoothEnabled = p2.isBluetoothEnabled,
-            bluetoothName = p2.bluetoothName
+            bluetoothName = p2.bluetoothName,
+            aodScreenEnabled = aodEnabled
         )
     }
         .distinctUntilChanged()
@@ -4068,20 +4074,6 @@ class PlayerViewModel @Inject constructor(
                                         // Pre-resolve and cache the stream URL in LRU cache
                                         val url = com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper.getSongPlayerUrl(context, ytSong)
                                         com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper.streamUrlLruCache.put("${youtubeId}_high", url)
-
-                                        // If on WiFi, download audio file for permanent cache
-                                        if (connectivityStateHolder.isMeteredNetwork.value == false) {
-                                            val audioPath = com.unshoo.pixelmusic.data.remote.youtube.DownloadHelper.downloadAudio(context, ytSong)
-                                            if (audioPath != null) {
-                                                // Update local YouTube DB
-                                                val ytDb = com.unshoo.pixelmusic.data.database.youtube.AppDatabase.getInstance(context)
-                                                ytDb.songRepository().updateAudioPath(youtubeId, audioPath)
-
-                                                // Update unified DB
-                                                val mainId = -(15_000_000_000_000L + youtubeId.hashCode().toLong().absoluteValue)
-                                                musicRepository.updateSongFilePath(mainId, audioPath)
-                                            }
-                                        }
                                     } catch (e: Exception) {
                                         Timber.e(e, "Failed to pre-cache recently played song $youtubeId")
                                     }

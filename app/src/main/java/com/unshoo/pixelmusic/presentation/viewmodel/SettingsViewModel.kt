@@ -79,6 +79,7 @@ data class SettingsUiState(
     val libraryNavigationMode: String = LibraryNavigationMode.TAB_ROW,
     val launchTab: String = LaunchTab.HOME,
     val keepPlayingInBackground: Boolean = true,
+    val aodScreenEnabled: Boolean = false,
     val disableCastAutoplay: Boolean = false,
     val resumeOnHeadsetReconnect: Boolean = false,
     val showQueueHistory: Boolean = true,
@@ -123,6 +124,7 @@ data class SettingsUiState(
     val isSafeTokenLimitEnabled: Boolean = true,
     val streamingAudioQualityWifi: StreamingAudioQuality = StreamingAudioQuality.HIGH,
     val streamingAudioQualityMobile: StreamingAudioQuality = StreamingAudioQuality.HIGH,
+    val downloadAudioQuality: StreamingAudioQuality = StreamingAudioQuality.HIGH,
     val forceHighQualityOnMobile: Boolean = false,
     val albumArtQualityMobile: AlbumArtQuality = AlbumArtQuality.LOW,
     val cacheLikedSongsOffline: Boolean = false,
@@ -228,7 +230,8 @@ private sealed interface SettingsUiUpdate {
         val lastfmUseNowPlaying: Boolean,
         val scrobbleDelayPercent: Float,
         val scrobbleMinSongDuration: Int,
-        val scrobbleDelaySeconds: Int
+        val scrobbleDelaySeconds: Int,
+        val aodScreenEnabled: Boolean
     ) : SettingsUiUpdate
 }
 
@@ -665,7 +668,8 @@ class SettingsViewModel @Inject constructor(
                 userPreferencesRepository.lastfmUseNowPlayingFlow,
                 userPreferencesRepository.scrobbleDelayPercentFlow,
                 userPreferencesRepository.scrobbleMinSongDurationFlow,
-                userPreferencesRepository.scrobbleDelaySecondsFlow
+                userPreferencesRepository.scrobbleDelaySecondsFlow,
+                userPreferencesRepository.aodScreenEnabledFlow
             ) { values ->
                 SettingsUiUpdate.Group2(
                     keepPlayingInBackground = values[0] as Boolean,
@@ -696,12 +700,14 @@ class SettingsViewModel @Inject constructor(
                     lastfmUseNowPlaying = values[25] as Boolean,
                     scrobbleDelayPercent = values[26] as Float,
                     scrobbleMinSongDuration = values[27] as Int,
-                    scrobbleDelaySeconds = values[28] as Int
+                    scrobbleDelaySeconds = values[28] as Int,
+                    aodScreenEnabled = values[29] as Boolean
                 )
             }.collect { update ->
                 _uiState.update { state ->
                     state.copy(
                         keepPlayingInBackground = update.keepPlayingInBackground,
+                        aodScreenEnabled = update.aodScreenEnabled,
                         disableCastAutoplay = update.disableCastAutoplay,
                         resumeOnHeadsetReconnect = update.resumeOnHeadsetReconnect,
                         showQueueHistory = update.showQueueHistory,
@@ -836,6 +842,12 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferencesRepository.streamingAudioQualityMobileFlow.collect { quality ->
                 _uiState.update { it.copy(streamingAudioQualityMobile = quality) }
+            }
+        }
+        
+        viewModelScope.launch {
+            userPreferencesRepository.downloadAudioQualityFlow.collect { quality ->
+                _uiState.update { it.copy(downloadAudioQuality = quality) }
             }
         }
 
@@ -1187,6 +1199,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setAodScreenEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAodScreenEnabled(enabled)
+        }
+    }
+
     fun setDisableCastAutoplay(disabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setDisableCastAutoplay(disabled)
@@ -1396,6 +1414,12 @@ class SettingsViewModel @Inject constructor(
     fun setStreamingAudioQualityMobile(quality: StreamingAudioQuality) {
         viewModelScope.launch {
             userPreferencesRepository.setStreamingAudioQualityMobile(quality)
+        }
+    }
+
+    fun setDownloadAudioQuality(quality: StreamingAudioQuality) {
+        viewModelScope.launch {
+            userPreferencesRepository.setDownloadAudioQuality(quality)
         }
     }
 

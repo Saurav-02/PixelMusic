@@ -52,7 +52,7 @@ object DownloadHelper {
         // Changed to .m4a
         val tempOutputFile = File(cacheDir, "${song.youtubeId}_temp.m4a")
 
-        val url = YoutubeHelper.getSongPlayerUrl(context, song)
+        val url = YoutubeHelper.getDownloadUrl(context, song)
         val total = try {
             val headReq = Request.Builder().url(url).header("Range", "bytes=0-0").build()
             client.newCall(headReq).execute().use { res ->

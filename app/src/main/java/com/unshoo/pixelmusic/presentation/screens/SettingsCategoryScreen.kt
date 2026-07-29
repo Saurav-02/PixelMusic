@@ -10,6 +10,7 @@ import java.util.Locale
 import java.util.Date
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.draw.rotate
+import androidx.compose.material.icons.outlined.DarkMode
 
 import android.content.Context
 import android.content.Intent
@@ -82,6 +83,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Restore
@@ -669,7 +671,17 @@ fun SettingsCategoryScreen(
                                 )
                             }
 
-                            SettingsSubsection(title = stringResource(R.string.setcat_music_storage_limit_title)) {
+                            SettingsSubsection(title = "Download Management") {
+                                ThemeSelectorItem(
+                                    label = "Download Audio Quality",
+                                    description = "Select the default audio quality for offline music downloads.",
+                                    options = StreamingAudioQuality.entries.associate { it.name to it.label },
+                                    selectedKey = uiState.downloadAudioQuality.name,
+                                    onSelectionChanged = { key ->
+                                        settingsViewModel.setDownloadAudioQuality(StreamingAudioQuality.valueOf(key))
+                                    },
+                                    leadingIcon = { Icon(Icons.Rounded.Download, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
                                 SliderSettingsItem(
                                     label = stringResource(R.string.setcat_music_storage_limit_desc),
                                     value = storageLimitDraft,
@@ -919,37 +931,6 @@ fun SettingsCategoryScreen(
                         }
                         SettingsCategory.PLAYBACK -> {
                             SettingsSubsection(title = stringResource(R.string.setcat_background_playback)) {
-                                SettingsItem(
-                                    title = "Glowing Wave Screen Saver",
-                                    subtitle = "Set PixelMusic as your system screen saver while charging or docked",
-                                    leadingIcon = { 
-                                        Icon(
-                                            painter = painterResource(R.drawable.rounded_imagesmode_24), 
-                                            contentDescription = null, 
-                                            tint = MaterialTheme.colorScheme.secondary
-                                        ) 
-                                    },
-                                    trailingIcon = { 
-                                        Icon(
-                                            imageVector = Icons.Rounded.ChevronRight, 
-                                            contentDescription = "Open Settings", 
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        ) 
-                                    },
-                                    onClick = {
-                                        val intent = Intent(Settings.ACTION_DREAM_SETTINGS)
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        try {
-                                            context.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            Toast.makeText(
-                                                context, 
-                                                "Screen saver settings not available on this device.", 
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    }
-                                )
                                 ThemeSelectorItem(
                                     label = stringResource(R.string.setcat_keep_playing_label),
                                     description = stringResource(R.string.setcat_keep_playing_desc),
@@ -958,6 +939,13 @@ fun SettingsCategoryScreen(
                                     onSelectionChanged = { settingsViewModel.setKeepPlayingInBackground(it.toBoolean()) },
                                     leadingIcon = { Icon(Icons.Rounded.MusicNote, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
+                                SwitchSettingItem(
+                                    title = "AOD Screen",
+                                    subtitle = "Long-press the album art in Now Playing for a glowing, AMOLED-friendly ambient view. Tap anywhere to exit.",
+                                    checked = uiState.aodScreenEnabled,
+                                    onCheckedChange = { settingsViewModel.setAodScreenEnabled(it) },
+                                    leadingIcon = { Icon(Icons.Outlined.DarkMode, null, tint = MaterialTheme.colorScheme.secondary) }
+                                 )
                                 SettingsItem(
                                     title = stringResource(R.string.setcat_battery_optimization_title),
                                     subtitle = stringResource(R.string.setcat_battery_optimization_subtitle),

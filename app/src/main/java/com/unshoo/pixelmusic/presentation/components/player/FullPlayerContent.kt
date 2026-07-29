@@ -1,6 +1,8 @@
 package com.unshoo.pixelmusic.presentation.components.player
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.animation.animateColorAsState
 import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.offset
@@ -23,6 +25,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import coil.imageLoader
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.slideInVertically
@@ -296,6 +299,7 @@ fun FullPlayerContent(
     // distinctUntilChanged in the ViewModel ensures this only emits when something
     // actually changed, batching multiple rapid updates into one recomposition.
     val fullPlayerSlice by playerViewModel.fullPlayerSlice.collectAsStateWithLifecycle()
+    val aodScreenEnabled = fullPlayerSlice.aodScreenEnabled
     val currentSongArtists = fullPlayerSlice.currentSongArtists
     val lyricsSyncOffset = fullPlayerSlice.lyricsSyncOffset
     val albumArtQuality = fullPlayerSlice.albumArtQuality
@@ -315,6 +319,7 @@ fun FullPlayerContent(
     }
 
     var showFetchLyricsDialog by remember { mutableStateOf(false) }
+    var showAodScreen by remember { mutableStateOf(false) }
     var totalDrag by remember { mutableStateOf(0f) }
 
     val context = LocalContext.current
@@ -393,6 +398,18 @@ fun FullPlayerContent(
         } else {
             showLyricsSheet = true
         }
+    }
+
+    if (showAodScreen) {
+    AodScreen(
+        songTitle = song.title,
+        artistName = song.artist,
+        albumArtUriString = song.albumArtUriString,
+        isPlayingProvider = isPlayingProvider,
+        currentPositionProvider = currentPositionProvider,
+        totalDurationProvider = totalDurationProvider,
+        onDismiss = { showAodScreen = false }
+    )
     }
 
     if (showFetchLyricsDialog) {
@@ -559,6 +576,8 @@ fun FullPlayerContent(
             currentMediaItemIndex = currentQueueIndex ?: currentMediaItemIndex,
             carouselStyle = carouselStyle,
             loadingTweaks = loadingTweaks,
+            aodScreenEnabled = aodScreenEnabled,           // ADD THIS
+            onEnterAodScreen = { showAodScreen = true },
             isSheetDragGestureActive = isSheetDragGestureActive,
             expansionFractionProvider = expansionFractionProvider,
             currentSheetState = currentSheetState,
@@ -965,53 +984,92 @@ fun FullPlayerContent(
                 .graphicsLayer { alpha = contentAlpha }
         ) {
             if (isImmersive && !isImmersiveExtended) {
-                // ==========================================
-                // 1. STANDARD IMMERSIVE MODE
-                // ==========================================
-                val bgColor = LocalMaterialTheme.current.surface 
-                val isDarkTheme = LocalPixelMusicDarkTheme.current
-                
-                Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-                    // LAYER 1: Truly Full-Screen Album Cover
-                    SmartImage(
-                        model = song.albumArtUriString,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop, // Fills the entire screen edge-to-edge
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    
-                    // LAYER 2: Apple Music Style Gradient Mask
-                    // Fades the image smoothly into the background color
-                    // right where your controls naturally sit.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colorStops = arrayOf(
-                                        0.0f to Color.Transparent,
-                                        0.35f to Color.Transparent, // Image stays perfectly clear for the top area
-                                        0.60f to bgColor.copy(alpha = 0.85f), // Smooth transition
-                                        0.80f to bgColor, // Solid background exactly behind your controls
-                                        1.0f to bgColor
-                                    )
-                                )
-                            )
-                    )
+    // ==========================================
+    // 1. STANDARD IMMERSIVE MODE
+    // ==========================================
+    val bgColor = LocalMaterialTheme.current.surface
+    val isDarkTheme = LocalPixelMusicDarkTheme.current
+    val context = LocalContext.current
+    val highResAlbumArtUri = remember(song.albumArtUriString) {
+    val rawUri = song.albumArtUriString ?: ""
+    when {
+        rawUri.contains("ggpht.com") || rawUri.contains("googleusercontent.com") -> {
+            rawUri.replace(Regex("=w\\d+-h\\d+"), "=w1200-h1200")
+                  .replace(Regex("=s\\d+"), "=s1200")
+        }
+        else -> rawUri
+    }
+    }
 
-                    // LAYER 3: Subtle top shadow for status bar and top buttons readability
+    // Material-You style wash extracted from the cover art. Falls back to
+    // the normal surface color while loading or if extraction fails.
+    var extractedColor by remember { mutableStateOf(bgColor) }
+    LaunchedEffect(highResAlbumArtUri, isDarkTheme) {
+    extractedColor = extractDominantColor(context, highResAlbumArtUri, bgColor, isDarkTheme)
+    }
+    val washColor by animateColorAsState(
+                    targetValue = androidx.compose.ui.graphics.lerp(bgColor, extractedColor, 0.5f),
+                    animationSpec = tween(500),
+                    label = "immersiveWashColor"
+                )
+
+                Box(modifier = Modifier.fillMaxSize().background(washColor)) {   // ADD THIS
+                    Column(modifier = Modifier.fillMaxSize()) {                  // ADD THIS
+                        BoxWithConstraints {
+                            val maxImageHeight = maxHeight * 0.42f
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = maxImageHeight)
+                                    .combinedClickable(              // ADD THIS
+                                        onClick = {},
+                                        onLongClick = { if (aodScreenEnabled) showAodScreen = true }
+                                     )
+                            ) {
+                                SmartImage(
+                                    model = highResAlbumArtUri,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    targetSize = coil.size.Size.ORIGINAL,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colorStops = arrayOf(
+                                                    0.0f to Color.Transparent,
+                                                    0.55f to Color.Transparent,
+                                                    0.80f to washColor.copy(alpha = 0.85f),
+                                                    1.0f to washColor
+                                                )
+                                            )
+                                        )
+                                )
+                            }
+                        }
+
+                        // LAYER 3: Everything below the image is solid wash color
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .background(washColor)
+                        )
+                    }   // ADD THIS — closes Column
+
+                    // LAYER 4: Subtle top shadow for status bar readability
                     Box(modifier = Modifier
                         .fillMaxWidth()
                         .height(130.dp)
                         .align(Alignment.TopCenter)
                         .background(Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.45f), 
-                                Color.Transparent
-                            )
+                            colors = listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent)
                         ))
                     )
-                }
+                }   // ADD THIS — closes outer Box
             } else if (isImmersiveExtended) {
                 // ==========================================
                 // 2. IMMERSIVE EXTENDED MODE (TOP HALF ONLY)
@@ -1037,10 +1095,15 @@ fun FullPlayerContent(
                         model = highResAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop, 
+                        targetSize = coil.size.Size.ORIGINAL,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .fillMaxWidth()
                             .fillMaxHeight(0.55f) // Restricts the image to slightly over 50% of the screen height
+                            .combinedClickable(              // ADD THIS
+                                onClick = {},
+                                onLongClick = { if (aodScreenEnabled) showAodScreen = true }
+                            )
                     )
                     
                     // LAYER 2: Gradient Mask to blend the bottom edge of the image smoothly into the background color
@@ -1469,6 +1532,8 @@ private fun FullPlayerAlbumCoverSection(
     requestedScrollIndex: Int?,
     onSongSelected: (Song) -> Unit,
     onAlbumClick: (Song) -> Unit,
+    aodScreenEnabled: Boolean,        // ADD THIS
+    onEnterAodScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val shouldDelay = loadingTweaks.delayAll || loadingTweaks.delayAlbumCarousel
@@ -1544,6 +1609,7 @@ private fun FullPlayerAlbumCoverSection(
                     }
                 },
                 onAlbumClick = onAlbumClick,
+                onAlbumLongPress = { if (aodScreenEnabled) onEnterAodScreen() },
                 carouselStyle = carouselStyle,
                 modifier = Modifier
                     .height(carouselHeight)
@@ -1752,6 +1818,34 @@ private fun predictSkipPreviousCarouselIndex(
         safeCurrentIndex > 0 -> safeCurrentIndex - 1
         repeatMode == Player.REPEAT_MODE_ALL -> queue.lastIndex
         else -> null
+    }
+}
+
+suspend fun extractDominantColor(
+    context: Context,
+    uriString: String?,
+    fallback: Color,
+    isDarkTheme: Boolean
+): Color = withContext(Dispatchers.IO) {
+    if (uriString.isNullOrBlank()) return@withContext fallback
+    try {
+        val request = coil.request.ImageRequest.Builder(context)
+            .data(uriString)
+            .allowHardware(false) // Palette needs a software bitmap
+            .size(160, 160)       // small = fast, plenty for color extraction
+            .build()
+        val result = context.imageLoader.execute(request)
+        val bitmap = (result.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+            ?: return@withContext fallback
+        val palette = androidx.palette.graphics.Palette.from(bitmap).generate()
+        val swatch = if (isDarkTheme) {
+            palette.darkMutedSwatch ?: palette.dominantSwatch ?: palette.mutedSwatch
+        } else {
+            palette.lightMutedSwatch ?: palette.mutedSwatch ?: palette.dominantSwatch
+        }
+        swatch?.let { Color(it.rgb) } ?: fallback
+    } catch (e: Exception) {
+        fallback
     }
 }
 

@@ -236,6 +236,7 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.material)
+    implementation("androidx.palette:palette-ktx:1.0.0")
     implementation(libs.androidx.appcompat)
     implementation("androidx.webkit:webkit:1.16.0")
 

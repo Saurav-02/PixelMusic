@@ -119,6 +119,53 @@ class DownloadRepository(appContext: Context) {
 
     suspend fun isSongDownloaded(youtubeId: String): Boolean {
         val song = localSongRepository.getSong(youtubeId)
+        val path = song?.audioFilePath
+        
+        if (path.isNullOrBlank() && song?.downloaded != true) {
+            return false
+        }
+        
+        if (!path.isNullOrBlank()) {
+            return try {
+                if (path.startsWith("content://")) {
+                    val uri = android.net.Uri.parse(path)
+                    var actuallyExists = false
+                    
+                    // 1. Try to get the actual physical path from MediaStore
+                    val cursor = _appContext.contentResolver.query(
+                        uri, 
+                        arrayOf(android.provider.MediaStore.MediaColumns.DATA), 
+                        null, null, null
+                    )
+                    
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val physicalPath = cursor.getString(0)
+                        if (physicalPath != null) {
+                            actuallyExists = File(physicalPath).exists()
+                        }
+                    }
+                    cursor?.close()
+                    
+                    // 2. Fallback: try opening a file descriptor
+                    if (!actuallyExists) {
+                        try {
+                            val afd = _appContext.contentResolver.openAssetFileDescriptor(uri, "r")
+                            afd?.close()
+                            actuallyExists = true
+                        } catch (e: Exception) {
+                            actuallyExists = false
+                        }
+                    }
+                    
+                    actuallyExists
+                } else {
+                    File(path).exists()
+                }
+            } catch (e: Exception) {
+                false
+            }
+        }
+        
         return song?.downloaded == true
     }
 
