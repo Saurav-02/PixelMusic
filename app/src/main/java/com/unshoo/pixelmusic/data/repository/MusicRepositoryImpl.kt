@@ -878,10 +878,7 @@ class MusicRepositoryImpl @Inject constructor(
         ).first().map { it.toSong() }
     }
 
-    override suspend fun getTelegramSongsOnce(): List<Song> = withContext(Dispatchers.IO) {
-        musicDao.getSongsBySourceType(SourceType.TELEGRAM).map { it.toSong() }
-    }
-
+     override suspend fun getTelegramSongsOnce(): List<Song> = emptyList()
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -1285,15 +1282,7 @@ class MusicRepositoryImpl @Inject constructor(
         return if (longId != null) {
             musicDao.getSongById(longId).map { it?.toSong() }.flowOn(Dispatchers.IO)
         } else {
-            combine(
-                telegramDao.getSongsByIds(listOf(songId)),
-                telegramDao.getAllChannels()
-            ) { songs, channels ->
-                val channelMap = channels.associateBy { it.chatId }
-                songs.firstOrNull()?.let {
-                    it.toSong(channelTitle = channelMap[it.chatId]?.title)
-                }
-            }.flowOn(Dispatchers.IO)
+            kotlinx.coroutines.flow.flowOf(null)
         }
     }
 
