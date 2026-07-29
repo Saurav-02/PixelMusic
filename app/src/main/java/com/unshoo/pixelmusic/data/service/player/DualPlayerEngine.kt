@@ -76,11 +76,7 @@ data class ActiveDecoderInfo(
 @Singleton
 class DualPlayerEngine @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val telegramRepository: TelegramRepository,
-    private val telegramStreamProxy: com.unshoo.pixelmusic.data.telegram.TelegramStreamProxy,
-
     private val gdriveStreamProxy: com.unshoo.pixelmusic.data.gdrive.GDriveStreamProxy,
-    private val telegramCacheManager: com.unshoo.pixelmusic.data.telegram.TelegramCacheManager,
     private val connectivityStateHolder: com.unshoo.pixelmusic.presentation.viewmodel.ConnectivityStateHolder,
     private val exoCache: com.unshoo.pixelmusic.data.remote.youtube.ExoCache,
     private val userPreferencesRepository: UserPreferencesRepository
@@ -89,7 +85,7 @@ class DualPlayerEngine @Inject constructor(
         private const val AUDIO_OFFLOAD_BUFFERING_FALLBACK_MS = 4_000L
         private const val MAX_AUXILIARY_TIMELINE_ITEMS = 200
         private val LOCAL_MEDIA_SCHEMES = setOf("content", "file", "android.resource")
-        private val REMOTE_MEDIA_SCHEMES = setOf("http", "https", "telegram", "gdrive", "youtube")
+        private val REMOTE_MEDIA_SCHEMES = setOf("http", "https", "gdrive", "youtube")
     }
 
     data class TransitionTarget(
@@ -241,18 +237,6 @@ class DualPlayerEngine @Inject constructor(
             }
 
             val uri = mediaItem?.localConfiguration?.uri
-            if (uri?.scheme == "telegram") {
-                scope.launch {
-                    val result = telegramRepository.resolveTelegramUri(uri.toString())
-                    val fileId = result?.first
-                    telegramCacheManager.setActivePlayback(fileId)
-                    Timber.tag("DualPlayerEngine").d("Telegram playback active: fileId=$fileId")
-                }
-            } else {
-                telegramCacheManager.setActivePlayback(null)
-            }
-            applyWakeModeForCurrentItem()
-
             // --- Pre-Resolve Next/Prev Tracks with Debounce to prevent flooding ---
             preResolutionJob?.cancel()
             preResolutionJob = scope.launch {
@@ -275,7 +259,7 @@ class DualPlayerEngine @Inject constructor(
 
                         for (uriToResolve in itemsToPreResolve) {
                             val scheme = uriToResolve.scheme
-                            if (scheme == "telegram" || scheme == "netease" || scheme == "qqmusic" || scheme == "navidrome" || scheme == "jellyfin" || scheme == "gdrive" || scheme == "youtube") {
+                            if (scheme == "netease" || scheme == "qqmusic" || scheme == "navidrome" || scheme == "jellyfin" || scheme == "gdrive" || scheme == "youtube") {
                                 resolveCloudUri(uriToResolve)
                             }
                         }
