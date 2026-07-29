@@ -1432,21 +1432,7 @@ class MusicRepositoryImpl @Inject constructor(
 
     override suspend fun deleteById(id: Long) {
         musicDao.deleteById(id)
-    }
-
-        // Create/update the per-topic app playlist
-        telegramRepository.updateAppPlaylistForTopic(chatId, threadId, topicName, entities)
-
-        // Best-effort sync trigger: if no worker is in flight yet, KEEP enqueues a fresh
-        // incremental run that will catch the rows being committed during the topic
-        // loop. This is the safety net for forum flows that fail mid-loop and never
-        // reach the final saveTelegramChannel() call (the dashboard's syncForumChannel
-        // path in particular — its only sync trigger is the end-of-flow channel save).
-        // Subsequent topic insertions are no-ops here because the existing worker is
-        // running; the calling VM's finally block ensures a follow-up sync runs
-        // afterwards to pick up rows added past the worker's Telegram phase.
-        requestTelegramUnifiedSync()
-    }
+     }
 
     override suspend fun getSongIdsSorted(
         sortOption: SortOption,
