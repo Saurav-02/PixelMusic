@@ -2439,24 +2439,6 @@ class MusicService : MediaLibraryService() {
         }
     }
 
-        val window = Timeline.Window()
-        val tokens = buildList(timeline.windowCount) {
-            for (index in 0 until timeline.windowCount) {
-                timeline.getWindow(index, window)
-                val mediaItem = window.mediaItem
-                add(
-                    mediaItem.mediaId.ifBlank {
-                        mediaItem.localConfiguration?.uri?.toString()
-                            ?: mediaItem.mediaMetadata.title?.toString()
-                            ?: index.toString()
-                    }
-                )
-            }
-        }
-        val safeCurrentIndex = currentIndex.coerceIn(0, (timeline.windowCount - 1).coerceAtLeast(0))
-        return encodeWearQueueRevision(tokens, safeCurrentIndex)
-    }
-
     private suspend fun buildPlayerInfo(): PlayerInfo {
         val player = engine.masterPlayer
         // Batch all main-thread reads into a single context switch (was 7 separate hops → 1)
