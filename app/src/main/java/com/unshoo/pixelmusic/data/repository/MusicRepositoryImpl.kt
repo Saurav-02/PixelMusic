@@ -399,31 +399,11 @@ class MusicRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveTelegramSongs(songs: List<Song>) {
-        val entities = songs.mapNotNull { it.toTelegramEntity() }
-        if (entities.isNotEmpty()) {
-            ensureTelegramDownloadSyncObserverStarted()
-            telegramDao.insertSongs(entities)
-            telegramRepository.warmUpArtworkForSongs(entities)
-            // Trigger sync to update main DB
-            androidx.work.WorkManager.getInstance(context).enqueue(
-                com.unshoo.pixelmusic.data.worker.SyncWorker.incrementalSyncWork()
-            )
-        }
+        // Feature removed
     }
 
     override suspend fun replaceTelegramSongsForChannel(chatId: Long, songs: List<Song>) {
-        val entities = songs.mapNotNull { it.toTelegramEntity() }.filter { it.chatId == chatId }
-        ensureTelegramDownloadSyncObserverStarted()
-        telegramDao.deleteSongsByChatId(chatId)
-        if (entities.isNotEmpty()) {
-            telegramDao.insertSongs(entities)
-            telegramRepository.warmUpArtworkForSongs(entities)
-        }
-        // Sync into the unified `songs` table is triggered later by saveTelegramChannel().
-        // We deliberately do NOT enqueue here: the SyncWorker gates Telegram processing on
-        // an existing channel row (telegramDao.getAllChannels()), and on first add this
-        // function runs BEFORE the channel entity is persisted. Triggering here would race
-        // and skip the sync, leaving songs invisible until the next app launch.
+        // Feature removed
     }
 
     /**
