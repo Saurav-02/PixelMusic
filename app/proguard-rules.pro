@@ -80,6 +80,20 @@
 -keep class com.unshoo.pixelmusic.data.database.SearchHistoryEntity { *; }
 -keep class com.unshoo.pixelmusic.data.database.TransitionRuleEntity { *; }
 
+# Netty channel classes are instantiated reflectively and require public no-arg constructors.
+# Without these, release builds can fail with:
+# "IllegalArgumentException: Class NioServerSocketChannel does not have a public non-arg constructor"
+-keep class io.netty.channel.socket.nio.NioServerSocketChannel { public <init>(); }
+-keep class io.netty.channel.socket.nio.NioSocketChannel { public <init>(); }
+-keep class io.netty.channel.epoll.EpollServerSocketChannel { public <init>(); }
+-keep class io.netty.channel.epoll.EpollSocketChannel { public <init>(); }
+-keep class io.netty.channel.kqueue.KQueueServerSocketChannel { public <init>(); }
+-keep class io.netty.channel.kqueue.KQueueSocketChannel { public <init>(); }
+
+# Ktor server engine classes (CIO and internals) — prevent R8 from stripping
+# service-loaded or reflectively-accessed engine wiring.
+-keep class io.ktor.server.engine.** { *; }
+-keep class io.ktor.server.cio.** { *; }
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
 
@@ -143,6 +157,21 @@
 
 # Keep Kotlin reflection if needed by Ktor/Serialization in Release
 -keep class kotlin.reflect.** { *; }
+
+# TDLib (Telegram Database Library) rules
+-keep class org.drinkless.tdlib.** { *; }
+-keep interface org.drinkless.tdlib.** { *; }
+
+# Ktor & Netty Rules (Crucial for StreamProxy)
+-keep class org.slf4j.** { *; }
+
+# Ktor Specific
+-dontwarn io.ktor.**
+-dontwarn kotlinx.coroutines.**
+-dontwarn io.netty.**
+
+# Ensure internal server can start
+-keep class com.unshoo.pixelmusic.data.telegram.TelegramStreamProxy { *; }
 
 # Kuromoji
 -keep class com.atilika.kuromoji.** { *; }
