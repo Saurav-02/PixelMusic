@@ -41,10 +41,9 @@ fun InstagramPromoDialog(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Profile Image
+                // Profile Image matching your drawable
                 Image(
-                    // TODO: Update with your actual drawable name
-                    painter = painterResource(id = R.drawable.your_instagram_photo), 
+                    painter = painterResource(id = R.drawable.saurav_profile), 
                     contentDescription = "Developer Profile",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
