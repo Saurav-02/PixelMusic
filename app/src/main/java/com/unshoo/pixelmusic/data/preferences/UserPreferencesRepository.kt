@@ -194,6 +194,7 @@ constructor(
         val USE_SMOOTH_CORNERS = booleanPreferencesKey("use_smooth_corners")
         val AOD_SCREEN_ENABLED = booleanPreferencesKey("aod_screen_enabled")
         val KEEP_PLAYING_IN_BACKGROUND = booleanPreferencesKey("keep_playing_in_background")
+        val EXTREME_DATA_SAVER_ENABLED = booleanPreferencesKey("extreme_data_saver_enabled") // ADD THIS LINE
         val IS_CROSSFADE_ENABLED = booleanPreferencesKey("is_crossfade_enabled")
         val HI_FI_MODE_ENABLED = booleanPreferencesKey("hi_fi_mode_enabled")
         val CROSSFADE_DURATION = intPreferencesKey("crossfade_duration")
@@ -1077,6 +1078,17 @@ constructor(
             dataStore.data.map { preferences ->
                 preferences[PreferencesKeys.KEEP_PLAYING_IN_BACKGROUND] ?: true
             }
+
+    val extremeDataSaverEnabledFlow: Flow<Boolean> =
+            dataStore.data.map { preferences ->
+                preferences[PreferencesKeys.EXTREME_DATA_SAVER_ENABLED] ?: false
+            }.distinctUntilChanged()
+
+    suspend fun setExtremeDataSaverEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.EXTREME_DATA_SAVER_ENABLED] = enabled
+        }
+    }
 
     val aodScreenEnabledFlow: Flow<Boolean> =
             dataStore.data.map { preferences ->
