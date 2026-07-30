@@ -94,7 +94,7 @@ import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.preferences.CollagePattern
 import com.unshoo.pixelmusic.presentation.components.AlbumArtCollage
 import com.unshoo.pixelmusic.presentation.components.BetaInfoBottomSheet
-import com.unshoo.pixelmusic.presentation.components.Beta05CleanInstallDisclaimerDialog
+import com.unshoo.pixelmusic.presentation.components.InstagramPromoDialog
 import com.unshoo.pixelmusic.presentation.components.ChangelogBottomSheet
 import com.unshoo.pixelmusic.presentation.components.DailyMixSection
 import com.unshoo.pixelmusic.presentation.components.HomeGradientTopBar
@@ -115,7 +115,6 @@ import com.unshoo.pixelmusic.presentation.model.mapRecentlyPlayedSongs
 import com.unshoo.pixelmusic.presentation.components.subcomps.PlayingEqIcon
 import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.components.StreamingProviderSheet
-import com.unshoo.pixelmusic.presentation.telegram.auth.TelegramLoginActivity
 import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.SettingsViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.StatsViewModel
@@ -657,12 +656,11 @@ fun HomeScreen(
         )
     }
     if (shouldShowCleanInstallDisclaimer) {
-        Beta05CleanInstallDisclaimerDialog(
-            onDismiss = { dontShowAgain ->
+        InstagramPromoDialog(
+            onDismiss = {
+                // Instantly mark it as dismissed forever so it never annoys the user again!
                 cleanInstallDisclaimerDismissedThisSession = true
-                if (dontShowAgain) {
-                    settingsViewModel.setBeta05CleanInstallDisclaimerDismissed(true)
-                }
+                settingsViewModel.setBeta05CleanInstallDisclaimerDismissed(true)
             }
         )
     }

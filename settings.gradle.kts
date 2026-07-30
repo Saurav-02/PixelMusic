@@ -39,5 +39,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "PixelMusic"
 include(":app")
-include(":shared")
 include(":baselineprofile")

@@ -324,12 +324,6 @@ object AppModule {
         )
     }
 
-    @Singleton
-    @Provides
-    fun provideTelegramDao(database: PixelMusicDatabase): com.unshoo.pixelmusic.data.database.TelegramDao {
-        return database.telegramDao()
-    }
-
     @Provides
     @Singleton
     fun provideFolderTreeBuilder(): FolderTreeBuilder {
@@ -345,9 +339,6 @@ object AppModule {
         searchHistoryDao: SearchHistoryDao,
         musicDao: MusicDao,
         lyricsRepository: LyricsRepository,
-        telegramDao: com.unshoo.pixelmusic.data.database.TelegramDao,
-        telegramCacheManager: Lazy<com.unshoo.pixelmusic.data.telegram.TelegramCacheManager>,
-        telegramRepository: Lazy<com.unshoo.pixelmusic.data.telegram.TelegramRepository>,
         songRepository: SongRepository,
         favoritesDao: FavoritesDao,
         artistImageRepository: ArtistImageRepository,
@@ -361,9 +352,6 @@ object AppModule {
             searchHistoryDao = searchHistoryDao,
             musicDao = musicDao,
             lyricsRepository = lyricsRepository,
-            telegramDao = telegramDao,
-            telegramCacheManagerProvider = telegramCacheManager,
-            telegramRepositoryProvider = telegramRepository,
             songRepository = songRepository,
             favoritesDao = favoritesDao,
             artistImageRepository = artistImageRepository,
@@ -385,10 +373,9 @@ object AppModule {
     fun provideSongMetadataEditor(
         @ApplicationContext context: Context,
         musicDao: MusicDao,
-        telegramDao: com.unshoo.pixelmusic.data.database.TelegramDao,
         userPreferencesRepository: UserPreferencesRepository
     ): SongMetadataEditor {
-        return SongMetadataEditor(context, musicDao, telegramDao, userPreferencesRepository)
+         return SongMetadataEditor(context, musicDao, userPreferencesRepository)
     }
 
     /**
@@ -551,9 +538,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideArtistImageRepository(
-        deezerApiService: DeezerApiService,
-        musicDao: MusicDao
-    ): ArtistImageRepository {
-        return ArtistImageRepository(deezerApiService, musicDao)
+    deezerApiService: DeezerApiService,
+    musicDao: MusicDao
+          ): ArtistImageRepository {
+      return ArtistImageRepository(deezerApiService, musicDao)
     }
 }

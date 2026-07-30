@@ -2,11 +2,20 @@ package com.unshoo.pixelmusic.presentation.components.player
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +49,9 @@ fun AodScreen(
     isPlayingProvider: () -> Boolean,
     currentPositionProvider: () -> Long,
     totalDurationProvider: () -> Long,
+    onPlayPauseClick: () -> Unit,
+    onSkipNextClick: () -> Unit,
+    onSkipPreviousClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     Dialog(
@@ -52,7 +64,6 @@ fun AodScreen(
         val context = LocalContext.current
         val view = LocalView.current
 
-        // Access the specific window holding the Dialog to hide the status bar
         val dialogWindow = (view.parent as? DialogWindowProvider)?.window
 
         DisposableEffect(dialogWindow) {
@@ -87,7 +98,6 @@ fun AodScreen(
 
         var glowColor by remember { mutableStateOf(Color(0xFF888888)) }
         LaunchedEffect(highResAlbumArtUri) {
-            // Assuming extractDominantColor is handled elsewhere in your codebase
             glowColor = extractDominantColor(context, highResAlbumArtUri, Color(0xFF888888), isDarkTheme = true)
         }
 
@@ -119,18 +129,19 @@ fun AodScreen(
                     detectTapGestures(
                         onDoubleTap = { onDismiss() }
                     )
-                },
-            contentAlignment = Alignment.Center
+                }
         ) {
-            Column(
+             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth() 
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     // Ambient radial glow animation
                     Box(
                         modifier = Modifier
-                            .requiredSize(380.dp) // Larger than the album art to allow the glow to show
+                            .requiredSize(340.dp)
                             .graphicsLayer {
                                 scaleX = glowScale
                                 scaleY = glowScale
@@ -139,32 +150,32 @@ fun AodScreen(
                             .background(
                                 brush = Brush.radialGradient(
                                     colors = listOf(
-                                        glowColor.copy(alpha = 0.7f), // Solid color in the center
-                                        Color.Transparent             // Fading to transparent at the edges
+                                        glowColor.copy(alpha = 0.7f),
+                                        Color.Transparent
                                     )
                                 )
                             )
                     )
 
-                    // The sharp, in-focus art on top
+                    // Sharp, in-focus, circular art — sized down from before
                     SmartImage(
                         model = highResAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         targetSize = coil.size.Size.ORIGINAL,
                         modifier = Modifier
-                            .size(240.dp)
-                            .clip(RoundedCornerShape(24.dp))
+                            .size(200.dp)
+                            .clip(CircleShape)
                     )
                 }
 
-                Spacer(Modifier.height(48.dp))
+                Spacer(Modifier.height(40.dp))
 
                 Text(
                     text = songTitle,
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = Color.White.copy(alpha = 0.95f),
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     maxLines = 1,
                     modifier = Modifier.padding(horizontal = 32.dp)
                 )
@@ -177,21 +188,114 @@ fun AodScreen(
                     modifier = Modifier.padding(horizontal = 32.dp)
                 )
 
-                Spacer(Modifier.height(36.dp))
+                Spacer(Modifier.height(40.dp))
 
                 val totalMs = totalDurationProvider()
                 val progress = if (totalMs > 0) (positionMs.toFloat() / totalMs.toFloat()).coerceIn(0f, 1f) else 0f
 
-                LinearWavyProgressIndicator(
-                    progress = { progress },
+                // Two-tone progress track with a thumb divider, matching the
+                // reference: solid white "played" portion, dim gray
+                // "remaining" portion, thin vertical white thumb at the seam.
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(50)),
-                    color = glowColor,
-                    trackColor = glowColor.copy(alpha = 0.2f)
-                )
+                        .fillMaxWidth(0.72f)
+                        .height(4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(progress.coerceAtLeast(0.001f))
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.White)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(3.dp)
+                            .height(18.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.White)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight((1f - progress).coerceAtLeast(0.001f))
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.White.copy(alpha = 0.25f))
+                    )
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.72f),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = formatAodTime(positionMs),
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        text = formatAodTime(totalMs),
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 14.sp
+                    )
+                }
+
+                Spacer(Modifier.height(28.dp))
+
+                // Transport controls
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(36.dp)
+                ) {
+                    IconButton(onClick = onSkipPreviousClick, modifier = Modifier.size(44.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.SkipPrevious,
+                            contentDescription = "Previous",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = onPlayPauseClick
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isPlayingProvider()) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                            contentDescription = if (isPlayingProvider()) "Pause" else "Play",
+                            tint = Color.Black,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+
+                    IconButton(onClick = onSkipNextClick, modifier = Modifier.size(44.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.SkipNext,
+                            contentDescription = "Next",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+private fun formatAodTime(ms: Long): String {
+    val totalSeconds = (ms / 1000).coerceAtLeast(0)
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%d:%02d".format(minutes, seconds)
 }

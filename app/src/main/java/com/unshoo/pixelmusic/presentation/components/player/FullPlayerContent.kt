@@ -408,6 +408,9 @@ fun FullPlayerContent(
         isPlayingProvider = isPlayingProvider,
         currentPositionProvider = currentPositionProvider,
         totalDurationProvider = totalDurationProvider,
+        onPlayPauseClick = { playerViewModel.playPause() },
+        onSkipNextClick = { playerViewModel.nextSong() },
+        onSkipPreviousClick = { playerViewModel.previousSong() },
         onDismiss = { showAodScreen = false }
     )
     }

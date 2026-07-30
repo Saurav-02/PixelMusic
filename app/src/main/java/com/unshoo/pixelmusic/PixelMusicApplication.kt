@@ -15,7 +15,6 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.unshoo.pixelmusic.data.repository.ArtistImageRepository
-import com.unshoo.pixelmusic.data.telegram.TelegramRepository
 import com.unshoo.pixelmusic.presentation.viewmodel.LibraryStateHolder
 import com.unshoo.pixelmusic.presentation.viewmodel.ThemeStateHolder
 import com.unshoo.pixelmusic.utils.AlbumArtCacheManager
@@ -43,11 +42,6 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
     lateinit var imageLoader: dagger.Lazy<ImageLoader>
 
     @Inject
-    lateinit var telegramCoilFetcherFactory: dagger.Lazy<com.unshoo.pixelmusic.data.image.TelegramCoilFetcher.Factory>
-
-
-
-    @Inject
     lateinit var localArtworkCoilFetcherFactory: dagger.Lazy<com.unshoo.pixelmusic.data.image.LocalArtworkCoilFetcher.Factory>
 
     @Inject
@@ -55,9 +49,6 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
 
     @Inject
     lateinit var artistImageRepository: dagger.Lazy<ArtistImageRepository>
-
-    @Inject
-    lateinit var telegramRepository: dagger.Lazy<TelegramRepository>
 
     @Inject
     lateinit var libraryStateHolder: dagger.Lazy<LibraryStateHolder>
@@ -180,7 +171,6 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
         return imageLoader.get().newBuilder()
             .components {
                 add(localArtworkCoilFetcherFactory.get())
-                add(telegramCoilFetcherFactory.get())
             }
             .build()
     }
@@ -205,7 +195,6 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
             level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN
         ) {
             artistImageRepository.get().clearCache()
-            telegramRepository.get().clearMemoryCache()
             MediaMetadataRetrieverPool.clear()
         }
 

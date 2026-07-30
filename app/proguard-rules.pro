@@ -94,7 +94,6 @@
 # service-loaded or reflectively-accessed engine wiring.
 -keep class io.ktor.server.engine.** { *; }
 -keep class io.ktor.server.cio.** { *; }
-
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
 
@@ -156,6 +155,9 @@
 -dontwarn org.eclipse.jetty.npn.NextProtoNego$ServerProvider
 -dontwarn org.eclipse.jetty.npn.NextProtoNego
 
+# Keep Kotlin reflection if needed by Ktor/Serialization in Release
+-keep class kotlin.reflect.** { *; }
+
 # TDLib (Telegram Database Library) rules
 -keep class org.drinkless.tdlib.** { *; }
 -keep interface org.drinkless.tdlib.** { *; }
@@ -170,9 +172,6 @@
 
 # Ensure internal server can start
 -keep class com.unshoo.pixelmusic.data.telegram.TelegramStreamProxy { *; }
-
-# Keep Kotlin reflection if needed by Ktor/Serialization in Release
--keep class kotlin.reflect.** { *; }
 
 # Kuromoji
 -keep class com.atilika.kuromoji.** { *; }

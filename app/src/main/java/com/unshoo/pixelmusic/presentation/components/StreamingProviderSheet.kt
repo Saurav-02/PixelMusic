@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.unshoo.pixelmusic.R
-import com.unshoo.pixelmusic.presentation.telegram.auth.TelegramLoginActivity
 import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
 
 /**
@@ -102,18 +101,6 @@ fun StreamingProviderSheet(
                         shape = providerSegmentItemShape,
                         onClick = {
                             onNavigateToYoutubeAuth()
-                            onDismissRequest()
-                        }
-                    )
-
-                    ProviderRow(
-                        iconPainter = painterResource(R.drawable.telegram),
-                        iconTint = Color(0xFF2AABEE),
-                        title = "Telegram",
-                        subtitle = "Stream from channels & chats",
-                        shape = providerSegmentItemShape,
-                        onClick = {
-                            context.startActivity(Intent(context, TelegramLoginActivity::class.java))
                             onDismissRequest()
                         }
                     )

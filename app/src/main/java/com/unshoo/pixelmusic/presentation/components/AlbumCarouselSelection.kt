@@ -171,12 +171,11 @@ fun AlbumCarouselSection(
                             .fillMaxSize()
                             .aspectRatio(1f)
                             .combinedClickable(
-                                enabled = isFocusedItem && song.albumId != -1L,
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = { onAlbumClick(song) },
-                                onLongClick = { onAlbumLongPress(song) }
-                            )
+                                onClick = { if (isFocusedItem && song.albumId != -1L) onAlbumClick(song) },
+                                onLongClick = { if (isFocusedItem) onAlbumLongPress(song) }
+                             )
                     ) { // Enforce 1:1 aspect ratio for the item itself
                         OptimizedAlbumArt(
                             uri = song.albumArtUriString,
