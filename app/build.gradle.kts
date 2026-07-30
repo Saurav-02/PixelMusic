@@ -287,6 +287,8 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.cio)
 
     // Identity & Background
     implementation(libs.androidx.work.runtime.ktx)
