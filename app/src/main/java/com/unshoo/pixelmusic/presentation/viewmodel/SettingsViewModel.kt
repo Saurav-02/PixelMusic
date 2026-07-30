@@ -79,6 +79,7 @@ data class SettingsUiState(
     val libraryNavigationMode: String = LibraryNavigationMode.TAB_ROW,
     val launchTab: String = LaunchTab.HOME,
     val keepPlayingInBackground: Boolean = true,
+    val extremeDataSaverEnabled: Boolean = false, // ADD THIS LINE
     val aodScreenEnabled: Boolean = false,
     val disableCastAutoplay: Boolean = false,
     val resumeOnHeadsetReconnect: Boolean = false,
@@ -203,6 +204,7 @@ private sealed interface SettingsUiUpdate {
     
     data class Group2(
         val keepPlayingInBackground: Boolean,
+        val extremeDataSaverEnabled: Boolean,
         val disableCastAutoplay: Boolean,
         val resumeOnHeadsetReconnect: Boolean,
         val showQueueHistory: Boolean,
@@ -641,6 +643,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             combine<Any?, SettingsUiUpdate.Group2>(
                 userPreferencesRepository.keepPlayingInBackgroundFlow,
+                userPreferencesRepository.extremeDataSaverEnabledFlow,
                 userPreferencesRepository.disableCastAutoplayFlow,
                 userPreferencesRepository.resumeOnHeadsetReconnectFlow,
                 userPreferencesRepository.showQueueHistoryFlow,
@@ -673,40 +676,42 @@ class SettingsViewModel @Inject constructor(
             ) { values ->
                 SettingsUiUpdate.Group2(
                     keepPlayingInBackground = values[0] as Boolean,
-                    disableCastAutoplay = values[1] as Boolean,
-                    resumeOnHeadsetReconnect = values[2] as Boolean,
-                    showQueueHistory = values[3] as Boolean,
-                    isCrossfadeEnabled = values[4] as Boolean,
-                    hiFiModeEnabled = values[5] as Boolean,
-                    crossfadeDuration = values[6] as Int,
-                    persistentShuffleEnabled = values[7] as Boolean,
-                    folderBackGestureNavigation = values[8] as Boolean,
-                    lyricsSourcePreference = values[9] as LyricsSourcePreference,
-                    autoScanLrcFiles = values[10] as Boolean,
-                    blockedDirectories = @Suppress("UNCHECKED_CAST") (values[11] as Set<String>),
-                    hapticsEnabled = values[12] as Boolean,
-                    immersiveLyricsEnabled = values[13] as Boolean,
-                    immersiveLyricsTimeout = values[14] as Long,
-                    animatedLyricsBlurEnabled = values[15] as Boolean,
-                    animatedLyricsBlurStrength = values[16] as Float,
-                    performanceModeEnabled = values[17] as Boolean,
-                    audioOffloadEnabled = values[18] as Boolean,
-                    preferTelegramAlternative = values[19] as Boolean,
-                    lastfmSession = values[20] as String,
-                    lastfmUsername = values[21] as String,
-                    lastfmApiKey = values[22] as String,
-                    lastfmApiSecret = values[23] as String,
-                    lastfmScrobblingEnabled = values[24] as Boolean,
-                    lastfmUseNowPlaying = values[25] as Boolean,
-                    scrobbleDelayPercent = values[26] as Float,
-                    scrobbleMinSongDuration = values[27] as Int,
-                    scrobbleDelaySeconds = values[28] as Int,
-                    aodScreenEnabled = values[29] as Boolean
+                    extremeDataSaverEnabled = values[1] as Boolean, 
+                    disableCastAutoplay = values[2] as Boolean, 
+                    resumeOnHeadsetReconnect = values[3] as Boolean,
+                    showQueueHistory = values[4] as Boolean,
+                    isCrossfadeEnabled = values[5] as Boolean,
+                    hiFiModeEnabled = values[6] as Boolean,
+                    crossfadeDuration = values[7] as Int,
+                    persistentShuffleEnabled = values[8] as Boolean,
+                    folderBackGestureNavigation = values[9] as Boolean,
+                    lyricsSourcePreference = values[10] as LyricsSourcePreference,
+                    autoScanLrcFiles = values[11] as Boolean,
+                    blockedDirectories = @Suppress("UNCHECKED_CAST") (values[12] as Set<String>),
+                    hapticsEnabled = values[13] as Boolean,
+                    immersiveLyricsEnabled = values[14] as Boolean,
+                    immersiveLyricsTimeout = values[15] as Long,
+                    animatedLyricsBlurEnabled = values[16] as Boolean,
+                    animatedLyricsBlurStrength = values[17] as Float,
+                    performanceModeEnabled = values[18] as Boolean,
+                    audioOffloadEnabled = values[19] as Boolean,
+                    preferTelegramAlternative = values[20] as Boolean,
+                    lastfmSession = values[21] as String,
+                    lastfmUsername = values[22] as String,
+                    lastfmApiKey = values[23] as String,
+                    lastfmApiSecret = values[24] as String,
+                    lastfmScrobblingEnabled = values[25] as Boolean,
+                    lastfmUseNowPlaying = values[26] as Boolean,
+                    scrobbleDelayPercent = values[27] as Float,
+                    scrobbleMinSongDuration = values[28] as Int,
+                    scrobbleDelaySeconds = values[29] as Int,
+                    aodScreenEnabled = values[30] as Boolean
                 )
             }.collect { update ->
                 _uiState.update { state ->
                     state.copy(
                         keepPlayingInBackground = update.keepPlayingInBackground,
+                        extremeDataSaverEnabled = update.extremeDataSaverEnabled,
                         aodScreenEnabled = update.aodScreenEnabled,
                         disableCastAutoplay = update.disableCastAutoplay,
                         resumeOnHeadsetReconnect = update.resumeOnHeadsetReconnect,
@@ -1196,6 +1201,17 @@ class SettingsViewModel @Inject constructor(
     fun setKeepPlayingInBackground(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setKeepPlayingInBackground(enabled)
+        }
+    }
+    
+    fun setExtremeDataSaverEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setExtremeDataSaverEnabled(enabled)
+            if (enabled) {
+                userPreferencesRepository.setStreamingAudioQualityWifi(StreamingAudioQuality.LOW)
+                userPreferencesRepository.setStreamingAudioQualityMobile(StreamingAudioQuality.LOW)
+                userPreferencesRepository.setAlbumArtQualityMobile(AlbumArtQuality.LOW)
+            }
         }
     }
 
