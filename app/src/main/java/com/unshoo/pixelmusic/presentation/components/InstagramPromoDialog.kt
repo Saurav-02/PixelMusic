@@ -90,7 +90,7 @@ fun InstagramPromoDialog(
 
                     Button(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://instagram.com/Saurav7x"))
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com/holy_saurav"))
                             context.startActivity(intent)
                             onDismiss()
                         },
