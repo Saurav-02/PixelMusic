@@ -941,11 +941,18 @@ fun SettingsCategoryScreen(
                                 )
                                 SwitchSettingItem(
                                     title = "AOD Screen",
-                                    subtitle = "Long-press the album art in Now Playing for a glowing, AMOLED-friendly ambient view. Tap anywhere to exit.",
+                                    subtitle = "Long-press the album art in Now Playing for an AMOLED-friendly ambient view. Double tap anywhere to exit.",
                                     checked = uiState.aodScreenEnabled,
                                     onCheckedChange = { settingsViewModel.setAodScreenEnabled(it) },
                                     leadingIcon = { Icon(Icons.Outlined.DarkMode, null, tint = MaterialTheme.colorScheme.secondary) }
                                  )
+                                SwitchSettingItem(
+                                    title = "Extreme Data Saver",
+                                    subtitle = "Blocks all thumbnails, forces monochrome UI icons, and uses lowest audio quality to maximize data savings.",
+                                    checked = uiState.extremeDataSaverEnabled,
+                                    onCheckedChange = { settingsViewModel.setExtremeDataSaverEnabled(it) },
+                                    leadingIcon = { Icon(Icons.Outlined.Speed, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
                                 SettingsItem(
                                     title = stringResource(R.string.setcat_battery_optimization_title),
                                     subtitle = stringResource(R.string.setcat_battery_optimization_subtitle),
