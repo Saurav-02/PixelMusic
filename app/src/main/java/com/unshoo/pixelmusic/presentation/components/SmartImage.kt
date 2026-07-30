@@ -96,6 +96,7 @@ fun SmartImage(
     val albumArtQualityWifi = SmartImageCache.albumArtQualityWifi
     val albumArtQualityMobile = SmartImageCache.albumArtQualityMobile
     val performanceModeEnabled = SmartImageCache.performanceModeEnabled
+    val extremeDataSaverEnabled = SmartImageCache.extremeDataSaverEnabled
 
     val effectiveQuality = if (performanceModeEnabled) {
         AlbumArtQuality.LOW
@@ -121,11 +122,11 @@ fun SmartImage(
     }
 
     // Handle direct models (Bitmap, Vector, etc) early to avoid ImageRequest overhead
-    if (model == null || model is ImageVector || model is Painter || model is ImageBitmap || model is Bitmap) {
-        if (model == null) {
+    if (extremeDataSaverEnabled || model == null || model is ImageVector || model is Painter || model is ImageBitmap || model is Bitmap) {
+        if (extremeDataSaverEnabled || model == null) {
             Placeholder(
                 modifier = clippedModifier,
-                drawableResId = placeholderResId,
+                drawableResId = if (extremeDataSaverEnabled) R.drawable.pixelmusic_base_monochrome else placeholderResId,
                 contentDescription = contentDescription,
                 containerColor = placeHolderBackgroundColor,
                 iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -323,6 +324,7 @@ object SmartImageCache {
     var albumArtQualityWifi by androidx.compose.runtime.mutableStateOf(AlbumArtQuality.ORIGINAL)
     var albumArtQualityMobile by androidx.compose.runtime.mutableStateOf(AlbumArtQuality.ORIGINAL)
     var performanceModeEnabled by androidx.compose.runtime.mutableStateOf(false)
+    var extremeDataSaverEnabled by androidx.compose.runtime.mutableStateOf(false)
 
     @Volatile
     private var isInitialized = false
@@ -354,6 +356,9 @@ object SmartImageCache {
         }
         cacheScope.launch {
             userPreferencesRepository.performanceModeEnabledFlow.collect { performanceModeEnabled = it }
+        }
+        cacheScope.launch {
+            userPreferencesRepository.extremeDataSaverEnabledFlow.collect { extremeDataSaverEnabled = it }
         }
     }
 }
