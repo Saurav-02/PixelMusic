@@ -1,5 +1,1 @@
 
-New Features:
-1. Smart Folder Filtering: The "Excluded folders" list (in both initial setup and settings) now automatically hides directories that don't contain any music. 🧾📁
-2. Bug fixes. ⚠️🔨
-3. Performance improvements. ⏳💪
