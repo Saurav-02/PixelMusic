@@ -11,17 +11,17 @@
 
 <!-- This creates the seamless 3-column grid -->
 <p align="center">
-  <img src="assets/home.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
-  <img src="assets/library.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
-  <img src="assets/playing.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
+  <img src="assets/home.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
+  <img src="assets/library.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
+  <img src="assets/playing.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
   <br>
-  <img src="assets/Lyrics.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
-  <img src="assets/Listening.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
-  <img src="assets/share.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
+  <img src="assets/Lyrics.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
+  <img src="assets/Listening.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
+  <img src="assets/share.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
   <br>
-  <img src="assets/recognition.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
-  <img src="assets/recognised.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
-  <img src="assets/settings.jpg" width="220" style="border-radius: 16px; margin: 8px;" />
+  <img src="assets/recognition.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
+  <img src="assets/recognised.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
+  <img src="assets/settings.jpg" width="220" style="border-radius: 10px; margin: 8px;" />
 </p>
 
 <p align="center">
