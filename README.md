@@ -43,7 +43,7 @@
 | Feature | Description |
 |:---|:---|
 | **Dynamic Island Support** | Native support for OriginOS Capsule and Android 16 Live Updates. See live playback progress directly in your status bar! |
-| **Hybrid Streaming** | Stream from YouTube Music, Telegram channels, Google Drive, or play your local offline files seamlessly. |
+| **Hybrid Streaming** | Stream from YouTube Music or play your local offline files seamlessly. |
 | **Music Recognition** | Built-in audio recognition to identify playing songs instantly, complete with a slick animated UI. |
 | **Material You Design** | The entire app adapts dynamically to the colors of your currently playing album artwork. |
 | **Synchronized Lyrics** | Real-time synchronized LRC lyrics for your favorite tracks. |
