@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>The Ultimate Hybrid Local & Streaming Music Powerhouse for Android</strong><br> 
-  An elegant, feature-rich audio experience built for audiophiles and streaming enthusiasts, featuring native Dynamic Island support.
+  An elegant, feature-rich audio experience built for audiophiles and streaming enthusiasts, featuring Material You expressive support. 
 </p>
 
 <!-- This creates the seamless 3-column grid -->
