@@ -1,3 +1,6 @@
+**Sub release 4.3**
+Fixed some crashes reported by users. 
+
 **Sub release 4.2**
 
 * 🎨 **Explore & Home Redesign:** Fresh, minimal layouts on both screens with fading titles, a smooth fog scrim over the status bar, motion-blur artifacts eliminated, and a fully reactive shuffle FAB with spring-back swipe gestures.[@Xyg901]
