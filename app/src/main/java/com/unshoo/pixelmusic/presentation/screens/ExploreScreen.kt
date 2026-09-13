@@ -214,7 +214,7 @@ fun ExploreScreen(
     val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
     val isMotionBlurEnabled by playerViewModel.userPreferencesRepository.uiMotionBlurEnabledFlow
         .collectAsStateWithLifecycle(initialValue = true)
-    val isPlaying by remember(stablePlayerState) { mutableStateOf(stablePlayerState.isPlaying) }
+    val isPlaying = stablePlayerState.isPlaying
     val currentSongId = stablePlayerState.currentSong?.id
     val quickPicksDisplayMode by playerViewModel.quickPicksDisplayMode.collectAsStateWithLifecycle()
     val pullRefreshState = rememberPullToRefreshState()
@@ -822,7 +822,7 @@ fun SongBigBoxCarousel(
                 },
                 onPlayPauseClick = {
                     if (isThisSong) {
-                        playerViewModel.togglePlayPause()
+                        playerViewModel.playPause()
                     } else {
                         playerViewModel.showAndPlaySong(
                             song = song,
