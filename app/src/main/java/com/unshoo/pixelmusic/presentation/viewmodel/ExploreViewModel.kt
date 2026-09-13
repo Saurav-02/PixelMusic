@@ -40,7 +40,15 @@ data class ExploreUiState(
     val chartsPage: ChartsPage? = null,
     val error: String? = null,
     val selectedFilter: String = "All",
-    val recentMixes: List<Playlist> = emptyList()
+    val recentMixes: List<Playlist> = emptyList(),
+
+    // ── New for mood chips ──────────────────────────────────────────────
+    val selectedMood: String? = null,
+    val moodSections: List<HomePage.Section> = emptyList(),
+    val isMoodLoading: Boolean = false,
+
+    // ── New for charts retry ───────────────────────────────────────────
+    val isChartsLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -57,6 +65,9 @@ class ExploreViewModel @Inject constructor(
 
     private var stage2Job: kotlinx.coroutines.Job? = null
     private var stage3Job: kotlinx.coroutines.Job? = null
+
+    /** Simple in-memory cache so re-tapping a mood doesn't refetch. */
+    private val moodCache = mutableMapOf<String, List<HomePage.Section>>()
 
     private val explorePrefs by lazy { context.getSharedPreferences("explore_guest_cache", Context.MODE_PRIVATE) }
 
@@ -97,10 +108,10 @@ class ExploreViewModel @Inject constructor(
                     cacheFile.delete()
                     return
                 }
-                
+
                 _uiState.update {
                     it.copy(
-                        isLoading = true, // still loading fresh data
+                        isLoading = true,
                         homePageSections = cache.sections,
                         homePageContinuation = cache.continuation,
                         newReleaseAlbums = cache.albums,
@@ -145,31 +156,24 @@ class ExploreViewModel @Inject constructor(
         if (forceRefresh) {
             _uiState.update { it.copy(isRefreshing = true, error = null) }
         } else {
-            // Only show loading spinner if we have no cached data at all
             val hasCachedData = _uiState.value.homePageSections.isNotEmpty() ||
                     _uiState.value.newReleaseAlbums.isNotEmpty() ||
                     _uiState.value.chartsPage != null
-            
-            // --- NEW CODE: STOP AUTO-REFRESH ---
-            // If we already have cached data and this is NOT a manual swipe-to-refresh,
-            // we stop right here to save network data!
+
             if (hasCachedData) {
                 return
             }
-            // -----------------------------------
 
             _uiState.update { it.copy(isLoading = !hasCachedData, error = null) }
         }
         try {
-            // 1. Get history and candidateArtistId immediately (fast database/prefs calls)
             val history = withContext(Dispatchers.IO) {
                 playbackStatsRepository.loadPlaybackHistory(limit = 30)
             }
             val candidateArtistId = withContext(Dispatchers.IO) {
                 userPreferencesRepository.subscribedArtistIdsFlow.first().firstOrNull()
             }
-            
-            // Query database for library artists with valid channel IDs to personalize New Releases
+
             val dbArtists = withContext(Dispatchers.IO) {
                 try {
                     musicDao.getAllArtistsListRaw()
@@ -191,7 +195,6 @@ class ExploreViewModel @Inject constructor(
 
             val hasLogin = YouTube.hasLoginCookie()
 
-            // --- STAGE 1: Fetch and display core Above-the-Fold Content (Instant) ---
             var home: HomePage? = null
             var explore: ExplorePage? = null
             var charts: ChartsPage? = null
@@ -256,10 +259,8 @@ class ExploreViewModel @Inject constructor(
                         val exp = YouTube.explore().getOrNull()
                         explore = exp
                         if (exp != null) {
-                            // ── ArchiveTune pattern: sort newReleaseAlbums by artist play rank ──
                             val artistRows = try { musicDao.getArtistsByPlayCount() } catch (e: Exception) { emptyList() }
 
-                            // Build indexed maps — index 0 = most played / most favourite
                             val artistsMap: MutableMap<Int, String> = mutableMapOf()
                             val favouriteArtistsMap: MutableMap<Int, String> = mutableMapOf()
                             var favIndex = 0
@@ -299,7 +300,6 @@ class ExploreViewModel @Inject constructor(
             }
 
             if (home == null && explore == null && charts == null && newReleasesResult == null) {
-                // Only show error if we also have no cached data
                 val hasCachedData = _uiState.value.homePageSections.isNotEmpty() ||
                         _uiState.value.newReleaseAlbums.isNotEmpty() ||
                         _uiState.value.chartsPage != null
@@ -313,8 +313,6 @@ class ExploreViewModel @Inject constructor(
                 return
             }
 
-
-            // --- STAGE 2: Fetch and display Library & Recommendations in background ---
             stage2Job = viewModelScope.launch(Dispatchers.IO) {
                 try {
                     coroutineScope {
@@ -478,10 +476,8 @@ class ExploreViewModel @Inject constructor(
                 }
             }
 
-            // --- STAGE 3: Persist final state to cache ---
             stage3Job = viewModelScope.launch(Dispatchers.IO) {
                 try {
-                    // Wait briefly for Stage 2 to settle, then persist
                     kotlinx.coroutines.delay(2000)
                     persistToCache(_uiState.value)
                 } catch (e: Exception) {
@@ -504,16 +500,14 @@ class ExploreViewModel @Inject constructor(
     fun loadMore() {
     val currentState = _uiState.value
     val continuation = currentState.homePageContinuation
-    
+
     Timber.d("loadMore() called - isContinuationLoading: ${currentState.isContinuationLoading}, continuation: ${continuation != null}")
-    
-    // Prevent multiple simultaneous calls
+
     if (currentState.isContinuationLoading) {
         Timber.d("loadMore() skipped - already loading")
         return
     }
-    
-    // No more data available
+
     if (continuation == null) {
         Timber.d("loadMore() skipped - no continuation token")
         return
@@ -521,20 +515,19 @@ class ExploreViewModel @Inject constructor(
 
     viewModelScope.launch {
         _uiState.update { it.copy(isContinuationLoading = true) }
-        
+
         try {
             val result = withContext(Dispatchers.IO) {
                 YouTube.home(continuation = continuation).getOrNull()
             }
-            
+
             Timber.d("loadMore() API result: ${result?.sections?.size ?: 0} sections, hasContinuation: ${result?.continuation != null}")
-            
+
             if (result == null) {
-                // API failed - don't clear continuation, allow retry
                 _uiState.update { it.copy(isContinuationLoading = false) }
                 return@launch
             }
-            
+
             if (result.sections.isEmpty()) {
                 Timber.d("loadMore() - no sections in this page, trying next")
                 _uiState.update {
@@ -548,30 +541,26 @@ class ExploreViewModel @Inject constructor(
                 }
                 return@launch
             }
-            
-            // Filter out duplicates by section title
+
             val existingTitles = currentState.homePageSections.map { it.title }.toSet()
             val uniqueNewSections = result.sections.filter { newSection ->
                 newSection.title !in existingTitles
             }
-            
+
             Timber.d("loadMore() - ${uniqueNewSections.size} unique sections after deduplication")
-            
+
             if (uniqueNewSections.isEmpty()) {
-                // All sections were duplicates - try next page immediately
                 Timber.d("loadMore() - all sections were duplicates, fetching next page")
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         isContinuationLoading = false,
                         homePageContinuation = result.continuation
-                    ) 
+                    )
                 }
-                // Recursively call loadMore for next page
                 loadMore()
                 return@launch
             }
-            
-            // Add unique sections and update continuation
+
             _uiState.update {
                 val newState = it.copy(
                     isContinuationLoading = false,
@@ -581,7 +570,7 @@ class ExploreViewModel @Inject constructor(
                 persistToCache(newState)
                 newState
             }
-            
+
         } catch (e: Exception) {
             Timber.e(e, "Error loading more Explore screen sections")
             _uiState.update { it.copy(isContinuationLoading = false) }
@@ -590,7 +579,132 @@ class ExploreViewModel @Inject constructor(
     }
 
     fun setSelectedFilter(filter: String) {
-        _uiState.update { it.copy(selectedFilter = filter) }
+        _uiState.update { it.copy(selectedFilter = filter, selectedMood = null, moodSections = emptyList()) }
+        // If user taps Charts and we don't have them yet, fetch them
+        if (filter == "Charts" && _uiState.value.chartsPage?.sections.isNullOrEmpty()) {
+            retryCharts()
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // MOODS
+    // ─────────────────────────────────────────────────────────────────────
+
+    fun setSelectedMood(mood: String?) {
+        if (mood == null) {
+            _uiState.update { it.copy(selectedMood = null, moodSections = emptyList(), isMoodLoading = false) }
+            return
+        }
+        // Toggle off if same mood tapped again
+        if (_uiState.value.selectedMood == mood) {
+            setSelectedMood(null)
+            return
+        }
+        // Serve from cache if available
+        val cached = moodCache[mood]
+        if (cached != null) {
+            _uiState.update { it.copy(selectedMood = mood, moodSections = cached, isMoodLoading = false) }
+            return
+        }
+        loadMoodInternal(mood)
+    }
+
+    private fun loadMoodInternal(mood: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(selectedMood = mood, isMoodLoading = true, moodSections = emptyList()) }
+            try {
+                val sections = withContext(Dispatchers.IO) {
+                    coroutineScope {
+                        val songsDeferred = async {
+                            YouTube.search(mood, YouTube.SearchFilter.FILTER_SONG).getOrNull()
+                        }
+                        val playlistsDeferred = async {
+                            YouTube.search("$mood playlist", YouTube.SearchFilter.FILTER_COMMUNITY_PLAYLIST).getOrNull()
+                        }
+                        val albumsDeferred = async {
+                            YouTube.search(mood, YouTube.SearchFilter.FILTER_ALBUM).getOrNull()
+                        }
+                        val artistsDeferred = async {
+                            YouTube.search(mood, YouTube.SearchFilter.FILTER_ARTIST).getOrNull()
+                        }
+
+                        val songs = songsDeferred.await()?.items?.filterIsInstance<SongItem>().orEmpty()
+                        val playlists = playlistsDeferred.await()?.items?.filterIsInstance<PlaylistItem>().orEmpty()
+                        val albums = albumsDeferred.await()?.items?.filterIsInstance<AlbumItem>().orEmpty()
+                        val artists = artistsDeferred.await()?.items?.filterIsInstance<ArtistItem>().orEmpty()
+
+                        val result = mutableListOf<HomePage.Section>()
+
+                        if (songs.isNotEmpty()) {
+                            result.add(HomePage.Section(
+                                title = "$mood Songs",
+                                label = null,
+                                thumbnail = null,
+                                endpoint = null,
+                                items = songs
+                            ))
+                        }
+                        if (playlists.isNotEmpty()) {
+                            result.add(HomePage.Section(
+                                title = "$mood Playlists",
+                                label = null,
+                                thumbnail = null,
+                                endpoint = null,
+                                items = playlists
+                            ))
+                        }
+                        if (albums.isNotEmpty()) {
+                            result.add(HomePage.Section(
+                                title = "$mood Albums",
+                                label = null,
+                                thumbnail = null,
+                                endpoint = null,
+                                items = albums
+                            ))
+                        }
+                        if (artists.isNotEmpty()) {
+                            result.add(HomePage.Section(
+                                title = "$mood Artists",
+                                label = null,
+                                thumbnail = null,
+                                endpoint = null,
+                                items = artists
+                            ))
+                        }
+                        result
+                    }
+                }
+                moodCache[mood] = sections
+                _uiState.update { it.copy(isMoodLoading = false, moodSections = sections) }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to load mood: $mood")
+                _uiState.update { it.copy(isMoodLoading = false, moodSections = emptyList()) }
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // CHARTS RETRY
+    // ─────────────────────────────────────────────────────────────────────
+
+    fun retryCharts() {
+        if (_uiState.value.isChartsLoading) return
+        if (!_uiState.value.chartsPage?.sections.isNullOrEmpty()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isChartsLoading = true) }
+            try {
+                val c = withContext(Dispatchers.IO) { YouTube.getChartsPage().getOrNull() }
+                _uiState.update {
+                    it.copy(
+                        isChartsLoading = false,
+                        chartsPage = c ?: it.chartsPage
+                    )
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Charts retry failed")
+                _uiState.update { it.copy(isChartsLoading = false) }
+            }
+        }
     }
 }
 
@@ -604,9 +718,6 @@ data class ExploreCacheModel(
     val cacheVersion: Int = 0
 ) {
     companion object {
-        // Bump this number any time you change how Explore data is fetched/parsed
-        // (like we just did). Any cache saved with an older number gets thrown away
-        // automatically instead of silently reusing broken/stale data.
         const val CURRENT_CACHE_VERSION = 2
     }
 }
