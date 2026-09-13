@@ -130,7 +130,7 @@ android {
     }
 
     compileOptions {
-        isCoreLibraryDesugaringEnabled = false
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -192,6 +192,7 @@ kotlin {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
     // InnerTube dependencies merged
     implementation(libs.ktor.client.core)
     implementation("dev.turingcomplete:kotlin-onetimepassword:2.4.1")
