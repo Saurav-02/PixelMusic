@@ -1,3 +1,13 @@
+**Sub release 4.2**
+
+* 🎨 **Explore & Home Redesign:** Fresh, minimal layouts on both screens with fading titles, a smooth fog scrim over the status bar, motion-blur artifacts eliminated, and a fully reactive shuffle FAB with spring-back swipe gestures.[@Xyg901]
+
+* 🔍 **Settings Search:** Powerful new search across every setting with fuzzy matching, recent-history, auto-scroll to the target, and a pulsing highlight when you land on it. The main search history UI was redesigned to match.[@Xyg901]
+
+* 🎭 **Mood Browsing & Charts Resilience:** New expressive mood chips on Explore let you instantly browse by vibe (Relax, Workout, Party…). Charts now gracefully recover with a Retry button if the initial fetch fails.[@Xyg901]
+
+* 🔄 **Revamped Update Screen:** Rolled out a redesigned, user-friendly in-app update screen to make downloading future beta releases seamless.[@Saurav124x]
+
 **Sub release 3.7** 
 
 *Fixed double notification on lock screen.[@Saurav124x]
