@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Explore
+import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -135,10 +136,6 @@ import kotlinx.coroutines.withContext
 import com.unshoo.pixelmusic.ui.modifiers.scrollMotionBlur
 import androidx.compose.material3.TextButton
 import com.unshoo.pixelmusic.presentation.components.HomeShuffleFab
-import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 
 
 
@@ -652,14 +649,14 @@ fun ExploreScreen(
 
     // Music recognition — triggered by long-press or swipe-up on the FAB.
     // Uses the full-screen island-style overlay for a polished entry/exit animation.
-AnimatedVisibility(
-    visible = showRecognitionDialog,
-    enter = fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)),
-    exit = fadeOut(animationSpec = tween(300, easing = FastOutSlowInEasing))
-) {
-    MusicRecognitionOverlay(
-        isExternalWindow = false,
-        onDismiss = { showRecognitionDialog = false },
+    AnimatedVisibility(
+        visible = showRecognitionDialog,
+        enter = fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)),
+        exit = fadeOut(animationSpec = tween(300, easing = FastOutSlowInEasing))
+    ) {
+        MusicRecognitionOverlay(
+            isExternalWindow = false,
+            onDismiss = { showRecognitionDialog = false },
             onPlayMusic = { recognizedSong ->
                 showRecognitionDialog = false
                 scope.launch {
@@ -793,113 +790,124 @@ fun SongBigBoxCarousel(
     sectionTitle: String
 ) {
     val nativeSongs = remember(songs) { songs.map { it.toNativeSong() } }
-    val chunks = remember(nativeSongs) { nativeSongs.chunked(3) }
+    val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
+    val currentSongId = stablePlayerState.currentSong?.id
+    val isPlayingNow = stablePlayerState.isPlaying
 
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(chunks.size) { chunkIndex ->
-            val chunk = chunks[chunkIndex]
+        items(nativeSongs.size) { index ->
+            val song = nativeSongs[index]
+            val isThisSong = song.id == currentSongId
+            val isThisSongPlaying = isThisSong && isPlayingNow
+
             val anim = rememberDynamicEffect(
-                baseCornerRadius = 24.dp,
+                baseCornerRadius = 22.dp,
                 squishCornerRadius = 54.dp,
                 minScale = 0.94f,
                 minAlpha = 0.7f
             )
-            Card(
-                shape = RoundedCornerShape(anim.cornerRadius),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-                modifier = Modifier
-                    .width(320.dp)
-                    .wrapContentHeight()
-                    .then(anim.modifier)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    chunk.forEachIndexed { index, song ->
-                        val globalRank = chunkIndex * 3 + index + 1
-                        SongChartRow(
-                            rank = globalRank,
+
+            SongBigBoxItem(
+                song = song,
+                isThisSongPlaying = isThisSongPlaying,
+                onClick = {
+                    playerViewModel.showAndPlaySong(
+                        song = song,
+                        contextSongs = nativeSongs,
+                        queueName = sectionTitle
+                    )
+                },
+                onPlayPauseClick = {
+                    if (isThisSong) {
+                        playerViewModel.togglePlayPause()
+                    } else {
+                        playerViewModel.showAndPlaySong(
                             song = song,
-                            onClick = {
-                                playerViewModel.showAndPlaySong(
-                                    song = song,
-                                    contextSongs = nativeSongs,
-                                    queueName = sectionTitle
-                                )
-                            }
+                            contextSongs = nativeSongs,
+                            queueName = sectionTitle
                         )
                     }
-                }
-            }
+                },
+                modifier = Modifier.then(anim.modifier)
+            )
         }
     }
 }
 
 @Composable
-private fun SongChartRow(
-    rank: Int,
+private fun SongBigBoxItem(
     song: Song,
-    onClick: () -> Unit
+    isThisSongPlaying: Boolean,
+    onClick: () -> Unit,
+    onPlayPauseClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 6.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        modifier = modifier
+            .width(280.dp)
+            .wrapContentHeight()
     ) {
-        // Big editorial rank number
-        Text(
-            text = rank.toString().padStart(2, '0'),
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold,
-                fontFamily = GoogleSansRounded
-            ),
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.width(38.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = song.title,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            SmartImage(
+                model = song.albumArtUriString,
+                contentDescription = song.title,
+                contentScale = ContentScale.Crop,
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.size(64.dp)
             )
-            Text(
-                text = song.artist,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = song.title,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = song.artist,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            FilledIconButton(
+                onClick = onPlayPauseClick,
+                modifier = Modifier.size(44.dp),
+                shape = CircleShape,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Icon(
+                    imageVector = if (isThisSongPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                    contentDescription = if (isThisSongPlaying) "Pause" else "Play",
+                    modifier = Modifier.size(22.dp)
+                )
+            }
         }
-
-        // Subtle chevron indicating tap target
-        Icon(
-            imageVector = Icons.Rounded.ChevronRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
-            modifier = Modifier.size(18.dp)
-        )
     }
 }
+
 @Composable
 fun MixedStationCarousel(
     items: List<YTItem>,
