@@ -181,3 +181,7 @@
 # Ignore missing jdk.dynalink classes referenced by Mozilla Rhino JS engine
 -dontwarn jdk.dynalink.**
 
+# OkHttp + kotlinx.serialization JSON tree parsing for GeminiAiClient
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
