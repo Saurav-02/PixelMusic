@@ -1,3 +1,6 @@
+*Sub release 4.3*
+Fixed some download related bugs on Samsung devices.
+
 **Sub release 4.3**
 Fixed some crashes reported by users. 
 
