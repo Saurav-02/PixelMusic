@@ -292,24 +292,39 @@ object SongDownloader {
             notificationBuilder.setContentText("Writing metadata...")
             updateNotification(notificationManager, notificationId, notificationBuilder)
 
-            val audioFile = AudioFileIO.read(tempRemuxedFile)
-            val tag = audioFile.tagOrCreateAndSetDefault
+try {
+    android.os.ParcelFileDescriptor.open(tempRemuxedFile!!, android.os.ParcelFileDescriptor.MODE_READ_WRITE).use { fd ->
+        val metadataFd = fd.dup()
+        val existingMetadata = com.kyant.taglib.TagLib.getMetadata(metadataFd.detachFd())
+        val propertyMap = java.util.HashMap(existingMetadata?.propertyMap ?: emptyMap())
 
-            tag.setField(FieldKey.TITLE, song.title)
-            tag.setField(FieldKey.ARTIST, song.displayArtist)
-            if (!song.album.isNullOrBlank()) {
-                tag.setField(FieldKey.ALBUM, song.album)
-            }
-            if (!lyricsText.isNullOrBlank()) {
-                tag.setField(FieldKey.LYRICS, lyricsText)
-            }
-            if (tempImageFile!!.exists() && tempImageFile!!.length() > 0) {
-                val artwork = StandardArtwork.createArtworkFromFile(tempImageFile)
-                tag.setField(artwork)
-            }
+        propertyMap["TITLE"] = arrayOf(song.title)
+        propertyMap["ARTIST"] = arrayOf(song.displayArtist)
+        if (!song.album.isNullOrBlank()) {
+            propertyMap["ALBUM"] = arrayOf(song.album)
+        }
+        if (!lyricsText.isNullOrBlank()) {
+            propertyMap["LYRICS"] = arrayOf(lyricsText)
+        }
 
-            audioFile.commit()
-
+        com.kyant.taglib.TagLib.savePropertyMap(fd.dup().detachFd(), propertyMap)
+        
+        if (tempImageFile!!.exists() && tempImageFile!!.length() > 0) {
+            val picture = com.kyant.taglib.Picture(
+                data = tempImageFile!!.readBytes(),
+                description = "Front Cover",
+                pictureType = "Front Cover",
+                mimeType = "image/jpeg"
+            )
+            com.kyant.taglib.TagLib.savePictures(fd.dup().detachFd(), arrayOf(picture))
+        }
+    }
+} catch (e: Exception) {
+    e.printStackTrace()
+    // If TagLib fails, the download won't crash. 
+    // MediaStore will still receive the metadata below this block.
+}
+            
             val contentValues = ContentValues().apply {
                 put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
                 put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp4")
