@@ -167,7 +167,7 @@ import unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-
+import com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle
 
 
 private const val HomeLoadingPlaceholderMinDurationMillis = 1200L
@@ -224,6 +224,8 @@ fun HomeScreen(
     val homeMixPreviewSongs by playerViewModel.homeMixPreviewSongs.collectAsStateWithLifecycle()
     val playbackHistory by playerViewModel.playbackHistory.collectAsStateWithLifecycle()
     val quickPicksDisplayMode by playerViewModel.quickPicksDisplayMode.collectAsStateWithLifecycle()
+    val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = AppBackgroundStyle.DEFAULT)
+    val isCustomBackground = backgroundStyle != AppBackgroundStyle.DEFAULT
     val lifecycleOwner = LocalLifecycleOwner.current
     val isTestBuild = context.packageName.endsWith(".test")
 
@@ -436,7 +438,9 @@ fun HomeScreen(
     )
 
     // Tinted top scrim that matches Explore's Material You expressive style in light mode
-    val homeScrimTopColor = if (MaterialTheme.colorScheme.background.luminance() > 0.5f) {
+    val homeScrimTopColor = if (isCustomBackground) {
+        Color.Transparent
+    } else if (MaterialTheme.colorScheme.background.luminance() > 0.5f) {
         MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
             .compositeOver(MaterialTheme.colorScheme.background)
     } else {
@@ -478,7 +482,7 @@ fun HomeScreen(
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
+                        .background(if (isCustomBackground) Color.Transparent else MaterialTheme.colorScheme.background)
                         .scrollMotionBlur(
                             lazyListState = listState,
                             enabled = settingsUiState.isUiMotionBlurEnabled
@@ -689,8 +693,8 @@ fun HomeScreen(
                         colorStops = arrayOf(
                             0.0f to Color.Transparent,
                             0.2f to Color.Transparent,
-                            0.8f to androidx.compose.material3.MaterialTheme.colorScheme.background,
-                            1.0f to androidx.compose.material3.MaterialTheme.colorScheme.background
+                            0.8f to if (isCustomBackground) Color.Transparent else androidx.compose.material3.MaterialTheme.colorScheme.background,
+                            1.0f to if (isCustomBackground) Color.Transparent else androidx.compose.material3.MaterialTheme.colorScheme.background
                         )
                     )
                 )
