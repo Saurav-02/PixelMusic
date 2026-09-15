@@ -189,12 +189,25 @@ fun ScreenWrapper(
                     }
                     AppBackgroundStyle.LIVE_BLUR -> {
                         if (currentSong?.albumArtUriString != null) {
-                            AsyncImage(
-                                model = currentSong?.albumArtUriString,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                // 1. The Base Album Art
+                                AsyncImage(
+                                    model = currentSong?.albumArtUriString,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                
+                                // 2. The Material You Fog Scrim
+                                // Pushes the image back with 75% background color, 
+                                // and tints it with 8% primary color to lock it into the theme palette.
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.75f))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                )
+                            }
                         }
                     }
                     AppBackgroundStyle.CUSTOM -> {
