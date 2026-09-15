@@ -742,6 +742,16 @@ constructor(
         preferences[PreferencesKeys.APP_BACKGROUND_OPACITY] ?: 0.5f
     }.distinctUntilChanged()
 
+    val appBackgroundBlurFlow: Flow<Float> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.APP_BACKGROUND_BLUR] ?: 0f
+    }.distinctUntilChanged()
+
+    suspend fun setAppBackgroundBlur(blur: Float) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_BACKGROUND_BLUR] = blur
+        }
+    }
+
     suspend fun setAppBackgroundStyle(style: AppBackgroundStyle) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.APP_BACKGROUND_STYLE] = style.name
