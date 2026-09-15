@@ -73,7 +73,7 @@ enum class AlbumArtQuality(val maxSize: Int, val label: String) {
 }
 
 enum class AppBackgroundStyle {
-    DEFAULT, GREEN_NOTES, DARK_NOTES, CUSTOM
+    DEFAULT, MUSIC_NOTES, LIVE_BLUR, CUSTOM
 }
 
 enum class DynamicIslandStyle {
@@ -169,7 +169,8 @@ constructor(
         val APP_BACKGROUND_STYLE = stringPreferencesKey("app_background_style")
         val APP_BACKGROUND_CUSTOM_URI = stringPreferencesKey("app_background_custom_uri")
         val APP_BACKGROUND_OPACITY = androidx.datastore.preferences.core.floatPreferencesKey("app_background_opacity")
-
+        val APP_BACKGROUND_BLUR = androidx.datastore.preferences.core.floatPreferencesKey("app_background_blur")
+        
         
         val PLAYER_THEME_PREFERENCE = stringPreferencesKey("player_theme_preference_v2")
         val ALBUM_ART_PALETTE_STYLE = stringPreferencesKey("album_art_palette_style_v1")
