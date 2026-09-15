@@ -168,6 +168,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle
+import androidx.compose.ui.draw.blur
+
 
 
 private const val HomeLoadingPlaceholderMinDurationMillis = 1200L
@@ -224,6 +226,8 @@ fun HomeScreen(
     val homeMixPreviewSongs by playerViewModel.homeMixPreviewSongs.collectAsStateWithLifecycle()
     val playbackHistory by playerViewModel.playbackHistory.collectAsStateWithLifecycle()
     val quickPicksDisplayMode by playerViewModel.quickPicksDisplayMode.collectAsStateWithLifecycle()
+    val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = AppBackgroundStyle.DEFAULT)
+    val isCustomBackground = backgroundStyle != AppBackgroundStyle.DEFAULT
     val lifecycleOwner = LocalLifecycleOwner.current
     val isTestBuild = context.packageName.endsWith(".test")
 
@@ -449,7 +453,8 @@ fun HomeScreen(
             .then(sweepModifier)
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            containerColor = if (isCustomBackground) Color.Transparent else MaterialTheme.colorScheme.background
         ) { innerPadding ->
             val pullRefreshState = rememberPullToRefreshState()
             PullToRefreshBox(
@@ -478,7 +483,7 @@ fun HomeScreen(
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
+                        .background(if (isCustomBackground) Color.Transparent else MaterialTheme.colorScheme.background)
                         .scrollMotionBlur(
                             lazyListState = listState,
                             enabled = settingsUiState.isUiMotionBlurEnabled
@@ -684,6 +689,7 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .height(bottomGradientHeight)
+                .then(if (isCustomBackground) Modifier.blur(16.dp) else Modifier)
                 .background(
                     brush = Brush.verticalGradient(
                         colorStops = arrayOf(
