@@ -68,6 +68,7 @@ data class SettingsUiState(
     val appBackgroundStyle: com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle = com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT,
     val appBackgroundCustomUri: String = "",
     val appBackgroundOpacity: Float = 0.5f,
+    val appBackgroundBlur: Float = 0f,
     val isLoadingDirectories: Boolean = false,
     val appLanguageTag: String = AppLanguage.SYSTEM.tag,
     val appThemeMode: String = AppThemeMode.FOLLOW_SYSTEM,
@@ -195,6 +196,7 @@ private sealed interface SettingsUiUpdate {
         val appBackgroundStyle: com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle,
         val appBackgroundCustomUri: String,
         val appBackgroundOpacity: Float,
+        val appBackgroundBlur: Float,
         val appRebrandDialogShown: Boolean,
         val appThemeMode: String,
         val appFontMode: String,
@@ -610,7 +612,8 @@ class SettingsViewModel @Inject constructor(
                 themePreferencesRepository.appFontModeFlow,
                 userPreferencesRepository.appBackgroundStyleFlow,
                 userPreferencesRepository.appBackgroundCustomUriFlow,
-                userPreferencesRepository.appBackgroundOpacityFlow
+                userPreferencesRepository.appBackgroundOpacityFlow,
+                userPreferencesRepository.appBackgroundBlurFlow
             ) { values ->
                 SettingsUiUpdate.Group1(
                     appRebrandDialogShown = values[0] as Boolean,
@@ -630,7 +633,8 @@ class SettingsViewModel @Inject constructor(
                     appFontMode = values[14] as String,
                     appBackgroundStyle = values[15] as com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle,
                     appBackgroundCustomUri = values[16] as String,
-                    appBackgroundOpacity = values[17] as Float
+                    appBackgroundOpacity = values[17] as Float,
+                    appBackgroundBlur = values[18] as Float
                 )
             }.collect { update ->
                 _uiState.update { state ->
@@ -652,6 +656,7 @@ class SettingsViewModel @Inject constructor(
                         appBackgroundStyle = update.appBackgroundStyle,
                         appBackgroundCustomUri = update.appBackgroundCustomUri,
                         appBackgroundOpacity = update.appBackgroundOpacity,
+                        appBackgroundBlur = update.appBackgroundBlur,
                         showPlayerFileInfo = update.showPlayerFileInfo
                     )
                 }
@@ -1998,6 +2003,12 @@ class SettingsViewModel @Inject constructor(
     fun setAppBackgroundOpacity(opacity: Float) {
         viewModelScope.launch {
             userPreferencesRepository.setAppBackgroundOpacity(opacity)
+        }
+    }
+
+    fun setAppBackgroundBlur(blur: Float) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAppBackgroundBlur(blur)
         }
     }
 }
