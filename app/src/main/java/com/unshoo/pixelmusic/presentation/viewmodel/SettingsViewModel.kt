@@ -65,6 +65,9 @@ import coil.imageLoader
 
 
 data class SettingsUiState(
+    val appBackgroundStyle: com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle = com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT,
+    val appBackgroundCustomUri: String = "",
+    val appBackgroundOpacity: Float = 0.5f,
     val isLoadingDirectories: Boolean = false,
     val appLanguageTag: String = AppLanguage.SYSTEM.tag,
     val appThemeMode: String = AppThemeMode.FOLLOW_SYSTEM,
@@ -189,6 +192,9 @@ data class LyricsRefreshProgress(
 // Helper classes for consolidated combine() collectors to reduce coroutine overhead
 private sealed interface SettingsUiUpdate {
     data class Group1(
+        val appBackgroundStyle: com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle,
+        val appBackgroundCustomUri: String,
+        val appBackgroundOpacity: Float,
         val appRebrandDialogShown: Boolean,
         val appThemeMode: String,
         val appFontMode: String,
@@ -618,7 +624,10 @@ class SettingsViewModel @Inject constructor(
                     carouselStyle = values[11] as String,
                     launchTab = values[12] as String,
                     showPlayerFileInfo = values[13] as Boolean,
-                    appFontMode = values[14] as String
+                    appFontMode = values[14] as String,
+                    appBackgroundStyle = values[15] as com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle,
+                    appBackgroundCustomUri = values[16] as String,
+                    appBackgroundOpacity = values[17] as Float
                 )
             }.collect { update ->
                 _uiState.update { state ->
@@ -637,6 +646,9 @@ class SettingsViewModel @Inject constructor(
                         libraryNavigationMode = update.libraryNavigationMode,
                         carouselStyle = update.carouselStyle,
                         launchTab = update.launchTab,
+                        appBackgroundStyle = update.appBackgroundStyle,
+                        appBackgroundCustomUri = update.appBackgroundCustomUri,
+                        appBackgroundOpacity = update.appBackgroundOpacity,
                         showPlayerFileInfo = update.showPlayerFileInfo
                     )
                 }
@@ -646,6 +658,9 @@ class SettingsViewModel @Inject constructor(
         // Group 2: Playback and system settings
         viewModelScope.launch {
             combine<Any?, SettingsUiUpdate.Group2>(
+                userPreferencesRepository.appBackgroundStyleFlow,
+                userPreferencesRepository.appBackgroundCustomUriFlow,
+                userPreferencesRepository.appBackgroundOpacityFlow,
                 userPreferencesRepository.keepPlayingInBackgroundFlow,
                 userPreferencesRepository.disableCastAutoplayFlow,
                 userPreferencesRepository.resumeOnHeadsetReconnectFlow,
@@ -1965,6 +1980,24 @@ class SettingsViewModel @Inject constructor(
     fun setGeneratedPlaylistsRetentionPeriod(period: String) {
         viewModelScope.launch {
             userPreferencesRepository.setGeneratedPlaylistsRetentionPeriod(period)
+        }
+    }
+
+    fun setAppBackgroundStyle(style: com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAppBackgroundStyle(style)
+        }
+    }
+
+    fun setAppBackgroundCustomUri(uri: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAppBackgroundCustomUri(uri)
+        }
+    }
+
+    fun setAppBackgroundOpacity(opacity: Float) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAppBackgroundOpacity(opacity)
         }
     }
 }
