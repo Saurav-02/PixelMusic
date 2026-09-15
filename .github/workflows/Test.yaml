@@ -142,7 +142,7 @@ jobs:
           
           CAPTION=$(cat caption.txt)
           
-          APK_FILE=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          APK_FILE=$(find app/build/outputs/apk/release -name "*arm64-v8a*.apk" | head -n 1)
           
           if [ -z "$APK_FILE" ]; then
             echo "Error: No APK file found to send."
