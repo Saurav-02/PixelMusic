@@ -607,7 +607,10 @@ class SettingsViewModel @Inject constructor(
                 userPreferencesRepository.carouselStyleFlow,
                 userPreferencesRepository.launchTabFlow,
                 userPreferencesRepository.showPlayerFileInfoFlow,
-                themePreferencesRepository.appFontModeFlow
+                themePreferencesRepository.appFontModeFlow,
+                userPreferencesRepository.appBackgroundStyleFlow,
+                userPreferencesRepository.appBackgroundCustomUriFlow,
+                userPreferencesRepository.appBackgroundOpacityFlow
             ) { values ->
                 SettingsUiUpdate.Group1(
                     appRebrandDialogShown = values[0] as Boolean,
