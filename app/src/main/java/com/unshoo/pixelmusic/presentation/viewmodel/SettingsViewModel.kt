@@ -661,9 +661,6 @@ class SettingsViewModel @Inject constructor(
         // Group 2: Playback and system settings
         viewModelScope.launch {
             combine<Any?, SettingsUiUpdate.Group2>(
-                userPreferencesRepository.appBackgroundStyleFlow,
-                userPreferencesRepository.appBackgroundCustomUriFlow,
-                userPreferencesRepository.appBackgroundOpacityFlow,
                 userPreferencesRepository.keepPlayingInBackgroundFlow,
                 userPreferencesRepository.disableCastAutoplayFlow,
                 userPreferencesRepository.resumeOnHeadsetReconnectFlow,
