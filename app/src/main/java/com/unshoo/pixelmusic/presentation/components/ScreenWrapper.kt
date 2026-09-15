@@ -32,6 +32,12 @@ import com.unshoo.pixelmusic.presentation.navigation.isMainRootRoute
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import com.unshoo.pixelmusic.R
+import com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle
 
 
 @OptIn(UnstableApi::class)
@@ -121,7 +127,10 @@ fun ScreenWrapper(
     // Hook into your data preference layer here or pass this state via parameters 
     // val navBarStyle by userPreferences.navBarStyle.collectAsStateWithLifecycle(initialValue = NavBarStyle.DEFAULT)
     val navBarStyle = "floating_pill" // Temporary hardcoded check matching step 1
-
+    val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = AppBackgroundStyle.DEFAULT)
+    val backgroundCustomUri by playerViewModel.userPreferencesRepository.appBackgroundCustomUriFlow.collectAsStateWithLifecycle(initialValue = "")
+    val backgroundOpacity by playerViewModel.userPreferencesRepository.appBackgroundOpacityFlow.collectAsStateWithLifecycle(initialValue = 0.5f)
+    
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -148,6 +157,39 @@ fun ScreenWrapper(
                 }
             )
     ) {
+        if (backgroundStyle != AppBackgroundStyle.DEFAULT) {
+            val alpha = backgroundOpacity
+            when (backgroundStyle) {
+                AppBackgroundStyle.GREEN_NOTES -> {
+                    Image(
+                        painter = painterResource(id = R.drawable.bg_green_notes),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }
+                    )
+                }
+                AppBackgroundStyle.DARK_NOTES -> {
+                    Image(
+                        painter = painterResource(id = R.drawable.bg_dark_notes),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }
+                    )
+                }
+                AppBackgroundStyle.CUSTOM -> {
+                    if (backgroundCustomUri.isNotBlank()) {
+                        AsyncImage(
+                            model = backgroundCustomUri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }
+                        )
+                    }
+                }
+                else -> {}
+            }
+        }
+
         content()
 
         // Dim Layer Overlay
