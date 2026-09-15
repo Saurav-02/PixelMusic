@@ -41,6 +41,7 @@ import com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.luminance
 import kotlinx.coroutines.flow.map
+import androidx.compose.ui.graphics.ColorFilter
 
 
 
@@ -179,9 +180,10 @@ fun ScreenWrapper(
                 when (backgroundStyle) {
                     AppBackgroundStyle.MUSIC_NOTES -> {
                         Image(
-                            painter = painterResource(id = if (isDarkTheme) R.drawable.bg_dark_notes else R.drawable.bg_green_notes),
+                            painter = painterResource(id = R.drawable.bg_music_notes_tintable),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                             modifier = Modifier.fillMaxSize()
                         )
                     }
