@@ -72,6 +72,10 @@ enum class AlbumArtQuality(val maxSize: Int, val label: String) {
     ORIGINAL(0, "Original - Maximum quality")
 }
 
+enum class AppBackgroundStyle {
+    DEFAULT, GREEN_NOTES, DARK_NOTES, CUSTOM
+}
+
 enum class DynamicIslandStyle {
     ANIMATED_NOTES, PROGRESS_TIME, STATIC_ICON
 }
@@ -162,7 +166,10 @@ constructor(
         val LATEST_GITHUB_CHANGELOG_CACHE = stringPreferencesKey("latest_github_changelog_cache")
         val DYNAMIC_ISLAND_STYLE = stringPreferencesKey("dynamic_island_style")
         val NOW_PLAYING_LYRICS_STYLE = stringPreferencesKey("now_playing_lyrics_style")
-       
+        val APP_BACKGROUND_STYLE = stringPreferencesKey("app_background_style")
+        val APP_BACKGROUND_CUSTOM_URI = stringPreferencesKey("app_background_custom_uri")
+        val APP_BACKGROUND_OPACITY = androidx.datastore.preferences.core.floatPreferencesKey("app_background_opacity")
+
         
         val PLAYER_THEME_PREFERENCE = stringPreferencesKey("player_theme_preference_v2")
         val ALBUM_ART_PALETTE_STYLE = stringPreferencesKey("album_art_palette_style_v1")
@@ -713,6 +720,44 @@ constructor(
         preferences[PreferencesKeys.NOW_PLAYING_LYRICS_STYLE] = style.name
     }
 }
+
+    // ===== App Background Settings =====
+
+    val appBackgroundStyleFlow: Flow<AppBackgroundStyle> = dataStore.data.map { preferences ->
+        try {
+            AppBackgroundStyle.valueOf(
+                preferences[PreferencesKeys.APP_BACKGROUND_STYLE] ?: AppBackgroundStyle.DEFAULT.name
+            )
+        } catch (e: Exception) {
+            AppBackgroundStyle.DEFAULT
+        }
+    }.distinctUntilChanged()
+
+    val appBackgroundCustomUriFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.APP_BACKGROUND_CUSTOM_URI] ?: ""
+    }.distinctUntilChanged()
+
+    val appBackgroundOpacityFlow: Flow<Float> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.APP_BACKGROUND_OPACITY] ?: 0.5f
+    }.distinctUntilChanged()
+
+    suspend fun setAppBackgroundStyle(style: AppBackgroundStyle) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_BACKGROUND_STYLE] = style.name
+        }
+    }
+
+    suspend fun setAppBackgroundCustomUri(uri: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_BACKGROUND_CUSTOM_URI] = uri
+        }
+    }
+
+    suspend fun setAppBackgroundOpacity(opacity: Float) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_BACKGROUND_OPACITY] = opacity
+        }
+    }
 
     // ===== Library Sync Settings =====
 
