@@ -773,8 +773,8 @@ Box(
                                     description = "Choose a custom background to show behind the app interface",
                                     options = mapOf(
                                         com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT.name to "Default (Solid Color)",
-                                        com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.GREEN_NOTES.name to "Green Music Notes",
-                                        com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DARK_NOTES.name to "Dark Music Notes",
+                                        com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.MUSIC_NOTES.name to "Music Notes (Auto Dark/Light)",
+                                        com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.LIVE_BLUR.name to "Live Blur (Now Playing Art)",
                                         com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM.name to "Custom Image from Gallery"
                                     ),
                                     selectedKey = currentBgStyle.name,
@@ -801,6 +801,14 @@ Box(
                                         steps = 9,
                                         onValueChange = { settingsViewModel.setAppBackgroundOpacity(it) },
                                         valueText = { "${(it * 100).toInt()}%" }
+                                    )
+                                    SliderSettingsItem(
+                                        label = "Wallpaper Blur",
+                                        value = uiState.appBackgroundBlur,
+                                        valueRange = 0f..100f,
+                                        steps = 20,
+                                        onValueChange = { settingsViewModel.setAppBackgroundBlur(it) },
+                                        valueText = { "${it.toInt()}%" }
                                     )
                                 }
                             }
