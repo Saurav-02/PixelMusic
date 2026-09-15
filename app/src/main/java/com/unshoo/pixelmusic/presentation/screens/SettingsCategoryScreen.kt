@@ -276,6 +276,22 @@ fun SettingsCategoryScreen(
         }
     }
 
+    val backgroundLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                // Persist the URI permission so the app can load it after a restart
+                val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(uri, flag)
+                settingsViewModel.setAppBackgroundCustomUri(uri.toString())
+                settingsViewModel.setAppBackgroundStyle(com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Could not load image. Try another gallery app.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         settingsViewModel.dataTransferEvents.collectLatest { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -748,6 +764,47 @@ Box(
                             val nowPlayingLyricsStyle by playerViewModel.userPreferencesRepository.nowPlayingLyricsStyleFlow
                                 .collectAsStateWithLifecycle(initialValue = com.unshoo.pixelmusic.data.preferences.NowPlayingLyricsStyle.HIDDEN)
 
+                            val currentBgStyle = uiState.appBackgroundStyle
+                            val currentBgOpacity = uiState.appBackgroundOpacity
+
+                            SettingsSubsection(title = "App Background") {
+                                ThemeSelectorItem(
+                                    label = "Background Wallpaper",
+                                    description = "Choose a custom background to show behind the app interface",
+                                    options = mapOf(
+                                        com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT.name to "Default (Solid Color)",
+                                        com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.GREEN_NOTES.name to "Green Music Notes",
+                                        com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DARK_NOTES.name to "Dark Music Notes",
+                                        com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM.name to "Custom Image from Gallery"
+                                    ),
+                                    selectedKey = currentBgStyle.name,
+                                    onSelectionChanged = { key ->
+                                        val selectedStyle = com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.valueOf(key)
+                                        if (selectedStyle == com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM) {
+                                            backgroundLauncher.launch("image/*")
+                                        } else {
+                                            settingsViewModel.setAppBackgroundStyle(selectedStyle)
+                                        }
+                                    },
+                                    leadingIcon = { Icon(Icons.Outlined.Palette, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
+
+                                AnimatedVisibility(
+                                    visible = currentBgStyle != com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT,
+                                    enter = expandVertically() + fadeIn(),
+                                    exit = shrinkVertically() + fadeOut()
+                                ) {
+                                    SliderSettingsItem(
+                                        label = "Wallpaper Opacity",
+                                        value = currentBgOpacity,
+                                        valueRange = 0.1f..1.0f,
+                                        steps = 9,
+                                        onValueChange = { settingsViewModel.setAppBackgroundOpacity(it) },
+                                        valueText = { "${(it * 100).toInt()}%" }
+                                    )
+                                }
+                            }
+                            
                             SettingsSubsection(title = stringResource(R.string.setcat_global_theme)) {
                                 ThemeSelectorItem(
                                     label = stringResource(R.string.setcat_language_label),
