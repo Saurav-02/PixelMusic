@@ -38,6 +38,11 @@ import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.luminance
+import kotlinx.coroutines.flow.map
+
+
 
 
 @OptIn(UnstableApi::class)
@@ -130,6 +135,10 @@ fun ScreenWrapper(
     val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = AppBackgroundStyle.DEFAULT)
     val backgroundCustomUri by playerViewModel.userPreferencesRepository.appBackgroundCustomUriFlow.collectAsStateWithLifecycle(initialValue = "")
     val backgroundOpacity by playerViewModel.userPreferencesRepository.appBackgroundOpacityFlow.collectAsStateWithLifecycle(initialValue = 0.5f)
+    val backgroundBlur by playerViewModel.userPreferencesRepository.appBackgroundBlurFlow.collectAsStateWithLifecycle(initialValue = 0f)
+
+    val currentSong by remember { playerViewModel.stablePlayerState.map { it.currentSong } }.collectAsStateWithLifecycle(initialValue = null)
+    val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     
     Box(
         modifier = modifier
@@ -159,34 +168,45 @@ fun ScreenWrapper(
     ) {
         if (backgroundStyle != AppBackgroundStyle.DEFAULT) {
             val alpha = backgroundOpacity
-            when (backgroundStyle) {
-                AppBackgroundStyle.GREEN_NOTES -> {
-                    Image(
-                        painter = painterResource(id = R.drawable.bg_green_notes),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }
-                    )
-                }
-                AppBackgroundStyle.DARK_NOTES -> {
-                    Image(
-                        painter = painterResource(id = R.drawable.bg_dark_notes),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }
-                    )
-                }
-                AppBackgroundStyle.CUSTOM -> {
-                    if (backgroundCustomUri.isNotBlank()) {
-                        AsyncImage(
-                            model = backgroundCustomUri,
+            val blurMod = if (backgroundBlur > 0f) Modifier.blur(backgroundBlur.dp) else Modifier
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { this.alpha = alpha }
+                    .then(blurMod)
+            ) {
+                when (backgroundStyle) {
+                    AppBackgroundStyle.MUSIC_NOTES -> {
+                        Image(
+                            painter = painterResource(id = if (isDarkTheme) R.drawable.bg_dark_notes else R.drawable.bg_green_notes),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
+                    AppBackgroundStyle.LIVE_BLUR -> {
+                        if (currentSong?.albumArtUriString != null) {
+                            AsyncImage(
+                                model = currentSong?.albumArtUriString,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                    AppBackgroundStyle.CUSTOM -> {
+                        if (backgroundCustomUri.isNotBlank()) {
+                            AsyncImage(
+                                model = backgroundCustomUri,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                    else -> {}
                 }
-                else -> {}
             }
         }
 
