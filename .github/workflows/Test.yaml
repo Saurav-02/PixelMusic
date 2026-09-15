@@ -12,6 +12,20 @@ jobs:
       contents: read
 
     steps:
+      - name: Send Workflow Start Notification
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # Send a starting message and save the message ID for live updates
+          RESPONSE=$(curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
+            -d chat_id=${CHAT_ID} \
+            -d text="⏳ *Building new test version...*%0APlease wait while the workflow runs." \
+            -d parse_mode=Markdown)
+          
+          MESSAGE_ID=$(echo $RESPONSE | jq -r '.result.message_id')
+          echo "TG_MESSAGE_ID=$MESSAGE_ID" >> $GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -108,4 +122,45 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/Test-px/PixelMusic/merge-upstream \
             -d '{"branch":"main"}'
-            
+
+      - name: Send APK and Changelog to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # Extract only the first paragraph (latest changes) from changelog.txt
+          LATEST_CHANGES=$(awk -v RS='' 'NR==1' changelog.txt)
+          
+          if [ -z "$LATEST_CHANGES" ]; then
+            LATEST_CHANGES="No changelog provided."
+          fi
+          
+          # Build the caption format
+          echo "🔨 *Test Build #${{ env.NEXT_NUM }}*" > caption.txt
+          echo "" >> caption.txt
+          echo "$LATEST_CHANGES" >> caption.txt
+          
+          CAPTION=$(cat caption.txt)
+          
+          APK_FILE=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          
+          if [ -z "$APK_FILE" ]; then
+            echo "Error: No APK file found to send."
+            exit 1
+          fi
+
+          echo "Uploading $APK_FILE to Telegram..."
+          
+          # Send the APK as a reply to the initial loading message
+          curl -s -F "chat_id=${CHAT_ID}" \
+               -F "reply_to_message_id=${{ env.TG_MESSAGE_ID }}" \
+               -F "document=@${APK_FILE}" \
+               -F "caption=${CAPTION}" \
+               https://api.telegram.org/bot${BOT_TOKEN}/sendDocument
+               
+          # Edit the original message to show completion
+          curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/editMessageText \
+            -d chat_id=${CHAT_ID} \
+            -d message_id=${{ env.TG_MESSAGE_ID }} \
+            -d text="✅ *Build Completed!*%0ATest Build #${{ env.NEXT_NUM }} is ready." \
+            -d parse_mode=Markdown
