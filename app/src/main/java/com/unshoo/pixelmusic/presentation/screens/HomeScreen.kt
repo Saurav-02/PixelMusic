@@ -733,6 +733,7 @@ fun HomeScreen(
         HomeShuffleFab(
             isShuffleEnabled = isShuffleEnabled,
             isPlayerActive = currentSong != null,
+            baseBottomOffset = paddingValuesParent.calculateBottomPadding(),
             onClick = {
                 val songsToUse = quickPicks.ifEmpty { yourMixSongs }
                 if (songsToUse.isNotEmpty()) {
