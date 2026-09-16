@@ -81,7 +81,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
-
+import androidx.compose.animation.Crossfade
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -962,55 +962,71 @@ class MainActivity : ComponentActivity() {
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     // 1. The Global Wallpaper (Drawn only once!)
-                    if (backgroundStyle != com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT) {
-                        val alpha = backgroundOpacity
-                        val blurMod = if (backgroundBlur > 0f) Modifier.blur(backgroundBlur.dp) else Modifier
-                        
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer { this.alpha = alpha }
-                                .then(blurMod)
-                        ) {
-                            when (backgroundStyle) {
-                                com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.MUSIC_NOTES -> {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.bg_music_notes_tintable),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                }
-                                com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.LIVE_BLUR -> {
-                                    if (currentSong?.albumArtUriString != null) {
-                                        Box(modifier = Modifier.fillMaxSize()) {
+                    // We bundle the triggers into a single state so it only fades when these specific values change
+                    val backgroundTarget = remember(backgroundStyle, currentSong?.albumArtUriString, backgroundCustomUri) {
+                        listOf(backgroundStyle, currentSong?.albumArtUriString, backgroundCustomUri)
+                    }
+
+                    Crossfade(
+                        targetState = backgroundTarget,
+                        animationSpec = tween(durationMillis = 800), // Nice, slow 800ms fade
+                        label = "BackgroundCrossfade"
+                    ) { state ->
+                        val currentStyle = state[0] as com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle
+                        val currentArt = state[1] as String?
+                        val currentUri = state[2] as String?
+
+                        if (currentStyle != com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT) {
+                            // Reading these inside the lambda means sliders update instantly without triggering a crossfade!
+                            val alpha = backgroundOpacity 
+                            val blurMod = if (backgroundBlur > 0f) Modifier.blur(backgroundBlur.dp) else Modifier
+                            
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer { this.alpha = alpha }
+                                    .then(blurMod)
+                            ) {
+                                when (currentStyle) {
+                                    com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.MUSIC_NOTES -> {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.bg_music_notes_tintable),
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                    com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.LIVE_BLUR -> {
+                                        if (currentArt != null) {
+                                            Box(modifier = Modifier.fillMaxSize()) {
+                                                AsyncImage(
+                                                    model = currentArt,
+                                                    contentDescription = null,
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.75f))
+                                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                                )
+                                            }
+                                        }
+                                    }
+                                    com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM -> {
+                                        if (!currentUri.isNullOrBlank()) {
                                             AsyncImage(
-                                                model = currentSong?.albumArtUriString,
+                                                model = currentUri,
                                                 contentDescription = null,
                                                 contentScale = ContentScale.Crop,
                                                 modifier = Modifier.fillMaxSize()
                                             )
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.75f))
-                                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-                                            )
                                         }
                                     }
+                                    else -> {}
                                 }
-                                com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM -> {
-                                    if (backgroundCustomUri.isNotBlank()) {
-                                        AsyncImage(
-                                            model = backgroundCustomUri,
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
-                                    }
-                                }
-                                else -> {}
                             }
                         }
                     }
