@@ -214,7 +214,7 @@ fun SearchScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            // Removed solid background so the global wallpaper shows through!
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
