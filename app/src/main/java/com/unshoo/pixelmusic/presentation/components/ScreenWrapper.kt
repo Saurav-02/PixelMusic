@@ -116,8 +116,6 @@ fun ScreenWrapper(
         label = "dimAlpha"
     )
 
-    val navBarStyle = "floating_pill" // Temporary hardcoded check matching step 1
-
     // Fetch background style to determine if the ScreenWrapper should become transparent
     val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = AppBackgroundStyle.DEFAULT)
 
@@ -139,14 +137,6 @@ fun ScreenWrapper(
             }
             // If using a custom wallpaper, make the wrapper transparent so the MainActivity background shows through!
             .background(if (backgroundStyle != AppBackgroundStyle.DEFAULT) Color.Transparent else MaterialTheme.colorScheme.background)
-            // Add safety layout margins to clear space for the floating bar overlay
-            .then(
-                if (isMainRootScreen && navBarStyle == "floating_pill") {
-                    Modifier.padding(bottom = 100.dp) // Accounts for bar height + padding space
-                } else {
-                    Modifier
-                }
-            )
     ) {
         content()
 
