@@ -743,6 +743,7 @@ fun ExploreScreen(
         HomeShuffleFab(
             isShuffleEnabled = false,
             isPlayerActive = isExploreFabActive,
+            baseBottomOffset = paddingValuesParent.calculateBottomPadding(), // <-- Add this line
             onClick = { navController.navigateSafely(Screen.SmartMix.route) },
             isExploreMode = true,
             onLongClick = { showRecognitionDialog = true },
