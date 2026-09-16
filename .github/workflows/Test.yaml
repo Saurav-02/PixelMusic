@@ -12,20 +12,6 @@ jobs:
       contents: read
 
     steps:
-      - name: Send Workflow Start Notification
-        env:
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          # Send a starting message and save the message ID for live updates
-          RESPONSE=$(curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
-            -d chat_id=${CHAT_ID} \
-            -d text="⏳ *Building new test version...*%0APlease wait while the workflow runs." \
-            -d parse_mode=Markdown)
-          
-          MESSAGE_ID=$(echo $RESPONSE | jq -r '.result.message_id')
-          echo "TG_MESSAGE_ID=$MESSAGE_ID" >> $GITHUB_ENV
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -111,7 +97,7 @@ jobs:
           tag_name: test-build-${{ env.NEXT_NUM }}
           name: Test Build ${{ env.NEXT_NUM }}
           body_path: changelog.txt
-          files: app/build/outputs/apk/release/*.apk
+          files: app/build/outputs/apk/release/*arm64-v8a*.apk
 
       - name: Sync Fork Automatically
         run: |
@@ -142,6 +128,7 @@ jobs:
           
           CAPTION=$(cat caption.txt)
           
+          # Locate the arm64-v8a APK
           APK_FILE=$(find app/build/outputs/apk/release -name "*arm64-v8a*.apk" | head -n 1)
           
           if [ -z "$APK_FILE" ]; then
@@ -151,16 +138,8 @@ jobs:
 
           echo "Uploading $APK_FILE to Telegram..."
           
-          # Send the APK as a reply to the initial loading message
+          # Send the APK and caption directly to the chat
           curl -s -F "chat_id=${CHAT_ID}" \
-               -F "reply_to_message_id=${{ env.TG_MESSAGE_ID }}" \
                -F "document=@${APK_FILE}" \
                -F "caption=${CAPTION}" \
                https://api.telegram.org/bot${BOT_TOKEN}/sendDocument
-               
-          # Edit the original message to show completion
-          curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/editMessageText \
-            -d chat_id=${CHAT_ID} \
-            -d message_id=${{ env.TG_MESSAGE_ID }} \
-            -d text="✅ *Build Completed!*%0ATest Build #${{ env.NEXT_NUM }} is ready." \
-            -d parse_mode=Markdown
