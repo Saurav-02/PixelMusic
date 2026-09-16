@@ -684,24 +684,6 @@ fun HomeScreen(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .height(bottomGradientHeight)
-                .then(if (isCustomBackground) Modifier.blur(16.dp) else Modifier)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.0f to Color.Transparent,
-                            0.2f to Color.Transparent,
-                            0.8f to androidx.compose.material3.MaterialTheme.colorScheme.background,
-                            1.0f to androidx.compose.material3.MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
-        )
-
         // Top scrim — Material You expressive tint in light mode, matches Explore
         Box(
             modifier = Modifier
