@@ -325,10 +325,16 @@ fun ThemeSelectorItem(
         options: Map<String, String>,
         selectedKey: String,
         onSelectionChanged: (String) -> Unit,
-        leadingIcon: @Composable () -> Unit
+        leadingIcon: @Composable () -> Unit,
+        showBetaBadge: Boolean = false // <-- Added parameter
 ) {
     var showSheet by remember { mutableStateOf(false) }
-    val selectedOption = options[selectedKey] ?: selectedKey
+    val rawSelectedOption = options[selectedKey] ?: selectedKey
+    
+    // Auto-parse (Beta) suffixes for the badges
+    val selectedOptionClean = rawSelectedOption.removeSuffix(" (Beta)")
+    val isSelectedOptionBeta = rawSelectedOption.endsWith(" (Beta)")
+    
     val highlightTitle = LocalSettingsHighlightTitle.current
     val highlighted = highlightTitle != null && label == highlightTitle
     val shape = RoundedCornerShape(10.dp)
@@ -356,11 +362,27 @@ fun ThemeSelectorItem(
                     ) { leadingIcon() }
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            if (showBetaBadge) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    color = MaterialTheme.colorScheme.errorContainer,
+                                    shape = RoundedCornerShape(4.dp)
+                                ) {
+                                    Text(
+                                        text = "BETA",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = description,
@@ -371,18 +393,34 @@ fun ThemeSelectorItem(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         // Selected Value Badge
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            modifier = Modifier.align(Alignment.Start)
-                        ) {
-                            Text(
-                                 text = selectedOption,
-                                 style = MaterialTheme.typography.labelMedium,
-                                 color = MaterialTheme.colorScheme.primary,
-                                 fontWeight = FontWeight.Bold,
-                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                            )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            ) {
+                                Text(
+                                     text = selectedOptionClean,
+                                     style = MaterialTheme.typography.labelMedium,
+                                     color = MaterialTheme.colorScheme.primary,
+                                     fontWeight = FontWeight.Bold,
+                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                )
+                            }
+                            
+                            if (isSelectedOptionBeta) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    color = MaterialTheme.colorScheme.errorContainer,
+                                    shape = RoundedCornerShape(4.dp)
+                                ) {
+                                    Text(
+                                        text = "BETA",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -417,6 +455,10 @@ fun ThemeSelectorItem(
                         val isSelected = key == selectedKey
                         val containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer
                         val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                        
+                        // Parse suffix for bottom sheet options
+                        val cleanOptionLabel = optionLabel.removeSuffix(" (Beta)")
+                        val isBetaOption = optionLabel.endsWith(" (Beta)")
 
                         Surface(
                             onClick = {
@@ -434,12 +476,28 @@ fun ThemeSelectorItem(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = optionLabel,
+                                    text = cleanOptionLabel,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = contentColor,
-                                    modifier = Modifier.weight(1f)
+                                    color = contentColor
                                 )
+                                
+                                if (isBetaOption) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.errorContainer,
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "BETA",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.weight(1f))
 
                                 if (isSelected) {
                                     Icon(
