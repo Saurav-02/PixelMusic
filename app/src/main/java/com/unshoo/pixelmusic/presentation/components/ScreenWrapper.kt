@@ -29,22 +29,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
 import androidx.lifecycle.compose.currentStateAsState
 import com.unshoo.pixelmusic.presentation.navigation.isMainRootRoute
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
-import coil.compose.AsyncImage
-import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.luminance
-import kotlinx.coroutines.flow.map
-import androidx.compose.ui.graphics.ColorFilter
-
-
-
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -130,17 +116,11 @@ fun ScreenWrapper(
         label = "dimAlpha"
     )
 
-    // Hook into your data preference layer here or pass this state via parameters 
-    // val navBarStyle by userPreferences.navBarStyle.collectAsStateWithLifecycle(initialValue = NavBarStyle.DEFAULT)
     val navBarStyle = "floating_pill" // Temporary hardcoded check matching step 1
-    val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = AppBackgroundStyle.DEFAULT)
-    val backgroundCustomUri by playerViewModel.userPreferencesRepository.appBackgroundCustomUriFlow.collectAsStateWithLifecycle(initialValue = "")
-    val backgroundOpacity by playerViewModel.userPreferencesRepository.appBackgroundOpacityFlow.collectAsStateWithLifecycle(initialValue = 0.5f)
-    val backgroundBlur by playerViewModel.userPreferencesRepository.appBackgroundBlurFlow.collectAsStateWithLifecycle(initialValue = 0f)
 
-    val currentSong by remember { playerViewModel.stablePlayerState.map { it.currentSong } }.collectAsStateWithLifecycle(initialValue = null)
-    val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    
+    // Fetch background style to determine if the ScreenWrapper should become transparent
+    val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = AppBackgroundStyle.DEFAULT)
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -157,7 +137,8 @@ fun ScreenWrapper(
                     this.clip = false
                 }
             }
-            .background(MaterialTheme.colorScheme.background)
+            // If using a custom wallpaper, make the wrapper transparent so the MainActivity background shows through!
+            .background(if (backgroundStyle != AppBackgroundStyle.DEFAULT) Color.Transparent else MaterialTheme.colorScheme.background)
             // Add safety layout margins to clear space for the floating bar overlay
             .then(
                 if (isMainRootScreen && navBarStyle == "floating_pill") {
@@ -167,70 +148,10 @@ fun ScreenWrapper(
                 }
             )
     ) {
-        if (backgroundStyle != AppBackgroundStyle.DEFAULT) {
-            val alpha = backgroundOpacity
-            val blurMod = if (backgroundBlur > 0f) Modifier.blur(backgroundBlur.dp) else Modifier
-            
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { this.alpha = alpha }
-                    .then(blurMod)
-            ) {
-                when (backgroundStyle) {
-                    AppBackgroundStyle.MUSIC_NOTES -> {
-                        Image(
-                            painter = painterResource(id = R.drawable.bg_music_notes_tintable),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    AppBackgroundStyle.LIVE_BLUR -> {
-                        if (currentSong?.albumArtUriString != null) {
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                // 1. The Base Album Art
-                                AsyncImage(
-                                    model = currentSong?.albumArtUriString,
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                                
-                                // 2. The Material You Fog Scrim
-                                // Pushes the image back with 75% background color, 
-                                // and tints it with 8% primary color to lock it into the theme palette.
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.75f))
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-                                )
-                            }
-                        }
-                    }
-                    AppBackgroundStyle.CUSTOM -> {
-                        if (backgroundCustomUri.isNotBlank()) {
-                            AsyncImage(
-                                model = backgroundCustomUri,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
-                    else -> {}
-                }
-            }
-        }
-
         content()
 
         // Dim Layer Overlay
         // Always composed with alpha-driven visibility instead of a conditional node.
-        // Conditionally adding/removing this Box when dimAlpha crosses 0 added a node to
-        // the composition tree mid-transition and contributed to the outgoing-screen flash.
         Box(
             modifier = Modifier
                 .fillMaxSize()
