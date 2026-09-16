@@ -695,49 +695,6 @@ fun HomeScreen(
             }
         }
 
-        // Top scrim — Material You expressive tint in light mode, matches Explore
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .height(statusBarHeight + 64.dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.00f to homeScrimTopColor.copy(alpha = 0.95f),
-                            0.18f to homeScrimTopColor.copy(alpha = 0.86f),
-                            0.36f to homeScrimTopColor.copy(alpha = 0.68f),
-                            0.54f to homeScrimTopColor.copy(alpha = 0.48f),
-                            0.72f to homeScrimTopColor.copy(alpha = 0.28f),
-                            0.88f to homeScrimTopColor.copy(alpha = 0.11f),
-                            1.00f to Color.Transparent
-                        )
-                    )
-                )
-        )
-
-        // NEW: Bottom scrim — High blurry gradient with expressive dynamic colors
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                // 140.dp added to make it reach high and blur smoothly behind the FAB
-                .height(paddingValuesParent.calculateBottomPadding() + bottomPadding + 140.dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.00f to Color.Transparent,
-                            0.12f to homeScrimBottomColor.copy(alpha = 0.11f),
-                            0.28f to homeScrimBottomColor.copy(alpha = 0.28f),
-                            0.46f to homeScrimBottomColor.copy(alpha = 0.48f),
-                            0.64f to homeScrimBottomColor.copy(alpha = 0.68f),
-                            0.82f to homeScrimBottomColor.copy(alpha = 0.86f),
-                            1.00f to homeScrimBottomColor.copy(alpha = 0.95f)
-                        )
-                    )
-                )
-        )
-
         // "PixelMusic" title + icon — sits above the scrim, fades out on scroll
         Row(
             modifier = Modifier
