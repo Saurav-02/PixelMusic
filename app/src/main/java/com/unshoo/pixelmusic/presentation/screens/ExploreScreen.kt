@@ -707,6 +707,13 @@ fun ExploreScreen(
             surfaceColor
         }
 
+        // NEW: Expressive dynamic bottom scrim
+        val scrimBottomColor = if (isLightTheme) {
+            primaryColor.copy(alpha = 0.2f).compositeOver(MaterialTheme.colorScheme.background)
+        } else {
+            primaryColor.copy(alpha = 0.08f).compositeOver(MaterialTheme.colorScheme.background)
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -722,6 +729,27 @@ fun ExploreScreen(
                             0.72f to scrimTopColor.copy(alpha = 0.28f),
                             0.88f to scrimTopColor.copy(alpha = 0.11f),
                             1.00f to Color.Transparent
+                        )
+                    )
+                )
+        )
+
+        // NEW: Bottom scrim — High blurry gradient with expressive dynamic colors
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .height(paddingValuesParent.calculateBottomPadding() + 140.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.00f to Color.Transparent,
+                            0.12f to scrimBottomColor.copy(alpha = 0.11f),
+                            0.28f to scrimBottomColor.copy(alpha = 0.28f),
+                            0.46f to scrimBottomColor.copy(alpha = 0.48f),
+                            0.64f to scrimBottomColor.copy(alpha = 0.68f),
+                            0.82f to scrimBottomColor.copy(alpha = 0.86f),
+                            1.00f to scrimBottomColor.copy(alpha = 0.95f)
                         )
                     )
                 )
