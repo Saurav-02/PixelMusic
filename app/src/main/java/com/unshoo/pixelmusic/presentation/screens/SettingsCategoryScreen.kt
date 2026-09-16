@@ -770,6 +770,7 @@ Box(
                             SettingsSubsection(title = "App Background") {
                                 ThemeSelectorItem(
                                     label = "Background Wallpaper",
+                                    showBetaBadge = true,
                                     description = "Choose a custom background to show behind the app interface",
                                     options = mapOf(
                                         com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT.name to "Default (Solid Color)",
