@@ -46,6 +46,7 @@ import kotlin.math.roundToInt
 fun HomeShuffleFab(
     isShuffleEnabled: Boolean,
     isPlayerActive: Boolean,
+    baseBottomOffset: Dp,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isExploreMode: Boolean = false,
@@ -53,23 +54,6 @@ fun HomeShuffleFab(
     onSwipeUp: (() -> Unit)? = null,
 ) {
     val systemNavBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
-    val navState = when {
-        systemNavBarInset > 35.dp -> 2
-        systemNavBarInset > 5.dp -> 1
-        else -> 0
-    }
-
-    val activeHeight = when (navState) {
-        2 -> 106.dp
-        1 -> 74.dp
-        else -> 55.dp
-    }
-    val inactiveHeight = when (navState) {
-        2 -> 40.dp
-        1 -> 14.dp
-        else -> 5.dp
-    }
 
     var isPlayerActiveDelayed by remember { mutableStateOf(isPlayerActive) }
 
@@ -82,7 +66,8 @@ fun HomeShuffleFab(
         }
     }
 
-    val targetOffset = if (isPlayerActiveDelayed) activeHeight else inactiveHeight
+    // 2. Calculate exact clearance: Scaffold padding + MiniPlayer (if active) + 16dp spacing
+    val targetOffset = baseBottomOffset + (if (isPlayerActiveDelayed) MiniPlayerHeight else 0.dp) + 16.dp
 
     val animatedBottomOffset by animateDpAsState(
         targetValue = targetOffset,
