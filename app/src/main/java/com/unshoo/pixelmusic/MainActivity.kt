@@ -1138,40 +1138,10 @@ class MainActivity : ComponentActivity() {
                             with(density) { containerHeight.toPx() }
                         }
 
-                        val showPlayerContentInitially by remember {
-                            playerViewModel.stablePlayerState
-                                .map { it.currentSong?.id != null }
-                                .distinctUntilChanged()
-                        }.collectAsStateWithLifecycle(initialValue = false)
-                        val routesWithHiddenMiniPlayer = remember { setOf(Screen.NavBarCrRad.route) }
-                        val shouldHideMiniPlayer by remember(currentRoute) {
-                            derivedStateOf { currentRoute in routesWithHiddenMiniPlayer }
-                        }
-
-                        val miniPlayerH = with(density) { MiniPlayerHeight.toPx() }
-                        val totalSheetHeightWhenContentCollapsedPx = if (showPlayerContentInitially && !shouldHideMiniPlayer) miniPlayerH else 0f
-
-                        val bottomMargin = miniPlayerBottomMargin
-
-                        val spacerPx = with(density) { MiniPlayerBottomSpacer.toPx() }
-                        val bottomMarginPx = with(density) { bottomMargin.toPx() }
-                        val sheetCollapsedTargetY = calculatePlayerSheetCollapsedTargetY(
-                            containerHeightPx = screenHeightPx,
-                            collapsedContentHeightPx = totalSheetHeightWhenContentCollapsedPx,
-                            bottomMarginPx = bottomMarginPx,
-                            bottomSpacerPx = spacerPx
-                        )
-                            AppNavigation(
-                                playerViewModel = playerViewModel,
-                                navController = navController,
-                                paddingValues = innerPadding,
-                                userPreferencesRepository = userPreferencesRepository,
-                                onSearchBarActiveChange = { isSearchBarActive = it },
-                            onOpenSidebar = { scope.launch { drawerState.open() } }
-                        )
-
-                        // NEW: Global Persistent Scrims
-                        // Placed here so they remain totally stable during screen transitions!
+                        // ==========================================
+                        // GLOBAL PERSISTENT SCRIMS (BACKGROUND LAYER)
+                        // Placed before AppNavigation so they sit BEHIND the headers and lists
+                        // ==========================================
                         val isLightTheme = MaterialTheme.colorScheme.background.luminance() > 0.5f
                         
                         val scrimTopColor = if (isLightTheme) {
@@ -1209,7 +1179,7 @@ class MainActivity : ComponentActivity() {
                                 )
                         )
                         
-                        // Global Bottom Scrim (Tall blurry gradient)
+                        // Global Bottom Scrim
                         val currentSongIdForScrim by remember { playerViewModel.stablePlayerState.map { it.currentSong?.id } }.collectAsStateWithLifecycle(initialValue = null)
                         val bottomPaddingForScrim = innerPadding.calculateBottomPadding() + (if(currentSongIdForScrim != null) MiniPlayerHeight else 0.dp)
                         
@@ -1232,7 +1202,40 @@ class MainActivity : ComponentActivity() {
                                     )
                                 )
                         )
+                        // ==========================================
 
+                        val showPlayerContentInitially by remember {
+                            playerViewModel.stablePlayerState
+                                .map { it.currentSong?.id != null }
+                                .distinctUntilChanged()
+                        }.collectAsStateWithLifecycle(initialValue = false)
+                        val routesWithHiddenMiniPlayer = remember { setOf(Screen.NavBarCrRad.route) }
+                        val shouldHideMiniPlayer by remember(currentRoute) {
+                            derivedStateOf { currentRoute in routesWithHiddenMiniPlayer }
+                        }
+
+                        val miniPlayerH = with(density) { MiniPlayerHeight.toPx() }
+                        val totalSheetHeightWhenContentCollapsedPx = if (showPlayerContentInitially && !shouldHideMiniPlayer) miniPlayerH else 0f
+
+                        val bottomMargin = miniPlayerBottomMargin
+
+                        val spacerPx = with(density) { MiniPlayerBottomSpacer.toPx() }
+                        val bottomMarginPx = with(density) { bottomMargin.toPx() }
+                        val sheetCollapsedTargetY = calculatePlayerSheetCollapsedTargetY(
+                            containerHeightPx = screenHeightPx,
+                            collapsedContentHeightPx = totalSheetHeightWhenContentCollapsedPx,
+                            bottomMarginPx = bottomMarginPx,
+                            bottomSpacerPx = spacerPx
+                        )
+                            AppNavigation(
+                                playerViewModel = playerViewModel,
+                                navController = navController,
+                                paddingValues = innerPadding,
+                                userPreferencesRepository = userPreferencesRepository,
+                                onSearchBarActiveChange = { isSearchBarActive = it },
+                            onOpenSidebar = { scope.launch { drawerState.open() } }
+                        )
+                            
                         val isExpandedOrExpanding by remember {
                             derivedStateOf {
                                 playerViewModel.playerContentExpansionFraction.value > 0.01f
