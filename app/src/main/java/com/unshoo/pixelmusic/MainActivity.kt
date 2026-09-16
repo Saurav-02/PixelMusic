@@ -139,7 +139,10 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import com.unshoo.pixelmusic.presentation.utils.AppHapticsConfig
 import com.unshoo.pixelmusic.presentation.utils.LocalAppHapticsConfig
