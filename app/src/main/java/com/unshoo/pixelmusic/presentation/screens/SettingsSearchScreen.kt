@@ -115,7 +115,7 @@ fun openSetting(setting: SearchableSetting, queryUsed: String) {
 }
 
     Surface(
-        color = MaterialTheme.colorScheme.background,
+        color = Color.Transparent,
         modifier = Modifier
             .fillMaxSize()
             .imePadding()
