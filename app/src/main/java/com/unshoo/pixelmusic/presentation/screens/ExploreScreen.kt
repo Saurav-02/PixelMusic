@@ -137,7 +137,7 @@ import kotlinx.coroutines.withContext
 import com.unshoo.pixelmusic.ui.modifiers.scrollMotionBlur
 import androidx.compose.material3.TextButton
 import com.unshoo.pixelmusic.presentation.components.HomeShuffleFab
-
+import com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle
 
 
 private val MOOD_CHIPS = listOf(
@@ -215,6 +215,8 @@ fun ExploreScreen(
     val isPlaying = stablePlayerState.isPlaying
     val currentSongId = stablePlayerState.currentSong?.id
     val quickPicksDisplayMode by playerViewModel.quickPicksDisplayMode.collectAsStateWithLifecycle()
+    val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = AppBackgroundStyle.DEFAULT)
+    val isCustomBackground = backgroundStyle != AppBackgroundStyle.DEFAULT
     val pullRefreshState = rememberPullToRefreshState()
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val scope = rememberCoroutineScope()
@@ -280,7 +282,8 @@ fun ExploreScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            containerColor = if (isCustomBackground) Color.Transparent else MaterialTheme.colorScheme.background
         ) { innerPadding ->
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
@@ -301,7 +304,7 @@ fun ExploreScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(backgroundBrush)
+                        .then(if (isCustomBackground) Modifier else Modifier.background(backgroundBrush))
                 ) {
                     if (uiState.isLoading && uiState.homePageSections.isEmpty() && uiState.newReleaseAlbums.isEmpty() && uiState.chartsPage == null) {
                         Box(
@@ -693,23 +696,6 @@ fun ExploreScreen(
                                 }
                             }
                         }
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.BottomCenter)
-                                .height(paddingValuesParent.calculateBottomPadding() + 160.dp)
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colorStops = arrayOf(
-                                            0.0f to Color.Transparent,
-                                            0.2f to Color.Transparent,
-                                            0.8f to MaterialTheme.colorScheme.background,
-                                            1.0f to MaterialTheme.colorScheme.background
-                                        )
-                                    )
-                                )
-                        )
                     }
                 }
             }
