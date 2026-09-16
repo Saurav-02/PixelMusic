@@ -1164,8 +1164,71 @@ class MainActivity : ComponentActivity() {
                                 paddingValues = innerPadding,
                                 userPreferencesRepository = userPreferencesRepository,
                                 onSearchBarActiveChange = { isSearchBarActive = it },
-                                onOpenSidebar = { scope.launch { drawerState.open() } }
-                            )
+                            onOpenSidebar = { scope.launch { drawerState.open() } }
+                        )
+
+                        // NEW: Global Persistent Scrims
+                        // Placed here so they remain totally stable during screen transitions!
+                        val isLightTheme = MaterialTheme.colorScheme.background.luminance() > 0.5f
+                        
+                        val scrimTopColor = if (isLightTheme) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f).compositeOver(MaterialTheme.colorScheme.background)
+                        } else {
+                            MaterialTheme.colorScheme.background
+                        }
+                        
+                        val scrimBottomColor = if (isLightTheme) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f).compositeOver(MaterialTheme.colorScheme.background)
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f).compositeOver(MaterialTheme.colorScheme.background)
+                        }
+                        
+                        val statusBarTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                        
+                        // Global Top Scrim
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.TopCenter)
+                                .height(statusBarTopPadding + 64.dp)
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colorStops = arrayOf(
+                                            0.00f to scrimTopColor.copy(alpha = 0.95f),
+                                            0.18f to scrimTopColor.copy(alpha = 0.86f),
+                                            0.36f to scrimTopColor.copy(alpha = 0.68f),
+                                            0.54f to scrimTopColor.copy(alpha = 0.48f),
+                                            0.72f to scrimTopColor.copy(alpha = 0.28f),
+                                            0.88f to scrimTopColor.copy(alpha = 0.11f),
+                                            1.00f to Color.Transparent
+                                        )
+                                    )
+                                )
+                        )
+                        
+                        // Global Bottom Scrim (Tall blurry gradient)
+                        val currentSongIdForScrim by remember { playerViewModel.stablePlayerState.map { it.currentSong?.id } }.collectAsStateWithLifecycle(initialValue = null)
+                        val bottomPaddingForScrim = innerPadding.calculateBottomPadding() + (if(currentSongIdForScrim != null) MiniPlayerHeight else 0.dp)
+                        
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter)
+                                .height(bottomPaddingForScrim + 140.dp)
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colorStops = arrayOf(
+                                            0.00f to Color.Transparent,
+                                            0.12f to scrimBottomColor.copy(alpha = 0.11f),
+                                            0.28f to scrimBottomColor.copy(alpha = 0.28f),
+                                            0.46f to scrimBottomColor.copy(alpha = 0.48f),
+                                            0.64f to scrimBottomColor.copy(alpha = 0.68f),
+                                            0.82f to scrimBottomColor.copy(alpha = 0.86f),
+                                            1.00f to scrimBottomColor.copy(alpha = 0.95f)
+                                        )
+                                    )
+                                )
+                        )
 
                         val isExpandedOrExpanding by remember {
                             derivedStateOf {
