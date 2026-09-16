@@ -160,6 +160,12 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
 
 
 
@@ -943,11 +949,74 @@ class MainActivity : ComponentActivity() {
                         else -> { }
                     }
                 }
-        ) {
+            ) {
+                val backgroundStyle by playerViewModel.userPreferencesRepository.appBackgroundStyleFlow.collectAsStateWithLifecycle(initialValue = com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT)
+                val backgroundCustomUri by playerViewModel.userPreferencesRepository.appBackgroundCustomUriFlow.collectAsStateWithLifecycle(initialValue = "")
+                val backgroundOpacity by playerViewModel.userPreferencesRepository.appBackgroundOpacityFlow.collectAsStateWithLifecycle(initialValue = 0.5f)
+                val backgroundBlur by playerViewModel.userPreferencesRepository.appBackgroundBlurFlow.collectAsStateWithLifecycle(initialValue = 0f)
+                
+                val currentSong by remember { playerViewModel.stablePlayerState.map { it.currentSong } }.collectAsStateWithLifecycle(initialValue = null)
 
-                Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                bottomBar = {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // 1. The Global Wallpaper (Drawn only once!)
+                    if (backgroundStyle != com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT) {
+                        val alpha = backgroundOpacity
+                        val blurMod = if (backgroundBlur > 0f) Modifier.blur(backgroundBlur.dp) else Modifier
+                        
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer { this.alpha = alpha }
+                                .then(blurMod)
+                        ) {
+                            when (backgroundStyle) {
+                                com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.MUSIC_NOTES -> {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.bg_music_notes_tintable),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.LIVE_BLUR -> {
+                                    if (currentSong?.albumArtUriString != null) {
+                                        Box(modifier = Modifier.fillMaxSize()) {
+                                            AsyncImage(
+                                                model = currentSong?.albumArtUriString,
+                                                contentDescription = null,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.75f))
+                                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                            )
+                                        }
+                                    }
+                                }
+                                com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM -> {
+                                    if (backgroundCustomUri.isNotBlank()) {
+                                        AsyncImage(
+                                            model = backgroundCustomUri,
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                }
+                                else -> {}
+                            }
+                        }
+                    }
+
+                    // 2. The Main Content Scaffold (Transparent so background shows through)
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        containerColor = Color.Transparent,
+                        bottomBar = {
                     if (shouldRenderNavigationBar) {
                         val currentSongId by remember {
                             playerViewModel.stablePlayerState
