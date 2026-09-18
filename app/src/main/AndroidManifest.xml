@@ -326,7 +326,7 @@
             android:name=".data.service.tile.MusicRecognitionTileService"
             android:exported="true"
             android:label="Recognize Music"
-            android:icon="@drawable/monochrome_player"
+            android:icon="@drawable/pixelmusic_base_monochrome" 
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
