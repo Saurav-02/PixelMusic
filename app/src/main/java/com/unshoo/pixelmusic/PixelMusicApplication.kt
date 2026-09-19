@@ -112,18 +112,25 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
         super.attachBaseContext(AppLocaleManager.wrapContext(base))
     }
 
-    override fun onCreate() {
+override fun onCreate() {
     super.onCreate()
+
+    // Unconditional — prints even if PixelLogger.init somehow fails.
+    android.util.Log.e("PM-BOOT", "Application.onCreate entered")
 
     // 1. Init the logger sink FIRST (before anything else may log)
     PixelLogger.init(this)
 
-    // 2. Observe the verbose-logging toggle and drive PixelLogger
-    startupScope.launch {
+// 2. Observe the verbose-logging toggle and drive PixelLogger
+startupScope.launch {
+    try {
         userPreferencesRepository.get().verboseLoggingEnabledFlow.collect { enabled ->
             PixelLogger.setEnabled(enabled)
         }
+    } catch (t: Throwable) {
+        android.util.Log.e("PM-BOOT", "verboseLogging collector crashed", t)
     }
+}
 
     MediaItemBuilder.initialize(this)
 
