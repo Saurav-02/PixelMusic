@@ -18,7 +18,6 @@ val Context.youtubeDataStore: DataStore<Preferences> by preferencesDataStore(nam
 
 open class DatastoreRepository(private val context: Context) {
     object PreferenceKeys {
-        private val VERBOSE_LOGGING = booleanPreferencesKey("verbose_logging")
         val IS_PRO_USER = booleanPreferencesKey("is_pro_user")
         val COOKIES = stringPreferencesKey(Constants.Datastore.COOKIES_KEY)
         val DATA_SYNC_ID = stringPreferencesKey(Constants.Datastore.DATA_SYNC_ID)
@@ -158,10 +157,4 @@ open class DatastoreRepository(private val context: Context) {
             it[PreferenceKeys.PERSISTENT_QUEUE] = json
         }
     }
-    val verboseLoggingEnabled: Flow<Boolean> = dataStore.data
-    .map { it[VERBOSE_LOGGING] ?: false }
-
-suspend fun setVerboseLoggingEnabled(enabled: Boolean) {
-    dataStore.edit { it[VERBOSE_LOGGING] = enabled }
-}
 }
