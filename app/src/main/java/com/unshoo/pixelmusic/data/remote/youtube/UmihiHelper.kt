@@ -13,6 +13,9 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Paths
 import kotlin.time.measureTimedValue
+import com.unshoo.pixelmusic.utils.PixelLogger
+
+
 
 object UmihiHelper {
     const val TAG = "UmihiPrint"
@@ -28,12 +31,14 @@ object UmihiHelper {
     }
 
     fun printd(message: String, tag: String = TAG) {
-        Log.d(tag, message)
-    }
+    Log.d(tag, message)
+    PixelLogger.d(PixelLogger.Category.MISC, tag, message)
+}
 
-    fun printe(message: String, tag: String = TAG, exception: java.lang.Exception? = null) {
-        Log.e(TAG, message, exception)
-    }
+fun printe(message: String, tag: String = TAG, exception: java.lang.Exception? = null) {
+    Log.e(TAG, message, exception)
+    PixelLogger.e(PixelLogger.Category.MISC, tag, message, exception)
+}
 
     fun getDownloadDirectory(context: Context, directory: String? = null): File {
         val dir = File(
