@@ -203,7 +203,8 @@ constructor(
         val LIBRARY_NAVIGATION_MODE = stringPreferencesKey("library_navigation_mode")
         val LAUNCH_TAB = stringPreferencesKey("launch_tab")
         val PLAYER_DESIGN_STYLE = stringPreferencesKey("player_design_style")
-
+        val VERBOSE_LOGGING_ENABLED = booleanPreferencesKey("verbose_logging_enabled")
+        
         // Transition Settings
         val GLOBAL_TRANSITION_SETTINGS = stringPreferencesKey("global_transition_settings_json")
         val LIBRARY_TABS_ORDER = stringPreferencesKey("library_tabs_order")
@@ -2471,5 +2472,18 @@ constructor(
 
     suspend fun setLatestGithubChangelogCache(changelog: String) {
         dataStore.edit { it[PreferencesKeys.LATEST_GITHUB_CHANGELOG_CACHE] = changelog }
+    }
+
+    // ===== Verbose Logging =====
+
+    val verboseLoggingEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.VERBOSE_LOGGING_ENABLED] ?: false
+        }
+
+    suspend fun setVerboseLoggingEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.VERBOSE_LOGGING_ENABLED] = enabled
+        }
     }
 }
