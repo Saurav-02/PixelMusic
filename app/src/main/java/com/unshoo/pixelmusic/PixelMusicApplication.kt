@@ -109,7 +109,16 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
     }
 
     override fun onCreate() {
-        super.onCreate()
+    super.onCreate()
+    PixelLogger.init(this)
+
+    // Collect the toggle and drive PixelLogger
+    applicationScope.launch {
+        datastoreRepository.verboseLoggingEnabled.collect { enabled ->
+            PixelLogger.setEnabled(enabled)
+        }
+    }
+    }
 
         MediaItemBuilder.initialize(this)
 
