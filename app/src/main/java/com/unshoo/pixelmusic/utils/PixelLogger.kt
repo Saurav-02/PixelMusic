@@ -68,14 +68,24 @@ object PixelLogger {
     private var logDir: File? = null
     private var currentLogFile: File? = null
 
-    /** Call once from Application.onCreate() */
-    fun init(context: Context) {
-        if (!started.compareAndSet(false, true)) return
-        val dir = File(context.filesDir, "logs").apply { mkdirs() }
-        logDir = dir
-        currentLogFile = File(dir, "pixelmusic.log")
-        ioScope.launch { drainToFile() }
-    }
+/** Call once from Application.onCreate() */
+fun init(context: Context) {
+    if (!started.compareAndSet(false, true)) return
+
+    // Unconditional probes. Bypass the enabled flag, bypass any level filter.
+    // If any of these five reach LogFox, we know the process is alive and
+    // which levels the OS / LogFox are letting through.
+    Log.v("PM-BOOT", "init: v probe")
+    Log.d("PM-BOOT", "init: d probe")
+    Log.i("PM-BOOT", "init: i probe")
+    Log.w("PM-BOOT", "init: w probe")
+    Log.e("PM-BOOT", "init: e probe")
+
+    val dir = File(context.filesDir, "logs").apply { mkdirs() }
+    logDir = dir
+    currentLogFile = File(dir, "pixelmusic.log")
+    ioScope.launch { drainToFile() }
+}
 
     fun setEnabled(value: Boolean) {
         _enabled.value = value
