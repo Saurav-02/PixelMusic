@@ -65,6 +65,7 @@ import coil.imageLoader
 
 
 data class SettingsUiState(
+    val verboseLoggingEnabled: Boolean = false,
     val appBackgroundStyle: com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle = com.unshoo.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT,
     val appBackgroundCustomUri: String = "",
     val appBackgroundOpacity: Float = 0.5f,
@@ -784,6 +785,12 @@ class SettingsViewModel @Inject constructor(
             userPreferencesRepository.uiMotionBlurEnabledFlow.collect { enabled ->
                 _uiState.update { it.copy(isUiMotionBlurEnabled = enabled) }
             }
+        }
+
+        viewModelScope.launch {
+    userPreferencesRepository.verboseLoggingEnabledFlow.collect { enabled ->
+        _uiState.update { it.copy(verboseLoggingEnabled = enabled) }
+    }
         }
 
         viewModelScope.launch {
@@ -1782,11 +1789,17 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun setHapticsEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setHapticsEnabled(enabled)
-        }
+fun setHapticsEnabled(enabled: Boolean) {
+    viewModelScope.launch {
+        userPreferencesRepository.setHapticsEnabled(enabled)
     }
+}
+
+fun setVerboseLoggingEnabled(enabled: Boolean) {
+    viewModelScope.launch {
+        userPreferencesRepository.setVerboseLoggingEnabled(enabled)
+    }
+}
 
     fun setBackupInfoDismissed(dismissed: Boolean) {
         viewModelScope.launch {
