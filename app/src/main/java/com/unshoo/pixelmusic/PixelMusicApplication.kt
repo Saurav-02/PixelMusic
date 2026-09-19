@@ -46,7 +46,7 @@ import org.schabi.newpipe.extractor.downloader.Request
 import org.schabi.newpipe.extractor.downloader.Response
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
-
+import com.unshoo.pixelmusic.utils.PixelLogger
 
 @HiltAndroidApp
 class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.Provider {
@@ -110,17 +110,18 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
 
     override fun onCreate() {
     super.onCreate()
+
+    // 1. Init the logger sink FIRST (before anything else may log)
     PixelLogger.init(this)
 
-    // Collect the toggle and drive PixelLogger
-    applicationScope.launch {
-        datastoreRepository.verboseLoggingEnabled.collect { enabled ->
+    // 2. Observe the verbose-logging toggle and drive PixelLogger
+    startupScope.launch {
+        userPreferencesRepository.get().verboseLoggingEnabledFlow.collect { enabled ->
             PixelLogger.setEnabled(enabled)
         }
     }
-    }
 
-        MediaItemBuilder.initialize(this)
+    MediaItemBuilder.initialize(this)
 
         val newPipeHttpClient = OkHttpClient.Builder().build()
 NewPipe.init(object : Downloader() {
