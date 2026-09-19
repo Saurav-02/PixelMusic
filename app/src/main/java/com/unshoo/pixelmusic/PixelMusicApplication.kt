@@ -23,6 +23,8 @@ import com.unshoo.pixelmusic.utils.AlbumArtCacheManager
 import com.unshoo.pixelmusic.utils.AlbumArtUtils
 import com.unshoo.pixelmusic.utils.CrashHandler
 import com.unshoo.pixelmusic.utils.AppLocaleManager
+import com.unshoo.pixelmusic.utils.PixelLogger
+import com.unshoo.pixelmusic.utils.PixelHttpLoggingInterceptor
 import com.unshoo.pixelmusic.utils.MediaItemBuilder
 import com.unshoo.pixelmusic.utils.MediaMetadataRetrieverPool
 import dagger.hilt.android.HiltAndroidApp
@@ -47,6 +49,9 @@ import org.schabi.newpipe.extractor.downloader.Response
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import com.unshoo.pixelmusic.utils.PixelLogger
+
+
+
 
 @HiltAndroidApp
 class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.Provider {
@@ -123,7 +128,9 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
 
     MediaItemBuilder.initialize(this)
 
-        val newPipeHttpClient = OkHttpClient.Builder().build()
+    val newPipeHttpClient = OkHttpClient.Builder()
+        .addInterceptor(PixelHttpLoggingInterceptor("newpipe"))
+        .build()
 NewPipe.init(object : Downloader() {
     override fun execute(request: Request): Response {
         val builder = okhttp3.Request.Builder().url(request.url())
