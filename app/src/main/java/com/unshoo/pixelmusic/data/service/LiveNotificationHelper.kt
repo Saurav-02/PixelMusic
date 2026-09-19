@@ -15,7 +15,7 @@ import com.unshoo.pixelmusic.ui.glancewidget.PlayerActions
 import java.util.Arrays
 
 object LiveNotificationHelper {
-    private const val LIVE_CHANNEL_ID = "pixelmusic_live_progress_v11"
+    private const val LIVE_CHANNEL_ID = "pixelmusic_live_progress_v12"
     private const val LIVE_NOTIFICATION_ID = 1002
 
     private var lastArtworkBytes: ByteArray? = null
@@ -116,7 +116,7 @@ object LiveNotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setRequestPromotedOngoing(true) 
             .setShortCriticalText(criticalText)
-            .setSmallIcon(R.drawable.monochrome_player)
+            .setSmallIcon(R.drawable.pixelmusic_base_monochrome)
             .setSortKey("zzzzz_ghost") // Forces the card to the bottom of the shade
 
         val progressPercent = if (safeDuration > 0L) {
