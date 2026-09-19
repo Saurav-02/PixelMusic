@@ -1704,17 +1704,24 @@ AnimatedVisibility(
                                 )
                             }
 
-                            SettingsSubsection(
-                                title = stringResource(R.string.setcat_diagnostics),
-                                addBottomSpace = false
-                            ) {
-                                SettingsItem(
-                                    title = stringResource(R.string.setcat_trigger_crash_title),
-                                    subtitle = stringResource(R.string.setcat_trigger_crash_subtitle),
-                                    leadingIcon = { Icon(Icons.Outlined.Warning, null, tint = MaterialTheme.colorScheme.error) },
-                                    onClick = { settingsViewModel.triggerTestCrash() }
-                                )
-                            }
+SettingsSubsection(
+    title = stringResource(R.string.setcat_diagnostics),
+    addBottomSpace = false
+) {
+    SwitchSettingItem(
+        title = "Verbose Logging",
+        subtitle = "Capture network, player, queue, and lyrics events into Logcat (tag prefix: PM-). Adds CPU and battery cost while enabled.",
+        checked = uiState.verboseLoggingEnabled,
+        onCheckedChange = { settingsViewModel.setVerboseLoggingEnabled(it) },
+        leadingIcon = { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.secondary) }
+    )
+    SettingsItem(
+        title = stringResource(R.string.setcat_trigger_crash_title),
+        subtitle = stringResource(R.string.setcat_trigger_crash_subtitle),
+        leadingIcon = { Icon(Icons.Outlined.Warning, null, tint = MaterialTheme.colorScheme.error) },
+        onClick = { settingsViewModel.triggerTestCrash() }
+    )
+}
                         }
                         SettingsCategory.ABOUT -> {
                             SettingsSubsection(
