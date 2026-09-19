@@ -59,7 +59,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.stream.StreamInfo
-
+import com.unshoo.pixelmusic.utils.PixelHttpLoggingInterceptor
 
 
 
@@ -75,12 +75,15 @@ object YoutubeHelper {
         )
     }
     val client = OkHttpClient.Builder()
-        .connectionPool(okhttp3.ConnectionPool(15, 5, java.util.concurrent.TimeUnit.MINUTES))
-        .connectTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
-        .readTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
-        .writeTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
-        .callTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
-        .build()
+    .connectionPool(okhttp3.ConnectionPool(15, 5, java.util.concurrent.TimeUnit.MINUTES))
+    .connectTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
+    .readTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
+    .writeTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
+    .callTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
+    .addInterceptor(PixelHttpLoggingInterceptor("stream") { url ->
+        !url.contains("ytimg.com") && !url.contains("ggpht.com")
+    })
+    .build()
 
     val streamUrlLruCache = LruCache<String, String>(200)
     val streamMimeTypeLruCache = LruCache<String, String>(200)
