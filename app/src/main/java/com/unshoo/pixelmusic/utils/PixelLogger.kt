@@ -142,13 +142,15 @@ fun init(context: Context) {
             throwable = throwable,
         )
 
-        // Logcat mirror
-        when (level) {
-            'D' -> Log.d("PM-${category.shortName}/$tag", message)
-            'I' -> Log.i("PM-${category.shortName}/$tag", message)
-            'W' -> Log.w("PM-${category.shortName}/$tag", message, throwable)
-            'E' -> Log.e("PM-${category.shortName}/$tag", message, throwable)
-        }
+// Android drops tags longer than 23 chars on some OEM ROMs.
+// Format: PM-<3-char category>/<up to 12 chars of tag>  = max 20 chars.
+val logTag = "PM-${category.shortName}/${tag.take(12)}"
+when (level) {
+    'D' -> Log.d(logTag, message)
+    'I' -> Log.i(logTag, message)
+    'W' -> Log.w(logTag, message, throwable)
+    'E' -> Log.e(logTag, message, throwable)
+}
 
         // Ring buffer
         synchronized(buffer) {
