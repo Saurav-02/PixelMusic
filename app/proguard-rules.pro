@@ -136,12 +136,12 @@
     public void i(...);
 }
 
-# Strip Android Log.v and Log.d calls as well
--assumenosideeffects class android.util.Log {
-    public static int v(...);
-    public static int d(...);
-    public static int i(...);
-}
+# NOTE: android.util.Log is intentionally NOT stripped here.
+# PixelLogger relies on Log.d/Log.i/Log.w/Log.e to reach Logcat.
+# Stripping them via -assumenosideeffects removes the calls at bytecode level
+# and silently disables the entire logging pipeline in release builds.
+# PixelLogger gates its own output on the "verbose_logging_enabled" preference,
+# so the cost when the toggle is OFF is one boolean read — no formatting, no IO.
 
 # Missing classes for JSoup Re2j regex delegate and Mozilla Rhino JSON converter bean introspection
 -dontwarn com.google.re2j.**
