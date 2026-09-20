@@ -2243,9 +2243,11 @@ class PlayerViewModel @Inject constructor(
                 syncShuffleStateWithSession(playbackStateHolder.stablePlayerState.value.isShuffleEnabled)
                 pendingPlaybackAction?.invoke()
                 pendingPlaybackAction = null
-            } catch (e: Exception) {
-                _playerUiState.update { it.copy(isLoadingInitialSongs = false, isLoadingLibraryCategories = false) }
-                Log.e("PlayerViewModel", "Error setting up MediaController", e)
+            } catch (e: java.util.concurrent.CancellationException) {
+    // Expected when a reconnect supersedes the previous future — not an error.
+} catch (e: Exception) {
+    _playerUiState.update { it.copy(isLoadingInitialSongs = false, isLoadingLibraryCategories = false) }
+    Log.e("PlayerViewModel", "Error setting up MediaController", e)
             }
         }, androidx.core.content.ContextCompat.getMainExecutor(context))
     }
