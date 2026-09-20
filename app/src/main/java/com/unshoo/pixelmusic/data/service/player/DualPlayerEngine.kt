@@ -204,18 +204,18 @@ class DualPlayerEngine @Inject constructor(
             }
 
             preResolutionJob?.cancel()
-            preResolutionJob = scope.launch {
-                delay(600)
-                try {
-    preResolveMediaItem(nextItem)
-} catch (e: CancellationException) {
-    // Allows the coroutine to cancel cleanly when the user skips tracks quickly
-    throw e 
-} catch (e: Exception) {
-    Log.w(TAG, "Error during pre-resolution in onMediaItemTransition", e)
-                }
+        preResolutionJob = scope.launch {
+            delay(600)
+            try {
+                mediaItem?.localConfiguration?.uri?.let { resolveCloudUri(it) }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e 
+            } catch (e: Exception) {
+                timber.log.Timber.tag("DualPlayerEngine").w(e, "Error during pre-resolution in onMediaItemTransition")
             }
         }
+        }
+        
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
             if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED || queueSnapshot.isEmpty()) {
