@@ -2978,7 +2978,7 @@ class MusicService : MediaLibraryService() {
                 Timber.tag(TAG)
                     .d("Widgets actualizados: ${playerInfo.songTitle} (Original: ${glanceIds.size}, Bar: ${barGlanceIds.size}, Control: ${controlGlanceIds.size})")
             } else {
-                Timber.tag(TAG).w("No se encontraron widgets para actualizar")
+                Timber.tag(TAG).w("PixelLogger.d(TAG, "No active Glance app widgets found for update.")")
             }
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Error al actualizar el widget")
