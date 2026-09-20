@@ -499,39 +499,51 @@ object YouTube {
         songs.values.toList()
     }
 
-    suspend fun artist(browseId: String): Result<ArtistPage> = runCatching {
-        val response = innerTube.browse(WEB_REMIX, browseId).body<BrowseResponse>()
-        val immersiveHeader = response.header?.musicImmersiveHeaderRenderer
-        val subscribeButtonRenderer = immersiveHeader?.subscriptionButton?.subscribeButtonRenderer
+suspend fun artist(browseId: String): Result<ArtistPage> = runCatching {
+    val response = innerTube.browse(WEB_REMIX, browseId).body<BrowseResponse>()
+    val immersiveHeader = response.header?.musicImmersiveHeaderRenderer
+    val subscribeButtonRenderer = immersiveHeader?.subscriptionButton?.subscribeButtonRenderer
 
+    // Resolution order matches YouTube Music's own fallback chain:
+    //  1. musicImmersiveHeaderRenderer.title        (artist page with hero image)
+    //  2. musicVisualHeaderRenderer.title           (newer layout)
+    //  3. musicHeaderRenderer.title                 (legacy layout)
+    //  4. musicDetailHeaderRenderer.title           (rare layout)
+    //  5. "" as a safe fallback so the response never fails to parse.
+    val resolvedTitle: String =
+        immersiveHeader?.title?.runs?.firstOrNull()?.text
+            ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
+            ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text
+            ?: response.header?.musicDetailHeaderRenderer?.title?.runs?.firstOrNull()?.text
+            ?: ""
+
+    ArtistPage(
         artist = ArtistItem(
-    id = browseId,
-    title = immersiveHeader?.title?.runs?.firstOrNull()?.text
-        ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
-        ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text
-        ?: "",
-                thumbnail = immersiveHeader?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
-                    ?: response.header?.musicVisualHeaderRenderer?.foregroundThumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
-                    ?: response.header?.musicDetailHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl(),
-                channelId = subscribeButtonRenderer?.channelId,
-                playEndpoint = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-                    ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicShelfRenderer
-                    ?.contents?.firstOrNull()?.musicResponsiveListItemRenderer?.overlay?.musicItemThumbnailOverlayRenderer
-                    ?.content?.musicPlayButtonRenderer?.playNavigationEndpoint?.watchEndpoint,
-                shuffleEndpoint = immersiveHeader?.playButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint
-                    ?: response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer
-                        ?.contents?.firstOrNull()?.musicShelfRenderer?.contents?.firstOrNull()?.musicResponsiveListItemRenderer?.navigationEndpoint?.watchPlaylistEndpoint,
-                radioEndpoint = immersiveHeader?.startRadioButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint,
-                subscriberCountText = subscribeButtonRenderer?.subscriberCountText?.runs?.firstOrNull()?.text
-                    ?: subscribeButtonRenderer?.subscriberCountWithSubscribeText?.runs?.firstOrNull()?.text,
-                monthlyListenerCountText = immersiveHeader?.monthlyListenerCount?.runs?.firstOrNull()?.text,
-            ),
-            sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-                ?.tabRenderer?.content?.sectionListRenderer?.contents
-                ?.mapNotNull(ArtistPage::fromSectionListRendererContent)!!,
-            description = immersiveHeader?.description?.runs?.firstOrNull()?.text
-        )
-    }
+            id = browseId,
+            title = resolvedTitle,
+            thumbnail = immersiveHeader?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
+                ?: response.header?.musicVisualHeaderRenderer?.foregroundThumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
+                ?: response.header?.musicDetailHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl(),
+            channelId = subscribeButtonRenderer?.channelId,
+            playEndpoint = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+                ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicShelfRenderer
+                ?.contents?.firstOrNull()?.musicResponsiveListItemRenderer?.overlay?.musicItemThumbnailOverlayRenderer
+                ?.content?.musicPlayButtonRenderer?.playNavigationEndpoint?.watchEndpoint,
+            shuffleEndpoint = immersiveHeader?.playButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint
+                ?: response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer
+                    ?.contents?.firstOrNull()?.musicShelfRenderer?.contents?.firstOrNull()?.musicResponsiveListItemRenderer?.navigationEndpoint?.watchPlaylistEndpoint,
+            radioEndpoint = immersiveHeader?.startRadioButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint,
+            subscriberCountText = subscribeButtonRenderer?.subscriberCountText?.runs?.firstOrNull()?.text
+                ?: subscribeButtonRenderer?.subscriberCountWithSubscribeText?.runs?.firstOrNull()?.text,
+            monthlyListenerCountText = immersiveHeader?.monthlyListenerCount?.runs?.firstOrNull()?.text,
+        ),
+        sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+            ?.tabRenderer?.content?.sectionListRenderer?.contents
+            ?.mapNotNull(ArtistPage::fromSectionListRendererContent)
+            .orEmpty(),
+        description = immersiveHeader?.description?.runs?.firstOrNull()?.text
+    )
+}
 
     suspend fun artistItems(endpoint: BrowseEndpoint): Result<ArtistItemsPage> = runCatching {
         val response = innerTube.browse(WEB_REMIX, endpoint.browseId, endpoint.params).body<BrowseResponse>()
