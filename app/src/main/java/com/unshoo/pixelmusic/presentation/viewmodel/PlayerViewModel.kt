@@ -2213,7 +2213,14 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    private var lastConnectionAttempt = 0L
+
     private fun connectMediaController() {
+        val now = System.currentTimeMillis()
+        // Prevent rapid overlapping connection requests
+        if (now - lastConnectionAttempt < 500L) return
+        lastConnectionAttempt = now
+
         activeMediaControllerFuture?.let {
             try {
                 androidx.media3.session.MediaController.releaseFuture(it)
@@ -2244,10 +2251,10 @@ class PlayerViewModel @Inject constructor(
                 pendingPlaybackAction?.invoke()
                 pendingPlaybackAction = null
             } catch (e: java.util.concurrent.CancellationException) {
-    // Expected when a reconnect supersedes the previous future — not an error.
-} catch (e: Exception) {
-    _playerUiState.update { it.copy(isLoadingInitialSongs = false, isLoadingLibraryCategories = false) }
-    Log.e("PlayerViewModel", "Error setting up MediaController", e)
+                // Expected when a reconnect supersedes the previous future — not an error.
+            } catch (e: Exception) {
+                _playerUiState.update { it.copy(isLoadingInitialSongs = false, isLoadingLibraryCategories = false) }
+                Log.e("PlayerViewModel", "Error setting up MediaController", e)
             }
         }, androidx.core.content.ContextCompat.getMainExecutor(context))
     }
@@ -2295,7 +2302,16 @@ class PlayerViewModel @Inject constructor(
         libraryStateHolder.loadFoldersFromRepository()
     }
 
+    private var lastResetTimestamp = 0L
+
     private fun resetAndLoadInitialData(caller: String = "Unknown") {
+        val now = System.currentTimeMillis()
+        // Prevent the function from running twice within 1 second
+        if (now - lastResetTimestamp < 1000L) {
+            return 
+        }
+        lastResetTimestamp = now
+
         Trace.beginSection("PlayerViewModel.resetAndLoadInitialData")
         try {
             Log.d("PlayerViewModel", "resetAndLoadInitialData called by $caller")
