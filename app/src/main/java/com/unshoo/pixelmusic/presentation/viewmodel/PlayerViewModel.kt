@@ -5834,20 +5834,38 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    private var preCacheLyricsJob: Job? = null
+// Song IDs currently being pre-cached. Used to dedupe duplicate requests and
+// to prevent track-skip from cancelling in-flight fetches for the *next*
+// tracks in the queue.
+private val preCachedLyricsIds: MutableSet<String> =
+    java.util.Collections.synchronizedSet(mutableSetOf<String>())
 
-    private fun preCacheLyricsForSongs(songs: List<Song>, sourcePref: LyricsSourcePreference) {
-        preCacheLyricsJob?.cancel()
-        preCacheLyricsJob = viewModelScope.launch(Dispatchers.IO) {
-            songs.forEach { song ->
-                try {
-                    musicRepository.getLyrics(song = song, sourcePreference = sourcePref)
-                } catch (e: Exception) {
-                    Log.w("PlayerViewModel", "Failed to pre-cache lyrics for song ${song.title}: ${e.message}")
-                }
+private fun preCacheLyricsForSongs(songs: List<Song>, sourcePref: LyricsSourcePreference) {
+    // Never cancel a previous job — cancellation was killing fetches for
+    // upcoming tracks every time the user skipped. Instead, only launch
+    // fetches for songs we are not already fetching.
+    val toFetch = songs.filterNot { preCachedLyricsIds.contains(it.id) }
+    if (toFetch.isEmpty()) return
+
+    preCachedLyricsIds.addAll(toFetch.map { it.id })
+
+    // Deliberately launching in viewModelScope (not a track-scoped scope) so
+    // that skipping the current track does not abort the fetch for the next
+    // one. When the ViewModel is cleared, this coroutine is cancelled.
+    viewModelScope.launch(Dispatchers.IO) {
+        toFetch.forEach { song ->
+            try {
+                musicRepository.getLyrics(song = song, sourcePreference = sourcePref)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w("PlayerViewModel", "Failed to pre-cache lyrics for song ${song.title}: ${e.message}")
+            } finally {
+                preCachedLyricsIds.remove(song.id)
             }
         }
     }
+}
 
     private fun loadLyricsForCurrentSong() {
         val currentSong = playbackStateHolder.stablePlayerState.value.currentSong ?: return
