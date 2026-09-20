@@ -2978,7 +2978,7 @@ class MusicService : MediaLibraryService() {
                 Timber.tag(TAG)
                     .d("Widgets actualizados: ${playerInfo.songTitle} (Original: ${glanceIds.size}, Bar: ${barGlanceIds.size}, Control: ${controlGlanceIds.size})")
             } else {
-                com.unshoo.pixelmusic.utils.PixelLogger.d("MusicService", "No active Glance app widgets found for update.")
+                timber.log.Timber.tag("MusicService").d("No active Glance app widgets found for update.")
             }
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Error al actualizar el widget")
