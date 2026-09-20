@@ -184,3 +184,7 @@
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
+
+# Keep YouTube models so Gson can serialize/deserialize the Explore cache in Release builds
+-keep class unshoo.ianshulyadav.pixelmusic.innertube.models.** { *; }
+-keep class unshoo.ianshulyadav.pixelmusic.innertube.pages.** { *; }
