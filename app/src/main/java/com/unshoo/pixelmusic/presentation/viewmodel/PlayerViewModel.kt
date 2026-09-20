@@ -2215,8 +2215,6 @@ class PlayerViewModel @Inject constructor(
 
     private var lastConnectionAttempt = 0L
 
-    private var lastConnectionAttempt = 0L
-
     private fun connectMediaController() {
         val now = System.currentTimeMillis()
         // Prevent rapid overlapping connection requests
