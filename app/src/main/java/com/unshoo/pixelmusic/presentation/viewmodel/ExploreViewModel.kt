@@ -730,7 +730,16 @@ data class ExploreCacheModel(
 private class YTItemTypeAdapter : com.google.gson.JsonSerializer<YTItem>, com.google.gson.JsonDeserializer<YTItem> {
     override fun serialize(src: YTItem, typeOfSrc: java.lang.reflect.Type, context: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement {
         val obj = context.serialize(src).asJsonObject
-        obj.addProperty("type", src::class.java.simpleName)
+        // FIX: R8 obfuscates class names in release builds. 
+        // We must manually map them so the offline cache doesn't break.
+        val typeName = when (src) {
+            is SongItem -> "SongItem"
+            is AlbumItem -> "AlbumItem"
+            is PlaylistItem -> "PlaylistItem"
+            is ArtistItem -> "ArtistItem"
+            else -> "Unknown"
+        }
+        obj.addProperty("type", typeName)
         return obj
     }
 
