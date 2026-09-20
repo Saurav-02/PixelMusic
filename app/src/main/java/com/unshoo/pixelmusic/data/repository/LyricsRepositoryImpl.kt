@@ -332,18 +332,22 @@ class LyricsRepositoryImpl @Inject constructor(
             .replace("&#39;", "'")
 
     private suspend fun saveToDbAndCache(song: Song, rawLyrics: String, isSynced: Boolean) {
-        try {
-            lyricsDao.insert(
-                com.unshoo.pixelmusic.data.database.LyricsEntity(
-                    songId = song.id.toLong(),
-                    content = rawLyrics,
-                    isSynced = isSynced,
-                    source = "remote"
-                )
+    val dbId = resolveLyricsDbId(song.id) ?: run {
+        Log.w(TAG, "Cannot resolve DB id for songId=${song.id}, skipping lyrics DB write")
+        return
+    }
+    try {
+        lyricsDao.insert(
+            com.unshoo.pixelmusic.data.database.LyricsEntity(
+                songId = dbId,
+                content = rawLyrics,
+                isSynced = isSynced,
+                source = "remote"
             )
-        } catch (e: NumberFormatException) {
-            Log.w(TAG, "Skipping DB update for non-numeric ID: ${song.id}")
-        }
+        )
+    } catch (e: Exception) {
+        Log.w(TAG, "Failed to save lyrics to DB for songId=${song.id}: ${e.message}")
+    }
     }
 
     private suspend fun findLocalLyricsFile(song: Song): Lyrics? = withContext(Dispatchers.IO) {
@@ -533,13 +537,13 @@ class LyricsRepositoryImpl @Inject constructor(
                 parseStoredLyrics(rawLyrics)?.let { return@withContext it to rawLyrics }
             }
 
-        song.id.toLongOrNull()
-            ?.let { lyricsDao.getLyrics(it)?.content }
-            ?.trim()
-            ?.takeIf { it.isNotBlank() }
-            ?.let { rawLyrics ->
-                parseStoredLyrics(rawLyrics)?.let { return@withContext it to rawLyrics }
-            }
+        resolveLyricsDbId(song.id)
+    ?.let { lyricsDao.getLyrics(it)?.content }
+    ?.trim()
+    ?.takeIf { it.isNotBlank() }
+    ?.let { rawLyrics ->
+        parseStoredLyrics(rawLyrics)?.let { return@withContext it to rawLyrics }
+    }
 
         readLyricsJsonCache(song)
             ?.takeIf { it.hasLyrics() }
@@ -853,6 +857,28 @@ class LyricsRepositoryImpl @Inject constructor(
     }
 
     private fun generateCacheKey(songId: String): String = songId
+
+/**
+ * Maps any songId (numeric local id, "youtube_XXX", or "youtube://XXX")
+ * to the SAME negative Long that PlayerViewModel.saveYoutubeSongsToDb uses
+ * as the DB key for YouTube songs. This must match exactly so that lyrics
+ * written here are found by PlayerViewModel and AutoQueueManager.
+ */
+private fun resolveLyricsDbId(songId: String): Long? {
+    return when {
+        songId.startsWith("youtube_") -> {
+            val videoId = songId.substringAfter("youtube_")
+            val hash = videoId.hashCode().toLong()
+            -(15_000_000_000_000L + if (hash < 0) -hash else hash)
+        }
+        songId.startsWith("youtube://") -> {
+            val videoId = songId.substringAfter("youtube://")
+            val hash = videoId.hashCode().toLong()
+            -(15_000_000_000_000L + if (hash < 0) -hash else hash)
+        }
+        else -> songId.toLongOrNull()
+    }
+}
 
     private fun createTempFileFromUri(uri: Uri): File? {
         // THE FIX: Skip virtual/remote URIs to prevent ContentResolver crashes
