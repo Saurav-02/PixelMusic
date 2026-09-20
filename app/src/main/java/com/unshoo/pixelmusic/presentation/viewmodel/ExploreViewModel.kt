@@ -99,28 +99,26 @@ class ExploreViewModel @Inject constructor(
 
     private fun restoreFromCache() {
         try {
-            if (cacheFile.exists()) {
-                val json = cacheFile.readText()
-                val cache = gson.fromJson(json, ExploreCacheModel::class.java)
+    val cachedData = exploreRepository.getCachedExploreData() ?: return@launch
+    
+    // Safely extract lists to prevent NullPointerExceptions on empty/null items
+    val safeMoods = cachedData.moodPlaylists?.filterNotNull().orEmpty()
+    val safeTrending = cachedData.trendingSongs?.filterNotNull().orEmpty()
+    val safeAlbums = cachedData.newAlbums?.filterNotNull().orEmpty()
 
-                if (cache.cacheVersion != ExploreCacheModel.CURRENT_CACHE_VERSION) {
-                    Timber.d("Explore cache is outdated (v${cache.cacheVersion}, need v${ExploreCacheModel.CURRENT_CACHE_VERSION}) - ignoring it")
-                    cacheFile.delete()
-                    return
-                }
-
-                _uiState.update {
-                    it.copy(
-                        isLoading = true,
-                        homePageSections = cache.sections,
-                        homePageContinuation = cache.continuation,
-                        newReleaseAlbums = cache.albums,
-                        chartsPage = cache.charts
-                    )
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to restore explore data from cache")
+    _uiState.update { current ->
+        current.copy(
+            moodPlaylists = safeMoods,
+            trendingSongs = safeTrending,
+            newAlbums = safeAlbums,
+            isLoading = false
+        )
+    }
+} catch (e: CancellationException) {
+    throw e 
+} catch (e: Exception) {
+    PixelLogger.e("ExploreViewModel", "Failed to restore explore data from cache", e)
+    _uiState.update { it.copy(isLoading = false) }
         }
     }
 
