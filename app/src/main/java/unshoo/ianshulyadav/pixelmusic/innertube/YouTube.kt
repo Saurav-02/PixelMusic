@@ -504,12 +504,12 @@ object YouTube {
         val immersiveHeader = response.header?.musicImmersiveHeaderRenderer
         val subscribeButtonRenderer = immersiveHeader?.subscriptionButton?.subscribeButtonRenderer
 
-        ArtistPage(
-            artist = ArtistItem(
-                id = browseId,
-                title = immersiveHeader?.title?.runs?.firstOrNull()?.text
-                    ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                    ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
+        artist = ArtistItem(
+    id = browseId,
+    title = immersiveHeader?.title?.runs?.firstOrNull()?.text
+        ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
+        ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text
+        ?: "",
                 thumbnail = immersiveHeader?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
                     ?: response.header?.musicVisualHeaderRenderer?.foregroundThumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
                     ?: response.header?.musicDetailHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl(),
