@@ -207,30 +207,12 @@ class DualPlayerEngine @Inject constructor(
             preResolutionJob = scope.launch {
                 delay(600)
                 try {
-                    val currentIndex = playerA.currentMediaItemIndex
-                    if (currentIndex != C.INDEX_UNSET) {
-                        val itemsToPreResolve = mutableListOf<Uri>()
-                        
-                        if (currentIndex + 1 < playerA.mediaItemCount) {
-                            playerA.getMediaItemAt(currentIndex + 1).localConfiguration?.uri?.let { 
-                                itemsToPreResolve.add(it) 
-                            }
-                        }
-                        if (currentIndex - 1 >= 0) {
-                            playerA.getMediaItemAt(currentIndex - 1).localConfiguration?.uri?.let { 
-                                itemsToPreResolve.add(it) 
-                            }
-                        }
-
-                        for (uriToResolve in itemsToPreResolve) {
-                            val scheme = uriToResolve.scheme
-                            if (scheme == "youtube") {
-                                resolveCloudUri(uriToResolve)
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    Timber.tag("DualPlayerEngine").w(e, "Error during pre-resolution in onMediaItemTransition")
+    preResolveMediaItem(nextItem)
+} catch (e: CancellationException) {
+    // Allows the coroutine to cancel cleanly when the user skips tracks quickly
+    throw e 
+} catch (e: Exception) {
+    Log.w(TAG, "Error during pre-resolution in onMediaItemTransition", e)
                 }
             }
         }
