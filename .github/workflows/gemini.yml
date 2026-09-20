@@ -11,6 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Gemini CLI
-        uses: google/gemini-cli-action@v1
+        uses: google-github-actions/run-gemini-cli@v1
         with:
           api_key: ${{ secrets.GEMINI_API_KEY }}
