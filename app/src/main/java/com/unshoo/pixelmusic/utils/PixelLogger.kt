@@ -88,8 +88,12 @@ fun init(context: Context) {
 }
 
     fun setEnabled(value: Boolean) {
-        _enabled.value = value
+    val previous = _enabled.value
+    _enabled.value = value
+    if (previous != value) {
+        Log.e("PM-BOOT", "setEnabled($value)")
         if (value) i(Category.MISC, "Logger", "Enabled")
+    }
     }
 
     fun clear() {
