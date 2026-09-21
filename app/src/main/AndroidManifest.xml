@@ -320,7 +320,9 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:exported="true"
             android:excludeFromRecents="true"
-            android:launchMode="singleTask" />
+            android:autoRemoveFromRecents="true"
+            android:taskAffinity=""
+            android:launchMode="singleInstance" />
 
         <service
             android:name=".data.service.tile.MusicRecognitionTileService"
