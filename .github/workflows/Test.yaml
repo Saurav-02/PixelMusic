@@ -37,7 +37,7 @@ jobs:
           sed -i 's|repos/[^/]*/PixelMusic/releases/latest|repos/Test-px/PixelMusic/releases/latest|g' app/src/main/java/com/unshoo/pixelmusic/utils/InAppUpdater.kt
 
           # 2. Safely change ONLY the main applicationId (will not touch applicationIdSuffix)
-          sed -i 's/applicationId = ".*"/applicationId = "com.unshoo.pixelmusic.test"/' app/build.gradle.kts
+          sed -i 's/applicationId = ".*"/applicationId = "com.saurav.pixelmusic.test"/' app/build.gradle.kts
           
           # 3. Change App Name to strictly "Test"
           sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Test<\/string>/g' app/src/main/res/values/strings.xml

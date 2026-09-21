@@ -58,27 +58,27 @@
 -dontwarn com.softsynth.**
 
 # Mantener clases de datos y sus miembros para evitar que R8 Full elimine campos
--keepclassmembers class com.unshoo.pixelmusic.data.model.** { *; }
--keepclassmembers class com.unshoo.pixelmusic.domain.model.** { *; }
+-keepclassmembers class com.saurav.pixelmusic.data.model.** { *; }
+-keepclassmembers class com.saurav.pixelmusic.domain.model.** { *; }
 
 -keepattributes Signature, InnerClasses, EnclosingMethod, AnnotationDefault, *Annotation*
 
 # Cast framework classes loaded via manifest/reflective entry points.
--keep class com.unshoo.pixelmusic.data.service.cast.CastOptionsProvider { *; }
+-keep class com.saurav.pixelmusic.data.service.cast.CastOptionsProvider { *; }
 -keep class * implements com.google.android.gms.cast.framework.OptionsProvider
 
 # Gson generic type capture for backup/restore in release builds.
 -keep class com.google.gson.reflect.TypeToken { *; }
 -keep class * extends com.google.gson.reflect.TypeToken
--keep class com.unshoo.pixelmusic.data.preferences.PreferenceBackupEntry { *; }
--keep class com.unshoo.pixelmusic.data.backup.model.** { *; }
--keep class com.unshoo.pixelmusic.data.backup.module.** { *; }
+-keep class com.saurav.pixelmusic.data.preferences.PreferenceBackupEntry { *; }
+-keep class com.saurav.pixelmusic.data.backup.model.** { *; }
+-keep class com.saurav.pixelmusic.data.backup.module.** { *; }
 # Backup payload entities are part of the persisted .pxpl contract.
--keep class com.unshoo.pixelmusic.data.database.FavoritesEntity { *; }
--keep class com.unshoo.pixelmusic.data.database.SongEngagementEntity { *; }
--keep class com.unshoo.pixelmusic.data.database.LyricsEntity { *; }
--keep class com.unshoo.pixelmusic.data.database.SearchHistoryEntity { *; }
--keep class com.unshoo.pixelmusic.data.database.TransitionRuleEntity { *; }
+-keep class com.saurav.pixelmusic.data.database.FavoritesEntity { *; }
+-keep class com.saurav.pixelmusic.data.database.SongEngagementEntity { *; }
+-keep class com.saurav.pixelmusic.data.database.LyricsEntity { *; }
+-keep class com.saurav.pixelmusic.data.database.SearchHistoryEntity { *; }
+-keep class com.saurav.pixelmusic.data.database.TransitionRuleEntity { *; }
 
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
@@ -148,12 +148,12 @@
 -dontwarn java.beans.**
 
 # Gson serialization keep rules for Explore cache and InnerTube API models
--keep class com.unshoo.pixelmusic.presentation.viewmodel.ExploreCacheModel { *; }
--keep class unshoo.ianshulyadav.pixelmusic.innertube.models.** { *; }
--keep class unshoo.ianshulyadav.pixelmusic.innertube.pages.** { *; }
+-keep class com.saurav.pixelmusic.presentation.viewmodel.ExploreCacheModel { *; }
+-keep class saurav.shru.pixelmusic.innertube.models.** { *; }
+-keep class saurav.shru.pixelmusic.innertube.pages.** { *; }
 # Keep InnerTube and YouTube API models safe from R8 minification
--keep class unshoo.ianshulyadav.pixelmusic.innertube.utils.** { *; }
--keep class com.unshoo.pixelmusic.data.model.youtube.** { *; }
+-keep class saurav.shru.pixelmusic.innertube.utils.** { *; }
+-keep class com.saurav.pixelmusic.data.model.youtube.** { *; }
 
 -keep class org.schabi.newpipe.extractor.** { *; }
 -keep class org.mozilla.javascript.** { *; }
@@ -168,10 +168,10 @@
 -keep class j$.** { *; }
 
 # Protect MusicService and its lifecycle overrides from R8 minification
--keep class com.unshoo.pixelmusic.data.service.MusicService { *; }
+-keep class com.saurav.pixelmusic.data.service.MusicService { *; }
 
 # Protect the preferences repository so the background playback toggle state isn't obfuscated
--keep class com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository { *; }
+-keep class com.saurav.pixelmusic.data.preferences.UserPreferencesRepository { *; }
 
 # Suppress R8 missing class warnings for Ktor plugins referenced by Google Generative AI
 -dontwarn io.ktor.client.plugins.HttpTimeout**
@@ -186,5 +186,5 @@
 -keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
 
 # Keep YouTube models so Gson can serialize/deserialize the Explore cache in Release builds
--keep class unshoo.ianshulyadav.pixelmusic.innertube.models.** { *; }
--keep class unshoo.ianshulyadav.pixelmusic.innertube.pages.** { *; }
+-keep class saurav.shru.pixelmusic.innertube.models.** { *; }
+-keep class saurav.shru.pixelmusic.innertube.pages.** { *; }
