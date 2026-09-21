@@ -219,7 +219,7 @@ object InAppUpdater {
                     return@launch
                 }
 
-                val body = response.body ?: return@launch
+                val body = response.body
                 if (totalBytes == 0L) {
                     totalBytes = body.contentLength() + downloadedBytes 
                 }

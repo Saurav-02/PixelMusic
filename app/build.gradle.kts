@@ -175,6 +175,11 @@ ksp {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=coil.annotation.ExperimentalCoilApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        )
 
         if (enableComposeCompilerReports) {
             val buildDir = project.layout.buildDirectory.get().asFile.absolutePath

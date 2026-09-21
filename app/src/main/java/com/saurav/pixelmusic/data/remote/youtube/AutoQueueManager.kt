@@ -185,7 +185,7 @@ object AutoQueueManager {
                 val item = player.currentMediaItem ?: return@withContext null
                 val mediaId = item.mediaId
                 val playbackUri = item.localConfiguration?.uri?.toString()
-                val metaUri = item.mediaMetadata?.extras?.getString("com.saurav.pixelmusic.external.CONTENT_URI")
+                val metaUri = item.mediaMetadata.extras?.getString("com.saurav.pixelmusic.external.CONTENT_URI")
                 val contentUri = metaUri ?: playbackUri
                 val vid = when {
                     mediaId.startsWith("youtube_") -> mediaId.substringAfter("youtube_")

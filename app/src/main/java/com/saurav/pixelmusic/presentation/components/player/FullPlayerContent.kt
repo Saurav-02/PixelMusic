@@ -1489,7 +1489,7 @@ fun FullPlayerContent(
                                             }
 
                                             val lyricsText = if (!currentLyricsObj?.synced.isNullOrEmpty()) {
-                                                currentLyricsObj?.synced?.joinToString("\n") { it.line }
+                                                currentLyricsObj.synced.joinToString("\n") { it.line }
                                             } else {
                                                 currentLyricsObj?.plain?.toString()
                                             }

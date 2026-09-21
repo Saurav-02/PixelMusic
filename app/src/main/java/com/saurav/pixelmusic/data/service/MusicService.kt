@@ -1691,8 +1691,8 @@ class MusicService : MediaLibraryService() {
         // Stable singleton sentinels so that getIndexOfPeriod/getUidOfPeriod work
         // correctly across repeated Timeline instances. Using `Any()` per-call breaks
         // equality checks inside Media3 because each construction yields a new object.
-        private val windowUid = Object()
-        private val periodUid = Object()
+        private val windowUid = Any()
+        private val periodUid = Any()
 
         private val listeners = java.util.concurrent.CopyOnWriteArrayList<Player.Listener>()
 
@@ -1865,10 +1865,12 @@ class MusicService : MediaLibraryService() {
             observedCastSession?.remoteMediaClient?.play()
         }
 
+        @Suppress("DEPRECATION")
         override fun seekTo(mediaItemIndex: Int, positionMs: Long) {
             observedCastSession?.remoteMediaClient?.seek(positionMs)
         }
 
+        @Suppress("DEPRECATION")
         override fun seekTo(positionMs: Long) {
             observedCastSession?.remoteMediaClient?.seek(positionMs)
         }

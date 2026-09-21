@@ -239,7 +239,7 @@ fun ExpandableAccountCard(
                                 modifier = Modifier.padding(16.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Logout,
+                                    imageVector = Icons.AutoMirrored.Rounded.Logout,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onErrorContainer,
                                     modifier = Modifier.size(24.dp)

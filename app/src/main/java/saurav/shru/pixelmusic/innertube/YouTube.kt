@@ -1210,7 +1210,7 @@ suspend fun artist(browseId: String): Result<ArtistPage> = runCatching {
             val thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: ""
             when {
                 renderer.isSong -> {
-                    val videoId = renderer.navigationEndpoint?.watchEndpoint?.videoId ?: return null
+                    val videoId = renderer.navigationEndpoint.watchEndpoint?.videoId ?: return null
                     val subtitleRuns = renderer.subtitle?.runs
                     val artists = subtitleRuns?.mapNotNull {
                         it.navigationEndpoint?.browseEndpoint?.browseId?.let { id ->
@@ -1228,7 +1228,7 @@ suspend fun artist(browseId: String): Result<ArtistPage> = runCatching {
                     )
                 }
                 renderer.isAlbum -> {
-                    val browseId = renderer.navigationEndpoint?.browseEndpoint?.browseId ?: return null
+                    val browseId = renderer.navigationEndpoint.browseEndpoint?.browseId ?: return null
                     val playlistId = renderer.thumbnailOverlay?.musicItemThumbnailOverlayRenderer?.content
                         ?.musicPlayButtonRenderer?.playNavigationEndpoint
                         ?.watchPlaylistEndpoint?.playlistId ?: ""
@@ -1292,11 +1292,12 @@ suspend fun artist(browseId: String): Result<ArtistPage> = runCatching {
     }
 
     suspend fun subscribeChannel(channelId: String, subscribe: Boolean): Result<Unit> = runCatching {
-        if (subscribe)
+        if (subscribe) {
             innerTube.subscribeChannel(WEB_REMIX, channelId)
-        else
+        } else {
             innerTube.unsubscribeChannel(WEB_REMIX, channelId)
-        Unit
+        }
+        return@runCatching
     }
 
     suspend fun getChannelId(browseId: String): String {

@@ -127,7 +127,7 @@ object SongDownloader {
             val imageDownloadJob = async(Dispatchers.IO) {
                 if (!song.albumArtUriString.isNullOrBlank()) {
                     try {
-                        val url = URL(song.albumArtUriString!!)
+                        val url = URL(song.albumArtUriString)
                         val connection = (url.openConnection() as HttpURLConnection).apply {
                             connectTimeout = 15000
                             readTimeout = 15000
@@ -146,7 +146,7 @@ object SongDownloader {
             }
 
             // Support exact byte resumption
-            var startByte = if (tempAudioFile!!.exists()) tempAudioFile!!.length() else 0L
+            var startByte = if (tempAudioFile.exists()) tempAudioFile.length() else 0L
             var totalBytes = parseTotalBytesFromUrl(streamUrl)
             var totalDownloaded = startByte
             var isFinished = false
@@ -244,7 +244,7 @@ object SongDownloader {
             updateNotification(notificationManager, notificationId, notificationBuilder)
 
             val extractor = MediaExtractor().apply {
-                setDataSource(tempAudioFile!!.absolutePath)
+                setDataSource(tempAudioFile.absolutePath)
             }
 
             var audioTrackIndex = -1
@@ -261,7 +261,7 @@ object SongDownloader {
                 extractor.selectTrack(audioTrackIndex)
                 val format = extractor.getTrackFormat(audioTrackIndex)
 
-                val muxer = MediaMuxer(tempRemuxedFile!!.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+                val muxer = MediaMuxer(tempRemuxedFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
                 val muxerTrackIndex = muxer.addTrack(format)
                 muxer.start()
 
@@ -293,7 +293,7 @@ object SongDownloader {
             updateNotification(notificationManager, notificationId, notificationBuilder)
 
 try {
-    android.os.ParcelFileDescriptor.open(tempRemuxedFile!!, android.os.ParcelFileDescriptor.MODE_READ_WRITE).use { fd ->
+    android.os.ParcelFileDescriptor.open(tempRemuxedFile, android.os.ParcelFileDescriptor.MODE_READ_WRITE).use { fd ->
         val metadataFd = fd.dup()
         val existingMetadata = com.kyant.taglib.TagLib.getMetadata(metadataFd.detachFd())
         val propertyMap = java.util.HashMap(existingMetadata?.propertyMap ?: emptyMap())
@@ -309,9 +309,9 @@ try {
 
         com.kyant.taglib.TagLib.savePropertyMap(fd.dup().detachFd(), propertyMap)
         
-        if (tempImageFile!!.exists() && tempImageFile!!.length() > 0) {
+        if (tempImageFile.exists() && tempImageFile.length() > 0) {
             val picture = com.kyant.taglib.Picture(
-                data = tempImageFile!!.readBytes(),
+                data = tempImageFile.readBytes(),
                 description = "Front Cover",
                 pictureType = "Front Cover",
                 mimeType = "image/jpeg"
@@ -342,7 +342,7 @@ try {
                 ?: throw Exception("Failed to create MediaStore entry")
 
             resolver.openOutputStream(uri)?.use { outputStream ->
-                tempRemuxedFile!!.inputStream().use { inputStream ->
+                tempRemuxedFile.inputStream().use { inputStream ->
                     val copyBuffer = ByteArray(64 * 1024)
                     var readCount: Int
                     while (inputStream.read(copyBuffer).also { readCount = it } != -1) {

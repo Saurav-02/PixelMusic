@@ -629,7 +629,7 @@ private suspend fun getSongUrlFromYoutube(
     maxBitrateKbps: Int = 0,
     requireM4a: Boolean = false
 ): Triple<String, String?, Int?> = withContext(Dispatchers.IO) {
-    val videoId = song.youtubeId ?: throw Exception("Invalid video ID")
+    val videoId = song.youtubeId
     val streamInfo = StreamInfo.getInfo(ServiceList.YouTube, "https://www.youtube.com/watch?v=$videoId")
     
     val audioStreams = streamInfo.audioStreams

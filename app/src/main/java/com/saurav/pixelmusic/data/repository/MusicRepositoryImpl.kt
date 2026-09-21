@@ -1506,9 +1506,9 @@ private fun handleDownloadOnLike(song: Song, isFavorite: Boolean) {
                     if (isFavorite) {
                         if (!targetFile.exists()) {
                             val lyricsText = if (!song.lyrics.isNullOrBlank()) {
-                                val parsed = com.saurav.pixelmusic.utils.LyricsUtils.parseLyrics(song.lyrics!!)
+                                val parsed = com.saurav.pixelmusic.utils.LyricsUtils.parseLyrics(song.lyrics)
                                 if (!parsed.synced.isNullOrEmpty()) {
-                                    parsed.synced!!.joinToString("\n") { it.line }
+                                    parsed.synced.joinToString("\n") { it.line }
                                 } else {
                                     parsed.plain?.joinToString("\n")
                                 }

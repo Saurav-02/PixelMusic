@@ -140,7 +140,7 @@ fun SmartImage(
     val rawModelString = when (model) {
         is String -> model
         is android.net.Uri -> model.toString()
-        is ImageRequest -> model.data?.toString()
+        is ImageRequest -> model.data.toString()
         else -> null
     }
 

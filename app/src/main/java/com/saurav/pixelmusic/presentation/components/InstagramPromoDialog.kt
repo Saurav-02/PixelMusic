@@ -99,7 +99,7 @@ fun InstagramPromoDialog(
                         Text("Follow")
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
-                            imageVector = Icons.Rounded.OpenInNew,
+                            imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
