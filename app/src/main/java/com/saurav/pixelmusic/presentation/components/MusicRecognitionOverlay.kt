@@ -29,6 +29,8 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -117,7 +119,10 @@ fun MusicRecognitionOverlay(
         }
     }
 
+    val hapticFeedback = LocalHapticFeedback.current
+
     val onScannerClick: () -> Unit = {
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         if (status is RecognitionStatus.Ready || status is RecognitionStatus.Error) {
             val permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
             if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
@@ -181,6 +186,7 @@ fun MusicRecognitionOverlay(
     // ENTRANCE ANIMATIONS
     LaunchedEffect(status) {
         if (status is RecognitionStatus.Success && !isClosing) {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             cardDropOffsetY.snapTo(offscreenStartY)
             cardScale.snapTo(initialScale)
             cardAlpha.snapTo(initialAlpha)
