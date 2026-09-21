@@ -1,3 +1,13 @@
+⚠️ **IMPORTANT NOTICE: APPLICATION ID CHANGE**
+We are changing our Application ID to `com.saurav.pixelmusic`. Because of this change, the new update cannot be installed over the previous version directly.
+
+Before updating, please take a full backup of your data:
+1. Go to **Settings** -> **Backup and restore** -> **Backup all data**.
+2. Go to **Accounts** -> **Account management** -> **Copy cookies** for faster login (or you can manually sign in).
+3. Then install the latest version, import your backup, and you're done! Enjoy ♥️
+
+---
+
 *Sub release 4.3*
 Fixed some download related bugs on Samsung devices.
 
