@@ -410,7 +410,7 @@ class PlaybackStateHolder @Inject constructor(
             castStateHolder.castPlayer?.seek(targetPosition)
 
             remoteSeekUnlockJob?.cancel()
-            remoteSeekUnlockJob = scope?.launch {
+            remoteSeekUnlockJob = scope.launch {
                 // Fail-safe: never keep remote seeking lock indefinitely.
                 delay(1800)
                 castStateHolder.setRemotelySeeking(false)
@@ -525,7 +525,7 @@ class PlaybackStateHolder @Inject constructor(
                 MediaStatus.REPEAT_MODE_REPEAT_ALL, MediaStatus.REPEAT_MODE_REPEAT_ALL_AND_SHUFFLE -> Player.REPEAT_MODE_ALL
                 else -> Player.REPEAT_MODE_OFF
             }
-            scope?.launch { userPreferencesRepository.setRepeatMode(mappedLocalMode) }
+            scope.launch { userPreferencesRepository.setRepeatMode(mappedLocalMode) }
             _stablePlayerState.update { it.copy(repeatMode = mappedLocalMode) }
         } else {
             val currentMode = _stablePlayerState.value.repeatMode
@@ -536,7 +536,7 @@ class PlaybackStateHolder @Inject constructor(
                 else -> Player.REPEAT_MODE_OFF
             }
             mediaController?.repeatMode = newMode
-            scope?.launch { userPreferencesRepository.setRepeatMode(newMode) }
+            scope.launch { userPreferencesRepository.setRepeatMode(newMode) }
             _stablePlayerState.update { it.copy(repeatMode = newMode) }
         }
     }
@@ -556,7 +556,7 @@ class PlaybackStateHolder @Inject constructor(
              mediaController?.repeatMode = mode
         }
         
-        scope?.launch { userPreferencesRepository.setRepeatMode(mode) }
+        scope.launch { userPreferencesRepository.setRepeatMode(mode) }
         _stablePlayerState.update { it.copy(repeatMode = mode) }
     }
 
@@ -621,7 +621,7 @@ class PlaybackStateHolder @Inject constructor(
 
     fun startProgressUpdates() {
         stopProgressUpdates()
-        progressJob = scope?.launch(Dispatchers.Main) {
+        progressJob = scope.launch(Dispatchers.Main) {
             while (true) {
                 val tickMs = currentProgressTickMs()
                 try {
@@ -629,7 +629,7 @@ class PlaybackStateHolder @Inject constructor(
                     val isRemote = castSession?.remoteMediaClient != null
                     
                     if (isRemote) {
-                        val remoteClient = castSession?.remoteMediaClient
+                        val remoteClient = castSession.remoteMediaClient
                         if (remoteClient != null) {
                             val isRemotePlaying = remoteClient.isPlaying
                             val currentPosition = remoteClient.approximateStreamPosition.coerceAtLeast(0L)
@@ -678,7 +678,7 @@ class PlaybackStateHolder @Inject constructor(
                              if (hasMediaMismatch) {
                                 Timber.tag(TAG).v(
                                      "Skipping local progress tick due media mismatch (visible=%s, player=%s)",
-                                     visibleSong?.id,
+                                     visibleSong.id,
                                      currentMediaId
                                  )
                                 delay(tickMs)
@@ -780,7 +780,7 @@ class PlaybackStateHolder @Inject constructor(
         if (shuffleToggleJob?.isActive == true) return
         if ((nowMs - lastShuffleToggleFinishedAtMs) < SHUFFLE_TOGGLE_COOLDOWN_MS) return
 
-        val coroutineScope = scope ?: return
+        val coroutineScope = scope
         val castSession = castStateHolder.castSession.value
         if (castSession != null && castSession.remoteMediaClient != null) {
             shuffleToggleJob = coroutineScope.launch {
@@ -860,14 +860,14 @@ class PlaybackStateHolder @Inject constructor(
                         updateQueueCallback(shuffledQueue)
                         _stablePlayerState.update { it.copy(isShuffleEnabled = true) }
 
-                        scope?.launch {
+                        scope.launch {
                             if (userPreferencesRepository.persistentShuffleEnabledFlow.first()) {
                                 userPreferencesRepository.setShuffleOn(true)
                             }
                         }
                     } else {
                         // Disable Shuffle
-                        scope?.launch {
+                        scope.launch {
                             if (userPreferencesRepository.persistentShuffleEnabledFlow.first()) {
                                 userPreferencesRepository.setShuffleOn(false)
                             }

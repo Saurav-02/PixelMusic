@@ -217,7 +217,6 @@ class SearchStateHolder @Inject constructor(
                             is PlaylistItem -> newItems.add(SearchResultItem.PlaylistItem(
                                 Playlist(id = item.id, name = item.title, songIds = emptyList(), coverImageUri = item.thumbnail, source = "YOUTUBE")
                             ))
-                            else -> {}
                         }
                     }
                     if (newItems.isNotEmpty()) {

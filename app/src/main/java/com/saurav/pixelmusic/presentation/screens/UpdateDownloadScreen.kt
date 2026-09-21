@@ -143,7 +143,7 @@ fun UpdateDownloadScreen(
                         .padding(8.dp)
                         .align(Alignment.TopStart)
                 ) {
-                    Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                 }
             }
         }

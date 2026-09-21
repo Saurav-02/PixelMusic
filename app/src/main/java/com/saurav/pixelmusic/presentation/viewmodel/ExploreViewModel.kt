@@ -109,8 +109,8 @@ class ExploreViewModel @Inject constructor(
             if (cachedData.cacheVersion != ExploreCacheModel.CURRENT_CACHE_VERSION) return
 
             // Safely extract lists to prevent NullPointerExceptions
-            val safeSections = cachedData.sections?.filterNotNull().orEmpty()
-            val safeAlbums = cachedData.albums?.filterNotNull().orEmpty()
+            val safeSections = cachedData.sections.filterNotNull()
+            val safeAlbums = cachedData.albums.filterNotNull()
             
             _uiState.update { current ->
                 current.copy(
@@ -737,7 +737,6 @@ private class YTItemTypeAdapter : com.google.gson.JsonSerializer<YTItem>, com.go
             is AlbumItem -> "AlbumItem"
             is PlaylistItem -> "PlaylistItem"
             is ArtistItem -> "ArtistItem"
-            else -> "Unknown"
         }
         obj.addProperty("type", typeName)
         return obj

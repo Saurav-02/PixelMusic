@@ -44,8 +44,8 @@ fun AnimatedSplashScreen(onSplashFinished: () -> Unit) {
                 animationSpec = keyframes {
                     durationMillis = 700
                     0f at 0
-                    30f at 250 with FastOutSlowInEasing
-                    -10f at 450 with FastOutSlowInEasing
+                    30f at 250 using FastOutSlowInEasing
+                    -10f at 450 using FastOutSlowInEasing
                     0f at 700
                 }
             )

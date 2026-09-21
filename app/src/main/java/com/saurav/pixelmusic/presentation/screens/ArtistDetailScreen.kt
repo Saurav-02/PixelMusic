@@ -329,7 +329,7 @@ fun ArtistDetailScreen(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Icon(
-                                        Icons.Rounded.QueueMusic,
+                                        Icons.AutoMirrored.Rounded.QueueMusic,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(16.dp)

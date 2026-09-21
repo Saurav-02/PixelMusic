@@ -214,9 +214,7 @@ fun StatsScreen(
     val isRefreshingFromViewModel by rememberUpdatedState(uiState.isRefreshing)
 
     val onPullRefresh: () -> Unit = {
-        if (hasPendingPullRefresh || uiState.isLoading) {
-            Unit
-        } else {
+        if (!hasPendingPullRefresh && !uiState.isLoading) {
             hasPendingPullRefresh = true
             isPullRefreshAnimating = true
             isPullRefreshMinDelayActive = true

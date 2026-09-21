@@ -2024,7 +2024,7 @@ class PlaylistViewModel @Inject constructor(
      */
     private fun Song.extractYoutubeId(fallbackId: String? = null): String? {
         if (!this.youtubeId.isNullOrBlank()) return this.youtubeId
-        if (this.contentUriString?.startsWith("youtube://") == true) return this.contentUriString.substringAfter("youtube://")
+        if (this.contentUriString.startsWith("youtube://")) return this.contentUriString.substringAfter("youtube://")
         if (this.id.startsWith("youtube_")) return this.id.removePrefix("youtube_")
         if (this.id.toLongOrNull() == null) return this.id // Raw cloud ID
         

@@ -177,21 +177,21 @@ private fun ImmutableList<Song>.asPersistentPlaybackQueue(): PersistentList<Song
 private fun ImmutableList<Song>.replaceSong(updatedSong: Song): ImmutableList<Song> {
     val index = indexOfFirst { it.id == updatedSong.id }
     if (index == -1) return this
-    return asPersistentPlaybackQueue().set(index, updatedSong)
+    return asPersistentPlaybackQueue().replacingAt(index, updatedSong)
 }
 
 private fun ImmutableList<Song>.removeSongById(songId: String): ImmutableList<Song> {
     val index = indexOfFirst { it.id == songId }
     if (index == -1) return this
-    return asPersistentPlaybackQueue().removeAt(index)
+    return asPersistentPlaybackQueue().removingAt(index)
 }
 
 private fun ImmutableList<Song>.moveSong(fromIndex: Int, toIndex: Int): ImmutableList<Song> {
     if (fromIndex == toIndex || fromIndex !in indices || toIndex !in indices) return this
     val movedSong = this[fromIndex]
     return asPersistentPlaybackQueue()
-        .removeAt(fromIndex)
-        .add(toIndex, movedSong)
+        .removingAt(fromIndex)
+        .addingAt(toIndex, movedSong)
 }
 
 private fun moveQueueIndex(index: Int, fromIndex: Int, toIndex: Int): Int {
@@ -2736,7 +2736,7 @@ class PlayerViewModel @Inject constructor(
                         
                         val videoId = startSong.youtubeId ?: startSong.id.substringAfter("youtube_")
                         com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.seed(
-                            endpoint = nextResult.endpoint ?: endpoint,
+                            endpoint = nextResult.endpoint,
                             continuation = nextResult.continuation,
                             videoId = videoId
                         )
@@ -3044,7 +3044,7 @@ class PlayerViewModel @Inject constructor(
                         ?: if (lastSong.id.startsWith("youtube_")) lastSong.id.substringAfter("youtube_") else videoId
                     if (!lastVideoId.isNullOrBlank()) {
                         com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.seed(
-                            endpoint = nextResult.endpoint ?: endpoint,
+                            endpoint = nextResult.endpoint,
                             continuation = nextResult.continuation,
                             videoId = lastVideoId
                         )
@@ -3137,7 +3137,7 @@ class PlayerViewModel @Inject constructor(
                         ?: if (lastSong.id.startsWith("youtube_")) lastSong.id.substringAfter("youtube_") else videoId
                     if (!lastVideoId.isNullOrBlank()) {
                         com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.seed(
-                            endpoint = nextResult.endpoint ?: endpoint,
+                            endpoint = nextResult.endpoint,
                             continuation = nextResult.continuation,
                             videoId = lastVideoId
                         )
@@ -4665,7 +4665,7 @@ class PlayerViewModel @Inject constructor(
         val targetFavoriteState = if (removing) false else !currentlyFavorite
         setFavoriteStatusEverywhere(song, targetFavoriteState, awaitRemoteSync = true)
 
-        val videoId = song.youtubeId ?: if (song.contentUriString?.startsWith("youtube://") == true) {
+        val videoId = song.youtubeId ?: if (song.contentUriString.startsWith("youtube://")) {
             song.contentUriString.substringAfter("youtube://")
         } else if (song.id.startsWith("youtube_")) {
             song.id.substringAfter("youtube_")

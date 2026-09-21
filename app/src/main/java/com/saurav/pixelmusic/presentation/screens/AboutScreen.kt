@@ -481,7 +481,7 @@ private fun AboutHeroCard(
                                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                             )
                                         ) {
-                                            Icon(Icons.Rounded.Notes, contentDescription = null, modifier = Modifier.size(18.dp))
+                                            Icon(Icons.AutoMirrored.Rounded.Notes, contentDescription = null, modifier = Modifier.size(18.dp))
                                             Spacer(Modifier.width(8.dp))
                                             Text("Changes in the latest version")
                                         }
@@ -542,7 +542,7 @@ private fun AboutHeroCard(
                                                         )
                                                     }
                                                     Icon(
-                                                        imageVector = Icons.Rounded.Notes,
+                                                        imageVector = Icons.AutoMirrored.Rounded.Notes,
                                                         contentDescription = "Read full changelog",
                                                         tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                                                         modifier = Modifier.size(16.dp)

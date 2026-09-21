@@ -1103,7 +1103,7 @@ fun MixedStationCarousel(
                         text = when (item) {
                             is PlaylistItem -> item.author?.name ?: "Mix Station"
                             is AlbumItem -> item.artists?.firstOrNull()?.name ?: "Album"
-                            is SongItem -> item.artists?.firstOrNull()?.name ?: "Song"
+                            is SongItem -> item.artists.firstOrNull()?.name ?: "Song"
                             else -> ""
                         },
                         style = MaterialTheme.typography.bodySmall,

@@ -281,7 +281,6 @@ fun EditPlaylistDialog(
     }
 }
 
-@OptIn(UnstableApi::class)
 @Composable
 private fun CreatePlaylistContent(
     onDismiss: () -> Unit,

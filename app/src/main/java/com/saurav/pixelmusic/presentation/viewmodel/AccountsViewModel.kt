@@ -72,17 +72,11 @@ class AccountsViewModel @Inject constructor(
     }
 
     val uiState: StateFlow<AccountsUiState> = combine(
-        combine(
-            listOf(
-                youtubeStateFlow,
-                lastfmStateFlow
-            )
-        ) { it.toList() },
+        youtubeStateFlow,
+        lastfmStateFlow,
         loggingOutServices,
         datastoreRepository.ytUsername
-    ) { states, activeLogouts, ytName ->
-        val (youtubeConnected, youtubePlaylistCount) = states[0] as Pair<Boolean, Int>
-        val (lastfmConnected, lastfmUsername, lastfmScrobbleEnabled) = states[1] as Triple<Boolean, String, Boolean>
+    ) { (youtubeConnected, youtubePlaylistCount), (lastfmConnected, lastfmUsername, lastfmScrobbleEnabled), activeLogouts, ytName ->
 
         val calculatedUserName = when {
             youtubeConnected && ytName.isNotBlank() -> ytName

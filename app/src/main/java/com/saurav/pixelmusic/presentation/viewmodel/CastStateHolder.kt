@@ -205,6 +205,7 @@ class CastStateHolder @Inject constructor(
             updateRoutes()
             syncSelectedRouteFromRouter(router)
         }
+        @Suppress("DEPRECATION")
         override fun onRouteUnselected(router: MediaRouter, route: MediaRouter.RouteInfo, reason: Int) {
             updateRoutes()
             syncSelectedRouteFromRouter(router)

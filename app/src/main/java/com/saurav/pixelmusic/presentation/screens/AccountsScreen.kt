@@ -579,10 +579,6 @@ private fun EmptyAccountsCard(
             )
 
             disconnectedServices.forEach { service ->
-                val painter = when (service) {
-                    ExternalServiceAccount.YOUTUBE -> null
-                    ExternalServiceAccount.LASTFM -> null
-                }
                 FilledTonalButton(
                     onClick = { onConnect(service) },
                     shape = AbsoluteSmoothCornerShape(18.dp, 60),
@@ -592,19 +588,11 @@ private fun EmptyAccountsCard(
                     ),
                     modifier = Modifier.fillMaxWidth().height(48.dp)
                 ) {
-                    if (painter != null) {
-                        Icon(
-                            painter = painter,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = accountIcon(service),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = accountIcon(service),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.size(8.dp))
                     Text(
                         text = connectTemplate.format(serviceDisplayName(service))

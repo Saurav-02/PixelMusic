@@ -471,7 +471,7 @@ fun SettingsCategoryScreen(
                                             )
                                         },
                                         leadingIcon = {
-                                            Icon(Icons.Outlined.QueueMusic, null, tint = MaterialTheme.colorScheme.secondary)
+                                            Icon(Icons.AutoMirrored.Outlined.QueueMusic, null, tint = MaterialTheme.colorScheme.secondary)
                                         }
                                     )
                                     SwitchSettingItem(
@@ -505,7 +505,7 @@ fun SettingsCategoryScreen(
                                             settingsViewModel.setTopSize(key)
                                         },
                                         leadingIcon = {
-                                            Icon(Icons.Outlined.TrendingUp, null, tint = MaterialTheme.colorScheme.secondary)
+                                            Icon(Icons.AutoMirrored.Outlined.TrendingUp, null, tint = MaterialTheme.colorScheme.secondary)
                                         }
                                     )
                                     ThemeSelectorItem(
