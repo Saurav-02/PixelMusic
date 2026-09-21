@@ -74,7 +74,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -1217,7 +1218,10 @@ fun FullPlayerContent(
         )
     }
 
-    val artistPickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val artistPickerSheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
     if (showArtistPicker && currentSongArtists.isNotEmpty()) {
         PlayerArtistPickerBottomSheet(
             song = song,

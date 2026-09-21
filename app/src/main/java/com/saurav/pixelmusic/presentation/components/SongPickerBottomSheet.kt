@@ -59,7 +59,8 @@ import com.saurav.pixelmusic.data.model.StorageFilter
 import com.saurav.pixelmusic.data.model.LibraryTabId
 import com.saurav.pixelmusic.ui.theme.ShapeCache
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -104,7 +105,10 @@ fun SongPickerBottomSheet(
     onConfirm: (Set<String>) -> Unit,
     playerViewModel: PlayerViewModel = hiltViewModel()
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
     val selectedSongIds = remember {
         mutableStateMapOf<String, Boolean>().apply {
             initiallySelectedSongIds.forEach { put(it, true) }
