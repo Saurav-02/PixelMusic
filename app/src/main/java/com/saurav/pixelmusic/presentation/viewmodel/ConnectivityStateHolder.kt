@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.saurav.pixelmusic.presentation.viewmodel
 
 import android.Manifest

@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@file:Suppress("DEPRECATION")
 
 package com.saurav.pixelmusic.presentation.screens
 
