@@ -6,7 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
-import androidx.compose.material.icons.rounded.Notes
+import androidx.compose.material.icons.automirrored.rounded.Notes
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.animateContentSize
