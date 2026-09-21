@@ -519,6 +519,7 @@ class ConnectivityStateHolder @Inject constructor(
             deviceClass.hasService(BluetoothClass.Service.RENDER)
     }
 
+    @Suppress("DEPRECATION")
     @SuppressLint("MissingPermission")
     private fun readConnectedWifiSsid(): String? {
         if (!hasFineLocationPermission()) return null

@@ -947,6 +947,7 @@ fun AdvancedTokenLoginDialog(
     onSaveToken: (String) -> Unit
 ) {
     var tokenInput by remember { mutableStateOf(currentCookie) }
+    @Suppress("DEPRECATION")
     val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
     val context = LocalContext.current
 

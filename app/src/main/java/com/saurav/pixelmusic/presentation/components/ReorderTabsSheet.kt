@@ -121,7 +121,7 @@ fun ReorderTabsSheet(
             performAppCompatHapticFeedback(
                 view,
                 appHapticsConfig,
-                HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+                HapticFeedbackConstants.SEGMENT_FREQUENT_TICK
             )
         },
         lazyListState = listState
