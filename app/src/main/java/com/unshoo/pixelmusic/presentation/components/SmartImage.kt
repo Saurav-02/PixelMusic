@@ -45,6 +45,7 @@ import dagger.hilt.components.SingletonComponent
 import com.unshoo.pixelmusic.presentation.viewmodel.ConnectivityStateHolder
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.unshoo.pixelmusic.data.preferences.AlbumArtQuality
+import com.unshoo.pixelmusic.utils.ThumbnailUrlUtils
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -79,7 +80,8 @@ fun SmartImage(
     alpha: Float = 1f,
     placeholderModel: Any? = null,
     placeHolderBackgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
-    isThumbnail: Boolean = true, // Defaults to true for all lists/explore/album/search screens
+    @Deprecated("Thumbnail quality now follows user preferences throughout the whole app")
+    isThumbnail: Boolean = false,
     onState: ((AsyncImagePainter.State) -> Unit)? = null
 ) {
     val context = LocalContext.current
@@ -93,25 +95,13 @@ fun SmartImage(
     // Initialize the shared Compose State-backed cache once
     SmartImageCache.initialize(connectivityStateHolder, userPreferencesRepository)
 
-    val isMeteredNetwork = SmartImageCache.isMeteredNetwork
-    val albumArtQualityWifi = SmartImageCache.albumArtQualityWifi
-    val albumArtQualityMobile = SmartImageCache.albumArtQualityMobile
-    val performanceModeEnabled = SmartImageCache.performanceModeEnabled
-
-    // When isThumbnail is true -> lowest quality (LOW)
-    // When isThumbnail is false (Now Playing) -> respects user settings
-    val effectiveQuality = if (isThumbnail || performanceModeEnabled) {
-        AlbumArtQuality.LOW
-    } else if (isMeteredNetwork) {
-        albumArtQualityMobile
-    } else {
-        albumArtQualityWifi
-    }
+    // Quality consistently follows user preferences (Wi-Fi vs metered mobile data, performance mode)
+    val effectiveQuality = SmartImageCache.getEffectiveQuality()
 
     val clippedModifier = modifier.clip(shape)
-    val requestTargetSize = remember(targetSize, effectiveQuality, isThumbnail) {
+    val requestTargetSize = remember(targetSize, effectiveQuality) {
         val baseSize = safeAlbumArtTargetSize(targetSize)
-        val maxSize = if (isThumbnail) 120 else effectiveQuality.maxSize
+        val maxSize = effectiveQuality.maxSize
         if (maxSize > 0) {
             val widthPx = (baseSize.width as? coil.size.Dimension.Pixels)?.px ?: maxSize
             val heightPx = (baseSize.height as? coil.size.Dimension.Pixels)?.px ?: maxSize
@@ -119,7 +109,7 @@ fun SmartImage(
             val clampedH = if (heightPx > maxSize) maxSize else heightPx
             Size(clampedW, clampedH)
         } else {
-            coil.size.Size.ORIGINAL
+            baseSize
         }
     }
 
@@ -147,55 +137,19 @@ fun SmartImage(
         return
     }
 
-    // Extract raw string whether passed as String or ImageRequest
+    // Extract raw string whether passed as String, Uri, or ImageRequest
     val rawModelString = when (model) {
         is String -> model
-        is ImageRequest -> model.data as? String
+        is android.net.Uri -> model.toString()
+        is ImageRequest -> model.data?.toString()
         else -> null
     }
 
-    val optimizedModel = remember(model, rawModelString, effectiveQuality, isThumbnail) {
+    val optimizedModel = remember(model, rawModelString, effectiveQuality) {
         if (rawModelString != null) {
-            val targetPx = when {
-                isThumbnail -> 120
-                effectiveQuality.maxSize > 0 -> effectiveQuality.maxSize
-                else -> 1200 // Original / Maximum Quality
-            }
-
-            var transformed = rawModelString
-
-            // 1. Google / YouTube user content (=w1000-h1000, =s500, =w120-h120-l90-rj, etc.)
-            if (transformed.contains("googleusercontent.com") || transformed.contains("ggpht.com")) {
-                val sizeParamRegex = Regex("=[ws]\\d+.*")
-                val slashSizeRegex = Regex("/[ws]\\d+.*")
-                transformed = when {
-                    sizeParamRegex.containsMatchIn(transformed) -> transformed.replace(sizeParamRegex, "=w$targetPx-h$targetPx-l90-rj")
-                    slashSizeRegex.containsMatchIn(transformed) -> transformed.replace(slashSizeRegex, "/w$targetPx-h$targetPx-l90-rj")
-                    transformed.contains("=") -> transformed.substringBeforeLast("=") + "=w$targetPx-h$targetPx-l90-rj"
-                    else -> "$transformed=w$targetPx-h$targetPx-l90-rj"
-                }
-            }
-
-            // 2. YouTube video thumbnails (maxresdefault, sddefault, hqdefault, mqdefault)
-            if (transformed.contains("i.ytimg.com")) {
-                val ytResolution = when {
-                    isThumbnail || effectiveQuality == AlbumArtQuality.LOW -> "mqdefault"
-                    effectiveQuality == AlbumArtQuality.MEDIUM -> "sddefault"
-                    effectiveQuality == AlbumArtQuality.HIGH -> "hqdefault"
-                    else -> "maxresdefault"
-                }
-                transformed = transformed.replace("maxresdefault.jpg", "$ytResolution.jpg")
-                    .replace("sddefault.jpg", "$ytResolution.jpg")
-                    .replace("hqdefault.jpg", "$ytResolution.jpg")
-                    .replace("mqdefault.jpg", "$ytResolution.jpg")
-                    .replace("maxresdefault.webp", "$ytResolution.webp")
-                    .replace("sddefault.webp", "$ytResolution.webp")
-                    .replace("hqdefault.webp", "$ytResolution.webp")
-                    .replace("mqdefault.webp", "$ytResolution.webp")
-            }
-
+            val transformed = ThumbnailUrlUtils.optimizeArtworkUrl(rawModelString, effectiveQuality) ?: rawModelString
             if (model is ImageRequest) {
-                model.newBuilder().data(transformed).build()
+                model.newBuilder().data(transformed).diskCacheKey(transformed).build()
             } else {
                 transformed
             }
@@ -214,13 +168,17 @@ fun SmartImage(
         requestTargetSize
     ) {
         if (optimizedModel is ImageRequest) {
+            val diskKey = optimizedModel.diskCacheKey ?: optimizedModel.data.toString()
             optimizedModel.newBuilder(context)
+                .diskCacheKey(diskKey)
                 .size(requestTargetSize)
                 .build()
         } else {
+            val modelStr = optimizedModel.toString()
             ImageRequest.Builder(context)
                 .data(optimizedModel)
-                .memoryCacheKey("$optimizedModel|$requestTargetSize")
+                .diskCacheKey(modelStr)
+                .memoryCacheKey("$modelStr|$requestTargetSize")
                 .crossfade(crossfadeDurationMillis)
                 .diskCachePolicy(if (useDiskCache) CachePolicy.ENABLED else CachePolicy.DISABLED)
                 .memoryCachePolicy(if (useMemoryCache) CachePolicy.ENABLED else CachePolicy.DISABLED)
@@ -415,5 +373,14 @@ object SmartImageCache {
         cacheScope.launch {
             userPreferencesRepository.performanceModeEnabledFlow.collect { performanceModeEnabled = it }
         }
+    }
+
+    fun getEffectiveQuality(): AlbumArtQuality {
+        return com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.getEffectiveQuality(
+            isMetered = isMeteredNetwork,
+            qualityWifi = albumArtQualityWifi,
+            qualityMobile = albumArtQualityMobile,
+            performanceMode = performanceModeEnabled
+        )
     }
 }
