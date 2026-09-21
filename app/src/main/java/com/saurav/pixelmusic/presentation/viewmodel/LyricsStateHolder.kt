@@ -105,7 +105,18 @@ class LyricsStateHolder @Inject constructor(
      * @param sourcePreference The preferred source for lyrics
      */
     private suspend fun fetchYouTubeLyrics(song: Song): String? {
-        return null
+        val videoId = song.youtubeId?.takeIf { it.isNotBlank() }
+            ?: song.id.takeIf { it.length == 11 && it.matches(Regex("^[a-zA-Z0-9_-]{11}$")) }
+            ?: return null
+
+        return runCatching {
+            val nextResult = saurav.shru.pixelmusic.innertube.YouTube.next(
+                saurav.shru.pixelmusic.innertube.models.WatchEndpoint(videoId = videoId)
+            ).getOrNull()
+            nextResult?.lyricsEndpoint?.let { endpoint ->
+                saurav.shru.pixelmusic.innertube.YouTube.lyrics(endpoint).getOrNull()
+            }
+        }.getOrNull()
     }
 
     fun loadLyricsForSong(song: Song, sourcePreference: LyricsSourcePreference) {
@@ -271,16 +282,7 @@ class LyricsStateHolder @Inject constructor(
                         _songUpdates.emit(updatedSong to lyrics)
                     }
                     .onFailure { error ->
-                        if (error is NoLyricsFoundException) {
-                            // Fallback to search
-                            musicRepository.searchRemoteLyrics(song)
-                                .onSuccess { (query, results) ->
-                                    _searchUiState.value = LyricsSearchUiState.PickResult(query, results)
-                                }
-                                .onFailure { searchError -> handleError(searchError) }
-                        } else {
-                            handleError(error)
-                        }
+                        handleError(error)
                     }
             }
         }

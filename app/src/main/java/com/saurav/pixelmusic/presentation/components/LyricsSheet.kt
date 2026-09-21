@@ -426,6 +426,7 @@ fun LyricsSheet(
     var showFetchLyricsDialog by remember { mutableStateOf(false) }
     // Flag to prevent dialog from showing briefly after reset
     var wasResetTriggered by remember { mutableStateOf(false) }
+    var hasDismissedDialogForSong by remember(currentSong?.id) { mutableStateOf(false) }
     // Save lyrics dialog state
     var showSaveLyricsDialog by remember { mutableStateOf(false) }
     var showSyncControls by remember { mutableStateOf(false) }
@@ -511,8 +512,8 @@ fun LyricsSheet(
 
     LaunchedEffect(currentSong, lyrics, isLoadingLyrics) {
         if (currentSong != null && lyrics == null && !isLoadingLyrics) {
-            // Only show dialog if reset was not just triggered
-            if (!wasResetTriggered) {
+            // Only show dialog if reset was not just triggered and user hasn't dismissed for this song
+            if (!wasResetTriggered && !hasDismissedDialogForSong) {
                 showFetchLyricsDialog = true
             }
         } else if (lyrics != null || isLoadingLyrics) {
@@ -535,6 +536,7 @@ fun LyricsSheet(
                 onManualSearch = onManualSearch,
                 onDismiss = {
                     showFetchLyricsDialog = false
+                    hasDismissedDialogForSong = true
                     onDismissLyricsSearch()
                     if (lyrics == null && !isLoadingLyrics) {
                         onBackClick()

@@ -140,8 +140,47 @@ object FilenameParser {
         if (title != null) {
             add(candidate(title, artist, MatchStrategy.TAGS))
             val channelless = artist?.let { TextMatch.stripChannelSuffix(it) }
-            if (!channelless.isNullOrBlank() && !channelless.equals(artist, ignoreCase = true))
+            if (!channelless.isNullOrBlank() && !channelless.equals(artist, ignoreCase = true)) {
                 add(candidate(title, channelless, MatchStrategy.TAGS))
+            }
+
+            if (artist != null) {
+                val primary = primaryArtist(artist)
+                if (!primary.equals(artist, ignoreCase = true) && primary.isNotBlank()) {
+                    add(candidate(title, primary, MatchStrategy.FILENAME_PRIMARY_ARTIST))
+                }
+
+                val collabParts = collabSeparator.split(artist).map { it.trim() }.filter { it.isNotBlank() }
+                if (collabParts.size > 1) {
+                    for (part in collabParts.take(3)) {
+                        add(candidate(title, part, MatchStrategy.FILENAME_PRIMARY_ARTIST))
+                        if (part.contains(Regex("""\s+-\s+"""))) {
+                            val hyphenated = part.replace(Regex("""\s+-\s+"""), "-").trim()
+                            add(candidate(title, hyphenated, MatchStrategy.FILENAME_PRIMARY_ARTIST))
+                        }
+                    }
+                } else if (artist.contains(Regex("""\s+-\s+"""))) {
+                    val hyphenated = artist.replace(Regex("""\s+-\s+"""), "-").trim()
+                    add(candidate(title, hyphenated, MatchStrategy.FILENAME_PRIMARY_ARTIST))
+                }
+            }
+
+            val loose = loosenTitle(title)
+            if (!loose.equals(title, ignoreCase = true) && loose.isNotBlank()) {
+                add(candidate(loose, artist, MatchStrategy.FILENAME_LOOSE))
+                artist?.let { add(candidate(loose, primaryArtist(it), MatchStrategy.FILENAME_LOOSE)) }
+                add(candidate(loose, null, MatchStrategy.FILENAME_TITLE_ONLY))
+            }
+
+            val noBrackets = stripAllBrackets(title)
+            if (!noBrackets.equals(title, ignoreCase = true) && noBrackets.isNotBlank()) {
+                add(candidate(noBrackets, artist, MatchStrategy.FILENAME_LOOSE))
+                artist?.let { add(candidate(noBrackets, primaryArtist(it), MatchStrategy.FILENAME_LOOSE)) }
+                add(candidate(noBrackets, null, MatchStrategy.FILENAME_TITLE_ONLY))
+            }
+
+            add(candidate(title, null, MatchStrategy.FILENAME_TITLE_ONLY))
+
             if (title.contains(Regex("""\s+-\s+"""))) addDashCandidates(title)
         }
 

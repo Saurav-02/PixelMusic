@@ -662,12 +662,16 @@ class LyricsRepositoryImpl @Inject constructor(
             
             val hits = smartLyricsMatcher.search(localTrack, candidates)
             
-            val results = hits.mapNotNull { hit ->
-                val rawLyrics = smartLyricsMatcher.fetchLyrics(hit) ?: return@mapNotNull null
-                val parsedLyrics = LyricsUtils.parseLyrics(rawLyrics).copy(areFromRemote = true)
-                if (!parsedLyrics.isValid()) return@mapNotNull null
+            val results = coroutineScope {
+                hits.map { hit ->
+                    async {
+                        val rawLyrics = smartLyricsMatcher.fetchLyrics(hit) ?: return@async null
+                        val parsedLyrics = LyricsUtils.parseLyrics(rawLyrics).copy(areFromRemote = true)
+                        if (!parsedLyrics.isValid()) return@async null
 
-                LyricsSearchResult(hit, parsedLyrics, rawLyrics)
+                        LyricsSearchResult(hit, parsedLyrics, rawLyrics)
+                    }
+                }.awaitAll().filterNotNull()
             }
 
             val query = "${song.title} ${song.displayArtist}".trim()
@@ -693,12 +697,16 @@ class LyricsRepositoryImpl @Inject constructor(
 
             val hits = smartLyricsMatcher.search(localTrack, candidates)
 
-            val results = hits.mapNotNull { hit ->
-                val rawLyrics = smartLyricsMatcher.fetchLyrics(hit) ?: return@mapNotNull null
-                val parsed = LyricsUtils.parseLyrics(rawLyrics).copy(areFromRemote = true)
-                if (!parsed.isValid()) return@mapNotNull null
+            val results = coroutineScope {
+                hits.map { hit ->
+                    async {
+                        val rawLyrics = smartLyricsMatcher.fetchLyrics(hit) ?: return@async null
+                        val parsed = LyricsUtils.parseLyrics(rawLyrics).copy(areFromRemote = true)
+                        if (!parsed.isValid()) return@async null
 
-                LyricsSearchResult(hit, parsed, rawLyrics)
+                        LyricsSearchResult(hit, parsed, rawLyrics)
+                    }
+                }.awaitAll().filterNotNull()
             }
 
             if (results.isEmpty()) {

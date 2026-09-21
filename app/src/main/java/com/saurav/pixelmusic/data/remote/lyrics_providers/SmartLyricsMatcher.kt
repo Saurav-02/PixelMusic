@@ -37,7 +37,7 @@ data class MatchConfig(
     val requestDelayMs: Long = 100,
     val maxCandidatesPerProvider: Int = 3,
     val retryBaseDelayMs: Long = 300,
-    val providerTimeoutMs: Long = 12_000,
+    val providerTimeoutMs: Long = 4_000,
 )
 
 class SmartLyricsMatcher(private val client: OkHttpClient) {
@@ -75,23 +75,21 @@ class SmartLyricsMatcher(private val client: OkHttpClient) {
         // -------------------------------------------------------------
         log("  [Fast-Path missed] Querying full provider ladder in parallel...")
 
+        val channel = kotlinx.coroutines.channels.Channel<List<ScoredHit>>(config.providerOrder.size)
         val jobs = config.providerOrder.map { provider ->
             async {
-                withTimeoutOrNull(config.providerTimeoutMs) {
+                val res = withTimeoutOrNull(config.providerTimeoutMs) {
                     searchProvider(provider, local, candidates, config, log)
                 } ?: emptyList<ScoredHit>().also { log("  [${provider.name}] skipped/timeout") }
+                channel.send(res)
             }
         }
 
         val hits = LinkedHashMap<String, ScoredHit>()
         var best = 0.0
-        var stopped = false
-        for ((index, deferred) in jobs.withIndex()) {
-            if (stopped && !deferred.isCompleted) {
-                deferred.cancel()
-                continue
-            }
-            for (hit in deferred.await()) {
+        repeat(config.providerOrder.size) {
+            val providerHits = channel.receive()
+            for (hit in providerHits) {
                 val key = "${hit.provider}|${hit.result.title}|${hit.result.artist}|${hit.result.durationSec}"
                 val existing = hits[key]
                 if (existing == null || hit.confidence.score > existing.confidence.score) hits[key] = hit
@@ -100,13 +98,15 @@ class SmartLyricsMatcher(private val client: OkHttpClient) {
                     log("  [${hit.provider.name}] ${hit.strategy.label} -> ${hit.result.title} (${hit.confidence.percent()}%)")
                 }
             }
-            if (!stopped && best >= ConfidenceScorer.AUTO_ACCEPT_THRESHOLD) {
-                stopped = true
+            if (best >= ConfidenceScorer.AUTO_ACCEPT_THRESHOLD) {
+                jobs.forEach { if (!it.isCompleted) it.cancel() }
+                channel.close()
+                return@repeat
             }
         }
 
         hits.values.sortedByDescending { it.confidence.score }
-            }
+    }
 
     private suspend fun searchProvider(
         provider: Providers,
