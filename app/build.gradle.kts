@@ -35,7 +35,7 @@ val enableComposeCompilerReports = providers.gradleProperty("pixelmusic.enableCo
 
 @Suppress("DEPRECATION")
 android {
-    namespace = "com.unshoo.pixelmusic"
+    namespace = "com.saurav.pixelmusic"
     compileSdk = 37
 
     splits {
@@ -74,7 +74,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.unshoo.pixelmusic"
+        applicationId = "com.saurav.pixelmusic"
         minSdk = 30
         targetSdk = 37
         versionCode = (project.findProperty("APP_VERSION_CODE") as? String)?.toInt() ?: 1

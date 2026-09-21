@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.unshoo.pixelmusic.baselineprofile"
+    namespace = "com.saurav.pixelmusic.baselineprofile"
     compileSdk = 37
 
     compileOptions {

@@ -89,7 +89,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.unshoo.pixelmusic.action.OPEN_PLAYER" />
+                <action android:name="com.saurav.pixelmusic.action.OPEN_PLAYER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <!-- Open M3U/M3U8 playlists shared from other apps -->
@@ -271,7 +271,7 @@
 
         <receiver android:name=".ui.glancewidget.WidgetUpdateReceiver" android:exported="false">
             <intent-filter>
-                <action android:name="com.unshoo.pixelmusic.ACTION_WIDGET_UPDATE_PLAYBACK_STATE" />
+                <action android:name="com.saurav.pixelmusic.ACTION_WIDGET_UPDATE_PLAYBACK_STATE" />
             </intent-filter>
         </receiver>
 
@@ -286,7 +286,7 @@
 
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="com.unshoo.pixelmusic.data.service.cast.CastOptionsProvider" />
+            android:value="com.saurav.pixelmusic.data.service.cast.CastOptionsProvider" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -299,7 +299,7 @@
         </provider>
 
         <provider
-            android:name="com.unshoo.pixelmusic.data.provider.SnapFileProvider"
+            android:name="com.saurav.pixelmusic.data.provider.SnapFileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
