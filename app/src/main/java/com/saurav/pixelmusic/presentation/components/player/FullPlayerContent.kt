@@ -1010,8 +1010,8 @@ fun FullPlayerContent(
     val bgColor = LocalMaterialTheme.current.surface
     val isDarkTheme = LocalPixelMusicDarkTheme.current
     val context = LocalContext.current
-    val effectiveQuality = com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
-    val optimizedAlbumArtUri = remember(song.albumArtUriString, effectiveQuality) {
+    val effectiveQuality = remember(song.id) { com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality() }
+    val optimizedAlbumArtUri = remember(song.id) {
         com.saurav.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(song.albumArtUriString, effectiveQuality) ?: song.albumArtUriString.orEmpty()
     }
 
@@ -1092,8 +1092,8 @@ fun FullPlayerContent(
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
                 // 1. Resolve canonical artwork URI matching user preference for sharp display and shared cache
-                val effectiveQuality = com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
-                val optimizedAlbumArtUri = remember(song.albumArtUriString, effectiveQuality) {
+                val effectiveQuality = remember(song.id) { com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality() }
+                val optimizedAlbumArtUri = remember(song.id) {
                     com.saurav.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(song.albumArtUriString, effectiveQuality) ?: song.albumArtUriString.orEmpty()
                 }
                 
@@ -1650,7 +1650,7 @@ private fun FullPlayerAlbumCoverSection(
                         scaleX = albumArtScale
                         scaleY = albumArtScale
                     },
-                albumArtQuality = albumArtQuality
+                albumArtQuality = remember(song.id) { albumArtQuality }
             )
         }
     }

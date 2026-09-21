@@ -94,11 +94,7 @@ fun SmartImage(
     // Initialize the shared Compose State-backed cache once
     SmartImageCache.initialize(connectivityStateHolder, userPreferencesRepository)
 
-    // Quality consistently follows user preferences (Wi-Fi vs metered mobile data, performance mode)
-    val effectiveQuality = SmartImageCache.getEffectiveQuality()
-
     val clippedModifier = modifier.clip(shape)
-    val requestTargetSize = remember(targetSize, effectiveQuality) {
         val baseSize = safeAlbumArtTargetSize(targetSize)
         val maxSize = effectiveQuality.maxSize
         if (maxSize > 0) {
@@ -144,7 +140,26 @@ fun SmartImage(
         else -> null
     }
 
-    val optimizedModel = remember(model, rawModelString, effectiveQuality) {
+    // Quality follows user preferences on fresh load / refresh without triggering global mass re-downloads
+    val effectiveQuality = remember(rawModelString) {
+        SmartImageCache.getEffectiveQuality()
+    }
+
+    val requestTargetSize = remember(targetSize, effectiveQuality) {
+        val baseSize = safeAlbumArtTargetSize(targetSize)
+        val maxSize = effectiveQuality.maxSize
+        if (maxSize > 0) {
+            val widthPx = (baseSize.width as? coil.size.Dimension.Pixels)?.px ?: maxSize
+            val heightPx = (baseSize.height as? coil.size.Dimension.Pixels)?.px ?: maxSize
+            val clampedW = if (widthPx > maxSize) maxSize else widthPx
+            val clampedH = if (heightPx > maxSize) maxSize else heightPx
+            Size(clampedW, clampedH)
+        } else {
+            baseSize
+        }
+    }
+
+    val optimizedModel = remember(rawModelString) {
         if (rawModelString != null) {
             val transformed = ThumbnailUrlUtils.optimizeArtworkUrl(rawModelString, effectiveQuality) ?: rawModelString
             if (model is ImageRequest) {
@@ -337,8 +352,12 @@ private fun Placeholder(
 
 object SmartImageCache {
     var isMeteredNetwork by androidx.compose.runtime.mutableStateOf(false)
-    var albumArtQualityWifi by androidx.compose.runtime.mutableStateOf(AlbumArtQuality.ORIGINAL)
-    var albumArtQualityMobile by androidx.compose.runtime.mutableStateOf(AlbumArtQuality.ORIGINAL)
+    @Volatile
+    var albumArtQualityWifi: AlbumArtQuality = AlbumArtQuality.ORIGINAL
+        private set
+    @Volatile
+    var albumArtQualityMobile: AlbumArtQuality = AlbumArtQuality.ORIGINAL
+        private set
     var performanceModeEnabled by androidx.compose.runtime.mutableStateOf(false)
 
     @Volatile

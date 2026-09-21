@@ -75,9 +75,9 @@ fun OptimizedAlbumArt(
         return
     }
 
-    val effectiveQuality = SmartImageCache.getEffectiveQuality()
+    val effectiveQuality = remember(uri) { SmartImageCache.getEffectiveQuality() }
 
-    val optimizedUri = remember(uri, effectiveQuality) {
+    val optimizedUri = remember(uri) {
         if (uri is String) {
             com.saurav.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(uri, effectiveQuality) ?: uri
         } else {
