@@ -80,7 +80,6 @@ fun SmartImage(
     alpha: Float = 1f,
     placeholderModel: Any? = null,
     placeHolderBackgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
-    @Deprecated("Thumbnail quality now follows user preferences throughout the whole app")
     isThumbnail: Boolean = false,
     onState: ((AsyncImagePainter.State) -> Unit)? = null
 ) {
