@@ -123,30 +123,25 @@ object YoutubeHelper {
         return upgradeThumbnailUrlToHighQuality(url)
     }
 
-    private fun upgradeThumbnailUrlToHighQuality(url: String, quality: Int = 400): String {
+    private fun upgradeThumbnailUrlToHighQuality(url: String, quality: Int = 0): String {
         if (url.isBlank()) return url
-        val resizeRegex = Regex("=w\\d+-h\\d+.*")
-        if (resizeRegex.containsMatchIn(url)) {
-            return url.replace(resizeRegex, "=w$quality-h$quality")
-        }
-        val sRegex = Regex("=s\\d+.*")
-        if (sRegex.containsMatchIn(url)) {
-            return url.replace(sRegex, "=s$quality")
-        }
-        if (url.contains("googleusercontent.com")) {
-            return if (url.contains("=")) {
-                url.substringBeforeLast("=") + "=w$quality-h$quality"
-            } else {
-                "$url=w$quality-h$quality"
+        val targetQuality = if (quality > 0) {
+            when {
+                quality <= 256 -> com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.LOW
+                quality <= 512 -> com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.MEDIUM
+                quality <= 800 -> com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.HIGH
+                else -> com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL
             }
+        } else {
+            com.unshoo.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
         }
-        return url
+        return com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(url, targetQuality) ?: url
     }
 
     // Public method for Now Playing/Lockscreen/Notification to get the HQ art
     fun getHighResThumbnailUrl(url: String?): String? {
         if (url.isNullOrBlank()) return url
-        return upgradeThumbnailUrlToHighQuality(url, 1000)
+        return upgradeThumbnailUrlToHighQuality(url)
     }
 
     fun getSongInfo(songMap: JsonElement, songInfoIndex: SongInfoType): String {

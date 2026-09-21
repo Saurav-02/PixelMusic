@@ -58,9 +58,10 @@ internal fun sanitizeNavBarCornerRadius(radius: Int): Int =
         radius.coerceIn(MIN_NAV_BAR_CORNER_RADIUS, MAX_NAV_BAR_CORNER_RADIUS)
 
 /**
- * Album art quality settings for developer options.
- * Controls maximum resolution for album artwork in player view.
- * Thumbnails in lists always use low resolution for performance.
+ * Album art quality settings for user preferences.
+ * Controls maximum resolution for album artwork and thumbnails throughout the app.
+ * All image surfaces (home showcase, explore, player, notification, lockscreen, AOD)
+ * follow this quality and share cached downloads.
  *
  * @property maxSize Maximum size in pixels (0 = original size)
  * @property label Human-readable label for UI
@@ -1950,9 +1951,8 @@ constructor(
     // ===== Developer Options =====
 
     /**
-     * Album art quality for player view.
-     * Controls the maximum resolution for album artwork displayed in the full player.
-     * Thumbnails in lists always use low resolution (256px) for optimal performance.
+     * Album art quality setting for Wi-Fi.
+     * Controls the resolution for album artwork and thumbnails across the entire app.
      */
     val albumArtQualityFlow: Flow<AlbumArtQuality> =
         dataStore.data.map { preferences ->

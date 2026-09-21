@@ -85,20 +85,14 @@ fun AodScreen(
             }
         }
 
-        val highResAlbumArtUri = remember(albumArtUriString) {
-            val rawUri = albumArtUriString ?: ""
-            when {
-                rawUri.contains("ggpht.com") || rawUri.contains("googleusercontent.com") -> {
-                    rawUri.replace(Regex("=w\\d+-h\\d+"), "=w1200-h1200")
-                          .replace(Regex("=s\\d+"), "=s1200")
-                }
-                else -> rawUri
-            }
+        val effectiveQuality = com.unshoo.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+        val optimizedAlbumArtUri = remember(albumArtUriString, effectiveQuality) {
+            com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(albumArtUriString, effectiveQuality) ?: (albumArtUriString ?: "")
         }
 
         var glowColor by remember { mutableStateOf(Color(0xFF888888)) }
-        LaunchedEffect(highResAlbumArtUri) {
-            glowColor = extractDominantColor(context, highResAlbumArtUri, Color(0xFF888888), isDarkTheme = true)
+        LaunchedEffect(optimizedAlbumArtUri) {
+            glowColor = extractDominantColor(context, optimizedAlbumArtUri, Color(0xFF888888), isDarkTheme = true)
         }
 
         var positionMs by remember { mutableLongStateOf(currentPositionProvider()) }
@@ -159,7 +153,7 @@ fun AodScreen(
 
                     // Sharp, in-focus, circular art — sized down from before
                     SmartImage(
-                        model = highResAlbumArtUri,
+                        model = optimizedAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         targetSize = coil.size.Size.ORIGINAL,

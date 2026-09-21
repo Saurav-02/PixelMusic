@@ -348,7 +348,6 @@ private fun RecentlyPlayedPill(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 shape = CircleShape,
-                isThumbnail = true,
                 targetSize = SmartImageCompactListTargetSize,
                 modifier = Modifier.size(HomeRecentlyPlayedPillArtSize)
             )

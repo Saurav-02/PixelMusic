@@ -83,10 +83,13 @@ fun PrefetchAlbumNeighbors(
                     .filter { it in queue.indices && it != page }
                 indices.forEach { idx ->
                     queue[idx].albumArtUriString?.let { uri ->
-                        val diskPolicy = if (LocalArtworkUri.isLocalArtworkUri(uri)) coil.request.CachePolicy.DISABLED else coil.request.CachePolicy.ENABLED
-                        val memoryCacheKey = albumArtMemoryCacheKey(uri, requestTargetSize)
+                        val effectiveQuality = com.unshoo.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+                        val optimizedUri = com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(uri, effectiveQuality) ?: uri
+                        val diskPolicy = if (LocalArtworkUri.isLocalArtworkUri(optimizedUri)) coil.request.CachePolicy.DISABLED else coil.request.CachePolicy.ENABLED
+                        val memoryCacheKey = albumArtMemoryCacheKey(optimizedUri, requestTargetSize)
                         val req = coil.request.ImageRequest.Builder(context)
-                            .data(uri)
+                            .data(optimizedUri)
+                            .diskCacheKey(optimizedUri)
                             .size(requestTargetSize)
                             .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
                             .apply {

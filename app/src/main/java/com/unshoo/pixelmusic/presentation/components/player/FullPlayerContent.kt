@@ -1009,22 +1009,16 @@ fun FullPlayerContent(
     val bgColor = LocalMaterialTheme.current.surface
     val isDarkTheme = LocalPixelMusicDarkTheme.current
     val context = LocalContext.current
-    val highResAlbumArtUri = remember(song.albumArtUriString) {
-    val rawUri = song.albumArtUriString ?: ""
-    when {
-        rawUri.contains("ggpht.com") || rawUri.contains("googleusercontent.com") -> {
-            rawUri.replace(Regex("=w\\d+-h\\d+"), "=w1200-h1200")
-                  .replace(Regex("=s\\d+"), "=s1200")
-        }
-        else -> rawUri
-    }
+    val effectiveQuality = com.unshoo.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+    val optimizedAlbumArtUri = remember(song.albumArtUriString, effectiveQuality) {
+        com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(song.albumArtUriString, effectiveQuality) ?: song.albumArtUriString.orEmpty()
     }
 
     // Material-You style wash extracted from the cover art. Falls back to
     // the normal surface color while loading or if extraction fails.
     var extractedColor by remember { mutableStateOf(bgColor) }
-    LaunchedEffect(highResAlbumArtUri, isDarkTheme) {
-    extractedColor = extractDominantColor(context, highResAlbumArtUri, bgColor, isDarkTheme)
+    LaunchedEffect(optimizedAlbumArtUri, isDarkTheme) {
+        extractedColor = extractDominantColor(context, optimizedAlbumArtUri, bgColor, isDarkTheme)
     }
     val washColor by animateColorAsState(
                     targetValue = androidx.compose.ui.graphics.lerp(bgColor, extractedColor, 0.5f),
@@ -1047,11 +1041,10 @@ fun FullPlayerContent(
                                      )
                             ) {
                                 SmartImage(
-                                    model = highResAlbumArtUri,
+                                    model = optimizedAlbumArtUri,
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
                                     targetSize = coil.size.Size.ORIGINAL,
-                                    isThumbnail = false,
                                     modifier = Modifier.fillMaxSize()
                                 )
                                 Box(
@@ -1097,26 +1090,19 @@ fun FullPlayerContent(
                 val bgColor = LocalMaterialTheme.current.surface 
                 val isDarkTheme = LocalPixelMusicDarkTheme.current
                 
-                // 1. Resolve a high-resolution URI for sharp display
-                val highResAlbumArtUri = remember(song.albumArtUriString) {
-                    val rawUri = song.albumArtUriString ?: ""
-                    when {
-                        rawUri.contains("ggpht.com") || rawUri.contains("googleusercontent.com") -> {
-                            rawUri.replace(Regex("=w\\d+-h\\d+"), "=w1200-h1200")
-                                  .replace(Regex("=s\\d+"), "=s1200")
-                        }
-                        else -> rawUri
-                    }
+                // 1. Resolve canonical artwork URI matching user preference for sharp display and shared cache
+                val effectiveQuality = com.unshoo.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+                val optimizedAlbumArtUri = remember(song.albumArtUriString, effectiveQuality) {
+                    com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(song.albumArtUriString, effectiveQuality) ?: song.albumArtUriString.orEmpty()
                 }
                 
                 Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
                     // LAYER 1: Image restricted to the top half
                     SmartImage(
-                        model = highResAlbumArtUri,
+                        model = optimizedAlbumArtUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop, 
                         targetSize = coil.size.Size.ORIGINAL,
-                        isThumbnail = false,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .fillMaxWidth()
@@ -1874,6 +1860,7 @@ suspend fun extractDominantColor(
     try {
         val request = coil.request.ImageRequest.Builder(context)
             .data(uriString)
+            .diskCacheKey(uriString)
             .allowHardware(false) // Palette needs a software bitmap
             .size(160, 160)       // small = fast, plenty for color extraction
             .build()
