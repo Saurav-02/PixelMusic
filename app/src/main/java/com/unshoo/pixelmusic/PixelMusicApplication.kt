@@ -134,6 +134,15 @@ startupScope.launch {
 
     MediaItemBuilder.initialize(this)
 
+    val smartImageEntryPoint = dagger.hilt.android.EntryPointAccessors.fromApplication(
+        this,
+        com.unshoo.pixelmusic.presentation.components.SmartImageEntryPoint::class.java
+    )
+    com.unshoo.pixelmusic.presentation.components.SmartImageCache.initialize(
+        smartImageEntryPoint.connectivityStateHolder(),
+        smartImageEntryPoint.userPreferencesRepository()
+    )
+
     val newPipeHttpClient = OkHttpClient.Builder()
         .addInterceptor(PixelHttpLoggingInterceptor("newpipe"))
         .build()
