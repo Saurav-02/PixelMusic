@@ -121,7 +121,7 @@ data class AlbumPage(
         fun getSongContinuation(response: BrowseResponse): String? {
             for (section in getSectionContents(response)) {
                 section.musicShelfRenderer?.let { shelf ->
-                    shelf.contents.getItems()?.takeIf(::hasTrackCandidates)?.let {
+                    shelf.contents?.getItems()?.takeIf(::hasTrackCandidates)?.let {
                         shelf.contents.getContinuation()?.let { continuation -> return continuation }
                         shelf.continuations?.getContinuation()?.let { continuation -> return continuation }
                     }
@@ -134,7 +134,7 @@ data class AlbumPage(
                 }
                 section.itemSectionRenderer?.contents?.forEach { content ->
                     content.musicShelfRenderer?.let { shelf ->
-                        shelf.contents.getItems()?.takeIf(::hasTrackCandidates)?.let {
+                        shelf.contents?.getItems()?.takeIf(::hasTrackCandidates)?.let {
                             shelf.contents.getContinuation()?.let { continuation -> return continuation }
                             shelf.continuations?.getContinuation()?.let { continuation -> return continuation }
                         }
