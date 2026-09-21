@@ -91,7 +91,7 @@ class GeminiAiClient(private val apiKey: String) : AiClient {
             .build()
 
         httpClient.newCall(request).execute().use { response ->
-            val body = response.body?.string().orEmpty()
+            val body = response.body.string()
 
             if (!response.isSuccessful) {
                 throw AiProviderSupport.createException(
@@ -149,7 +149,7 @@ class GeminiAiClient(private val apiKey: String) : AiClient {
                 .build()
 
             httpClient.newCall(request).execute().use { response ->
-                val body = response.body?.string().orEmpty()
+                val body = response.body.string()
                 if (!response.isSuccessful) return@withContext fallback
 
                 val tokens = runCatching {
@@ -173,7 +173,7 @@ class GeminiAiClient(private val apiKey: String) : AiClient {
                 val request = Request.Builder().url(url).get().build()
 
                 httpClient.newCall(request).execute().use { response ->
-                    val body = response.body?.string().orEmpty()
+                    val body = response.body.string()
                     if (!response.isSuccessful) return@withContext getDefaultModels()
                     parseModelsFromResponse(body).ifEmpty { getDefaultModels() }
                 }

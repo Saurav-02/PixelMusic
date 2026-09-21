@@ -229,7 +229,7 @@ class LyricsRepositoryImpl @Inject constructor(
             ) {
                 okHttpClient.newCall(request).execute().use { response ->
                     when {
-                        response.isSuccessful -> response.body?.string() ?: ""
+                        response.isSuccessful -> response.body.string()
                         response.code.isRetryableHttpStatusCode() ->
                             throw IOException("AMLLDB HTTP ${response.code} for songId=$neteaseSongId")
                         else -> ""

@@ -73,15 +73,15 @@ class LyricsPlusAPI(
                 val url = urlBuilder?.build() ?: return@runCatching null
                 val request = Request.Builder().url(url).build()
                 val response = client.newCall(request).execute()
-                val body = response.body?.string()
+                val body = response.body.string()
 
-                if (!response.isSuccessful || body.isNullOrBlank()) null
+                if (!response.isSuccessful || body.isBlank()) null
                 else gson.fromJson(body, LyricsPlusResponse::class.java)
             }.getOrNull()
 
             if (!lyrics?.lyrics.isNullOrEmpty()) {
                 lastWorkingServer = baseUrl
-                return@withContext convertToLrc(lyrics!!, multiPersonWordByWord)
+                return@withContext convertToLrc(lyrics, multiPersonWordByWord)
             }
         }
         null

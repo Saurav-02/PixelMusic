@@ -61,8 +61,8 @@ class QQMusicAPI(
 
         try {
             val response = client.newCall(request).execute()
-            val body = response.body?.string()
-            if (!response.isSuccessful || body.isNullOrBlank()) return@withContext null
+            val body = response.body.string()
+            if (!response.isSuccessful || body.isBlank()) return@withContext null
 
             val result = gson.fromJson(body, QQMusicSearchResponse::class.java)
             val songList = result.data?.song?.list ?: return@withContext null
@@ -97,8 +97,8 @@ class QQMusicAPI(
 
         try {
             val response = client.newCall(request).execute()
-            val body = response.body?.string()
-            if (!response.isSuccessful || body.isNullOrBlank()) return@withContext null
+            val body = response.body.string()
+            if (!response.isSuccessful || body.isBlank()) return@withContext null
 
             val parsedJson = runCatching { gson.fromJson(body, PaxLyricsResponse::class.java) }.getOrNull()
             val lyrics = parsedJson?.lyrics ?: body

@@ -41,8 +41,8 @@ class BetterLyricsAPI(
 
         try {
             val response = client.newCall(request).execute()
-            val body = response.body?.string()
-            if (!response.isSuccessful || body.isNullOrBlank()) return@withContext null
+            val body = response.body.string()
+            if (!response.isSuccessful || body.isBlank()) return@withContext null
 
             val ttml = gson.fromJson(body, BetterLyricsTtmlResponse::class.java).ttml ?: return@withContext null
             convertTtmlToLrc(ttml)

@@ -23,7 +23,7 @@ class LyricsProviderService(client: OkHttpClient) {
             when (provider) {
                 Providers.LRCLIB -> lrcLibAPI.getSongInfo(query, offset) ?: throw NoTrackFoundException()
                 Providers.NETEASE -> neteaseAPI.getSongInfo(query, offset) ?: throw NoTrackFoundException()
-                Providers.SPOTIFY -> spotifyAPI.getSongInfo(query, offset) ?: throw NoTrackFoundException()
+                Providers.SPOTIFY -> spotifyAPI.getSongInfo(query, offset)
                 Providers.QQMUSIC -> qqMusicAPI.getSongInfo(query, offset) ?: throw NoTrackFoundException()
                 Providers.APPLE -> appleAPI.getSongInfo(query, offset) ?: throw NoTrackFoundException()
                 Providers.LYRICSPLUS, Providers.BETTERLYRICS ->

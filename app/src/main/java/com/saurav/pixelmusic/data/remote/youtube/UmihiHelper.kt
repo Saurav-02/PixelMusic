@@ -66,7 +66,7 @@ fun printe(message: String, tag: String = TAG, exception: java.lang.Exception? =
 
                 if (!response.isSuccessful) return@withContext null
 
-                val bytes = response.body?.bytes() ?: return@withContext null
+                val bytes = response.body.bytes()
 
                 val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                     ?: return@withContext null

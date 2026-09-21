@@ -63,8 +63,8 @@ class AppleAPI(
                 return@withContext null
             }
 
-            val body = response.body?.string()
-            if (!response.isSuccessful || body.isNullOrBlank()) return@withContext null
+            val body = response.body.string()
+            if (!response.isSuccessful || body.isBlank()) return@withContext null
 
             val searchResponse = gson.fromJson(body, AppleMusicSearchResponse::class.java)
             val songs = searchResponse.results?.songs?.data ?: return@withContext null
@@ -101,9 +101,9 @@ class AppleAPI(
 
         try {
             val response = client.newCall(request).execute()
-            val body = response.body?.string()
+            val body = response.body.string()
 
-            if (!response.isSuccessful || body.isNullOrBlank() || body == "Not Found.") return@withContext null
+            if (!response.isSuccessful || body.isBlank() || body == "Not Found.") return@withContext null
 
             if (body.contains("<tt") || body.contains("<p")) {
                 convertTtmlToLrc(body)

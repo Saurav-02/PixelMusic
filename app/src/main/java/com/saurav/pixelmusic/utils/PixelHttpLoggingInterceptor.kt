@@ -27,7 +27,7 @@ class PixelHttpLoggingInterceptor(
         return try {
             val response = chain.proceed(request)
             val tookMs = (System.nanoTime() - startNs) / 1_000_000
-            val cl = response.body?.contentLength() ?: -1L
+            val cl = response.body.contentLength()
 
             PixelLogger.d(
                 Category.NETWORK, name,

@@ -22,7 +22,7 @@ class AppleTokenManager(private val client: OkHttpClient) {
                     .build()
 
                 val mainPageResponse = client.newCall(mainPageRequest).execute()
-                val mainPageBody = mainPageResponse.body?.string() ?: throw Exception("Empty response from Apple Music")
+                val mainPageBody = mainPageResponse.body.string()
 
                 val indexJsRegex = Regex("""/assets/index~[^/]+\.js""")
                 val indexJsMatch = indexJsRegex.find(mainPageBody)
@@ -35,7 +35,7 @@ class AppleTokenManager(private val client: OkHttpClient) {
                     .build()
 
                 val jsResponse = client.newCall(jsRequest).execute()
-                val jsBody = jsResponse.body?.string() ?: throw Exception("Empty JS response")
+                val jsBody = jsResponse.body.string()
 
                 val tokenRegex = Regex("""eyJh([^"]*)""")
                 val tokenMatch = tokenRegex.find(jsBody)

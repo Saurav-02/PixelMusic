@@ -32,8 +32,8 @@ class LRCLibAPI(
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) return@withContext emptyList()
             
-            val body = response.body?.string()
-            if (body.isNullOrBlank() || body == "[]") return@withContext emptyList()
+            val body = response.body.string()
+            if (body.isBlank() || body == "[]") return@withContext emptyList()
 
             val listType = object : TypeToken<List<LrcLibResponse>>() {}.type
             gson.fromJson(body, listType)
@@ -55,8 +55,8 @@ class LRCLibAPI(
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) return@withContext null
             
-            val body = response.body?.string()
-            if (body.isNullOrBlank() || body == "[]") return@withContext null
+            val body = response.body.string()
+            if (body.isBlank() || body == "[]") return@withContext null
 
             val listType = object : TypeToken<List<LrcLibResponse>>() {}.type
             val json: List<LrcLibResponse> = gson.fromJson(body, listType)
@@ -83,8 +83,8 @@ class LRCLibAPI(
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) return@withContext null
             
-            val body = response.body?.string()
-            if (body.isNullOrBlank() || body == "[]") return@withContext null
+            val body = response.body.string()
+            if (body.isBlank() || body == "[]") return@withContext null
 
             val json = gson.fromJson(body, LrcLibResponse::class.java)
             json.syncedLyrics

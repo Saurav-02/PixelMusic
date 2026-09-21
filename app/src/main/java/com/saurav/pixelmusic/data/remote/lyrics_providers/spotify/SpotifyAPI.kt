@@ -83,7 +83,7 @@ class SpotifyAPI(
             reqHeaders.forEach { (k, v) -> addHeader(k, v) }
         }.build()
         val response = client.newCall(request).execute()
-        val body = response.body?.string() ?: ""
+        val body = response.body.string()
         gson.fromJson(body, ServerTimeResponse::class.java).serverTime * 1000
     }
 
@@ -109,7 +109,7 @@ class SpotifyAPI(
             }.build()
 
             val response = client.newCall(request).execute()
-            val body = response.body?.string() ?: return@withContext
+            val body = response.body.string()
             
             val json = gson.fromJson(body, WebPlayerTokenResponse::class.java)
             spotifyToken = json.accessToken
@@ -137,7 +137,7 @@ class SpotifyAPI(
             }.build()
 
         val response = client.newCall(request).execute()
-        val body = response.body?.string() ?: throw NoTrackFoundException()
+        val body = response.body.string()
 
         val json = gson.fromJson(body, TrackSearchResult::class.java)
         if (json.data.searchV2.tracksV2.items.isEmpty()) throw NoTrackFoundException()
@@ -158,8 +158,8 @@ class SpotifyAPI(
         val request = Request.Builder().url(url).build()
         try {
             val response = client.newCall(request).execute()
-            val body = response.body?.string()
-            if (!response.isSuccessful || body.isNullOrBlank()) return@withContext null
+            val body = response.body.string()
+            if (!response.isSuccessful || body.isBlank()) return@withContext null
             
             val json = gson.fromJson(body, SyncedLinesResponse::class.java)
             if (json.lyrics == "Not Found.") return@withContext null

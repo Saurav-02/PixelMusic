@@ -78,7 +78,7 @@ object SpotifySecrets {
     private fun fetch(client: OkHttpClient, url: String): List<SecretData> {
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
-        val body = response.body?.string()?.trim() ?: return emptyList()
+        val body = response.body.string().trim()
 
         return if (body.startsWith("[")) {
             val type = object : TypeToken<List<SecretData>>() {}.type

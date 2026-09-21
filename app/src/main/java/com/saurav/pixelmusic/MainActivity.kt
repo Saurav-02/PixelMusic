@@ -1025,7 +1025,6 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
                                     }
-                                    else -> {}
                                 }
                             }
                         }
@@ -1122,7 +1121,7 @@ class MainActivity : ComponentActivity() {
                                         } else {
                                             0f
                                         }
-                                        val totalBarHeight = (componentHeightPx + shadowOverflowPx + bottomBarPaddingPx).toFloat()
+                                        val totalBarHeight = componentHeightPx + shadowOverflowPx + bottomBarPaddingPx
                                         val playerExpansionSlide = totalBarHeight * hideFraction
                                         val navigationVisibilitySlide = (1f - navBarVisibilityProgress) * totalBarHeight
                                         

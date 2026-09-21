@@ -50,7 +50,7 @@ object InAppUpdater {
             val response = client.newCall(request).execute()
             
             if (response.isSuccessful) {
-                val body = response.body?.string()
+                val body = response.body.string()
                 val release = gson.fromJson(body, GithubRelease::class.java)
                 
                 val cleanLatest = release.tagName.replace(Regex("[^0-9.]"), "")

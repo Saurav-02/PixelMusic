@@ -284,7 +284,7 @@ class M3uManager @Inject constructor(
 
                 // No local match, needs YouTube lookup
                 entriesNeedingNetwork.add(index to entry)
-            } else if (entry.path.isNotBlank() && youtubeId == null) {
+            } else if (entry.path.isNotBlank()) {
                 // If it is a local path with no title info and didn't match, fallback to local filename resolution search
                 val fileNameSearch = entry.path.substringAfterLast("/").substringBeforeLast(".")
                 if (fileNameSearch.isNotBlank()) {
@@ -511,7 +511,7 @@ class M3uManager @Inject constructor(
 
                 // No local match, needs YouTube lookup
                 entriesNeedingNetwork.add(index to entry)
-            } else if (entry.path.isNotBlank() && youtubeId == null) {
+            } else if (entry.path.isNotBlank()) {
                 // Local path with no title info and didn't match, fallback to local filename resolution search
                 val fileNameSearch = entry.path.substringAfterLast("/").substringBeforeLast(".")
                 if (fileNameSearch.isNotBlank()) {

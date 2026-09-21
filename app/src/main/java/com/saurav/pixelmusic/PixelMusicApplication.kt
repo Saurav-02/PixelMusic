@@ -48,6 +48,7 @@ import org.schabi.newpipe.extractor.downloader.Request
 import org.schabi.newpipe.extractor.downloader.Response
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 
 
@@ -154,14 +155,14 @@ NewPipe.init(object : Downloader() {
         }
         if (request.httpMethod() == "POST") {
             val body = request.dataToSend() ?: ByteArray(0)
-            builder.post(RequestBody.create(null, body))
+            builder.post(body.toRequestBody(null))
         }
         val okHttpResponse = newPipeHttpClient.newCall(builder.build()).execute()
         val headersMap = mutableMapOf<String, List<String>>()
         okHttpResponse.headers.names().forEach { name ->
             headersMap[name] = okHttpResponse.headers.values(name)
         }
-        return Response(okHttpResponse.code, okHttpResponse.message, headersMap, okHttpResponse.body?.string() ?: "", okHttpResponse.request.url.toString())
+        return Response(okHttpResponse.code, okHttpResponse.message, headersMap, okHttpResponse.body.string(), okHttpResponse.request.url.toString())
     }
 })
 

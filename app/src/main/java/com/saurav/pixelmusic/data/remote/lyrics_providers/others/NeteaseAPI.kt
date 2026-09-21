@@ -48,9 +48,9 @@ class NeteaseAPI(
             reqHeaders.forEach { requestBuilder.addHeader(it.key, it.value) }
 
             val response = client.newCall(requestBuilder.build()).execute()
-            val body = response.body?.string()
+            val body = response.body.string()
 
-            if (!response.isSuccessful || body.isNullOrBlank() || body == "[]" || body.contains("\"songCount\":0")) {
+            if (!response.isSuccessful || body.isBlank() || body == "[]" || body.contains("\"songCount\":0")) {
                 return@withContext emptyList()
             }
 
@@ -77,9 +77,9 @@ class NeteaseAPI(
 
         try {
             val response = client.newCall(requestBuilder.build()).execute()
-            val body = response.body?.string()
+            val body = response.body.string()
 
-            if (!response.isSuccessful || body.isNullOrBlank() || body == "[]" || body.contains("\"songCount\":0")) {
+            if (!response.isSuccessful || body.isBlank() || body == "[]" || body.contains("\"songCount\":0")) {
                 return@withContext null
             }
 
@@ -110,20 +110,26 @@ class NeteaseAPI(
 
         try {
             val response = client.newCall(requestBuilder.build()).execute()
-            val body = response.body?.string()
+            val body = response.body.string()
 
-            if (!response.isSuccessful || body.isNullOrBlank() || body == "[]") return@withContext null
+            if (!response.isSuccessful || body.isBlank() || body == "[]") return@withContext null
 
             val json = gson.fromJson(body, NeteaseLyricsResponse::class.java)
             var lyric = json.lrc?.lyric
 
             if (lyric.isNullOrEmpty()) return@withContext null
 
-            if (includeTranslation && !json.tlyric?.lyric.isNullOrEmpty()) {
-                lyric += "\n\n" + json.tlyric?.lyric
+            if (includeTranslation) {
+                val tlyric = json.tlyric?.lyric
+                if (!tlyric.isNullOrEmpty()) {
+                    lyric += "\n\n" + tlyric
+                }
             }
-            if (includeRomanization && !json.romalrc?.lyric.isNullOrEmpty()) {
-                lyric += "\n\n" + json.romalrc?.lyric
+            if (includeRomanization) {
+                val romalrc = json.romalrc?.lyric
+                if (!romalrc.isNullOrEmpty()) {
+                    lyric += "\n\n" + romalrc
+                }
             }
 
             lyric
