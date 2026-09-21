@@ -124,7 +124,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -316,7 +317,10 @@ fun SettingsCategoryScreen(
     var paletteBulkCompletedCount by remember { mutableStateOf(0) }
     var paletteBulkTotalCount by remember { mutableStateOf(0) }
     var paletteSongSearchQuery by remember { mutableStateOf("") }
-    val paletteRegenerateSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val paletteRegenerateSheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
     val isAnyPaletteRegenerateRunning = isPaletteRegenerateRunning || isPaletteBulkRegenerateRunning
 
     val filteredPaletteSongs = remember(paletteRegenerateTargets, paletteSongSearchQuery) {

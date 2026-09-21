@@ -227,7 +227,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.ripple
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.pointerInput
@@ -1648,7 +1649,10 @@ onViewToggleChange = { isChecked ->
     if (showSinglePlaylistOptionsSheet && selectedPlaylistForOptions != null) {
         val playlist = selectedPlaylistForOptions!!
         val isPinned = playlist.isPinned
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+        )
 
         ModalBottomSheet(
             onDismissRequest = { showSinglePlaylistOptionsSheet = false },
@@ -2290,7 +2294,10 @@ private fun ImportPlaylistSheet(
     val importCsvDesc = stringResource(R.string.presentation_batch_b_export_as_csv_desc)
     val cancelLabel = stringResource(R.string.cancel)
 
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -2797,7 +2804,10 @@ private fun LibraryTabSwitcherSheet(
     onEditClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
