@@ -3832,7 +3832,7 @@ class PlayerViewModel @Inject constructor(
         resetLyricsSearchState()
 
         val song = resolveSongFromMediaItem(mediaItem)?.let { 
-            // Upgrade thumbnail to HQ (1000px) specifically for the active playing track
+            // Resolve canonical artwork matching user preferences and shared image cache
             it.copy(albumArtUriString = com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper.getHighResThumbnailUrl(it.albumArtUriString) ?: it.albumArtUriString)
         }
         val currentPosition = player.currentPosition.coerceAtLeast(0L)
