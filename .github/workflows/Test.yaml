@@ -34,7 +34,7 @@ jobs:
       - name: Patch App for Testing
         run: |
           # 1. Change the InAppUpdater URL (wildcard catch to prevent mismatch errors)
-          sed -i 's|repos/[^/]*/PixelMusic/releases/latest|repos/Test-px/PixelMusic/releases/latest|g' app/src/main/java/com/unshoo/pixelmusic/utils/InAppUpdater.kt
+          sed -i 's|repos/[^/]*/PixelMusic/releases/latest|repos/Test-px/PixelMusic/releases/latest|g' app/src/main/java/com/saurav/pixelmusic/utils/InAppUpdater.kt
 
           # 2. Safely change ONLY the main applicationId (will not touch applicationIdSuffix)
           sed -i 's/applicationId = ".*"/applicationId = "com.saurav.pixelmusic.test"/' app/build.gradle.kts
