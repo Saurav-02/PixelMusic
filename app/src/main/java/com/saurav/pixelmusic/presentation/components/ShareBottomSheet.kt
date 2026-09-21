@@ -125,7 +125,10 @@ fun ShareBottomSheet(
 
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
 
     var selectedCardMode by remember { mutableStateOf(0) }
     var useSolidLyricsCard by remember { mutableStateOf(false) }
