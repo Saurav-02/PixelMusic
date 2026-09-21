@@ -75,19 +75,11 @@ fun OptimizedAlbumArt(
         return
     }
 
-    val effectiveQuality = if (SmartImageCache.performanceModeEnabled) {
-    AlbumArtQuality.LOW
-} else if (SmartImageCache.isMeteredNetwork) {
-    SmartImageCache.albumArtQualityMobile
-} else {
-    SmartImageCache.albumArtQualityWifi
-}
+    val effectiveQuality = SmartImageCache.getEffectiveQuality()
 
-    val optimizedUri = remember(uri, effectiveQuality) { // Use effectiveQuality here
-        if (uri is String && (uri.contains("ggpht.com") || uri.contains("googleusercontent.com"))) {
-            val size = if (effectiveQuality.maxSize > 0) effectiveQuality.maxSize else 1200 // Use effectiveQuality.maxSize here
-            uri.replace(Regex("=w\\d+-h\\d+"), "=w$size-h$size")
-               .replace(Regex("=s\\d+"), "=s$size")
+    val optimizedUri = remember(uri, effectiveQuality) {
+        if (uri is String) {
+            com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(uri, effectiveQuality) ?: uri
         } else {
             uri
         }
@@ -118,6 +110,7 @@ fun OptimizedAlbumArt(
             }.build()
             else -> ImageRequest.Builder(context)
                 .data(optimizedUri)
+                .diskCacheKey(optimizedUri.toString())
                 .crossfade(350) // Use Coil's native crossfade
                 .error(R.drawable.ic_music_placeholder)
                 .size(requestTargetSize)
