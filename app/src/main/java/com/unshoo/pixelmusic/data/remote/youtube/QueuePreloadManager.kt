@@ -170,17 +170,20 @@ object QueuePreloadManager {
                 val thumbnailUrl = song.thumbnailHref
                 if (thumbnailUrl.isNotBlank()) {
                     try {
-                        val imageDir = UmihiHelper.getDownloadDirectory(ctx, Constants.Downloads.THUMBNAILS_FOLDER)
-                        val destFile = File(imageDir, "$videoId.jpg")
-                        if (!destFile.exists()) {
-                            val artBytes = UmihiHelper.fetchArtworkBytes(thumbnailUrl)
-                            if (artBytes != null && artBytes.isNotEmpty()) {
-                                destFile.writeBytes(artBytes)
-                                printd("QueuePreloadManager: cached thumbnail for $videoId")
-                            }
+                        val optimizedUrl = com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(
+                            thumbnailUrl,
+                            com.unshoo.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+                        )
+                        if (!optimizedUrl.isNullOrBlank()) {
+                            val request = coil.request.ImageRequest.Builder(ctx)
+                                .data(optimizedUrl)
+                                .diskCacheKey(optimizedUrl)
+                                .build()
+                            coil.Coil.imageLoader(ctx).enqueue(request)
+                            printd("QueuePreloadManager: enqueued thumbnail preload for $videoId")
                         }
                     } catch (e: Exception) {
-                        printe("QueuePreloadManager: failed to cache thumbnail for $videoId: ${e.message}")
+                        printe("QueuePreloadManager: failed to preload thumbnail for $videoId: ${e.message}")
                     }
                 }
                 delay(500)
