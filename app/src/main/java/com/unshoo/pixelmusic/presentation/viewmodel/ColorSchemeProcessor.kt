@@ -189,8 +189,11 @@ class ColorSchemeProcessor @Inject constructor(
             val cachePolicy = if (skipCache) CachePolicy.DISABLED else CachePolicy.ENABLED
             val diskCachePolicy = if (LocalArtworkUri.isLocalArtworkUri(uri)) CachePolicy.DISABLED else cachePolicy
             
+            val effectiveQuality = com.unshoo.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+            val optimizedUri = com.unshoo.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(uri, effectiveQuality) ?: uri
             val request = ImageRequest.Builder(context)
-                .data(uri)
+                .data(optimizedUri)
+                .diskCacheKey(optimizedUri)
                 .allowHardware(false) // Required for pixel access
                 .size(Size(128, 128)) // Small size for fast processing
                 .bitmapConfig(Bitmap.Config.ARGB_8888)
