@@ -95,18 +95,6 @@ fun SmartImage(
     SmartImageCache.initialize(connectivityStateHolder, userPreferencesRepository)
 
     val clippedModifier = modifier.clip(shape)
-        val baseSize = safeAlbumArtTargetSize(targetSize)
-        val maxSize = effectiveQuality.maxSize
-        if (maxSize > 0) {
-            val widthPx = (baseSize.width as? coil.size.Dimension.Pixels)?.px ?: maxSize
-            val heightPx = (baseSize.height as? coil.size.Dimension.Pixels)?.px ?: maxSize
-            val clampedW = if (widthPx > maxSize) maxSize else widthPx
-            val clampedH = if (heightPx > maxSize) maxSize else heightPx
-            Size(clampedW, clampedH)
-        } else {
-            baseSize
-        }
-    }
 
     // Handle direct models (Bitmap, Vector, etc) early to avoid ImageRequest overhead
     if (model == null || model is ImageVector || model is Painter || model is ImageBitmap || model is Bitmap) {
