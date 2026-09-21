@@ -59,18 +59,15 @@ object InAppUpdater {
                 
                 val cleanLatest = release.tagName.replace(Regex("[^0-9.]"), "")
                 val cleanCurrent = currentVersion.replace(Regex("[^0-9.]"), "")
+                val apkAssets = release.assets.filter { it.name.endsWith(".apk") }
+                val apkAsset = selectBestApkForDevice(apkAssets)
                 
-                if (cleanLatest != cleanCurrent && release.assets.isNotEmpty()) {
-                    val apkAssets = release.assets.filter { it.name.endsWith(".apk") }
-                    val apkAsset = selectBestApkForDevice(apkAssets)
-                    
-                    if (apkAsset != null) {
-                        return@withContext UpdateState.Available(
-                            versionName = release.tagName, 
-                            downloadUrl = apkAsset.downloadUrl,
-                            changelog = release.body
-                        )
-                    }
+                if (cleanLatest != cleanCurrent && apkAsset != null) {
+                    return@withContext UpdateState.Available(
+                        versionName = release.tagName, 
+                        downloadUrl = apkAsset.downloadUrl,
+                        changelog = release.body
+                    )
                 }
                 return@withContext UpdateState.UpToDate(
                     versionName = release.tagName,
