@@ -49,7 +49,10 @@ fun AiMetadataSheet(
     error: String?,
     onRetry: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
     val colors = MaterialTheme.colorScheme
 
     var title by remember(initialMetadata) { mutableStateOf(initialMetadata?.title ?: "") }
