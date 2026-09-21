@@ -256,7 +256,6 @@ private fun QuickPickCard(
                 model = artUri,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                isThumbnail = true,
                 shape = RoundedCornerShape(imageCornerRadius),
                 modifier = Modifier
                     .size(124.dp)
@@ -359,7 +358,6 @@ private fun QuickPickPill(
                 model = artUri,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                isThumbnail = true,
                 shape = CircleShape,
                 modifier = Modifier.size(QuickPicksPillArtSize)
             )
