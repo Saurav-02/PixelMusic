@@ -76,7 +76,6 @@ fun AlbumArtCollage(
                                 model = song.albumArtUriString,
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
-                                isThumbnail = true,
                                 modifier = Modifier
                                     .size(cfg.width, cfg.height)
                                     .align(cfg.align)
@@ -99,7 +98,6 @@ fun AlbumArtCollage(
                                 model = song.albumArtUriString,
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
-                                isThumbnail = true,
                                 modifier = Modifier
                                     .size(cfg.width, cfg.height)
                                     .align(cfg.align)
