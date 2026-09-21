@@ -8,4 +8,5 @@
         name="files"
         path="." />
     <external-files-path name="apk_updates_download" path="Download/" />
+    <external-files-path name="all_external_files" path="." />
 </paths>

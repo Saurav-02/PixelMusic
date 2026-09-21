@@ -469,6 +469,31 @@ private fun AboutHeroCard(
                                         Spacer(Modifier.width(8.dp))
                                         Text("You are on the latest version")
                                     }
+
+                                    if (state.downloadUrl != null) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Button(
+                                            onClick = {
+                                                val appContext = context.applicationContext
+                                                InAppUpdater.createNotificationChannel(appContext)
+                                                InAppUpdater.startOrResumeDownload(
+                                                    context = appContext,
+                                                    url = state.downloadUrl,
+                                                    versionName = state.versionName ?: versionName
+                                                )
+                                                navController.navigateSafely("update_download")
+                                            },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                        ) {
+                                            Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                                            Spacer(Modifier.width(8.dp))
+                                            Text("Download latest version again")
+                                        }
+                                    }
                                     
                                     if (!latestChangelog.isNullOrBlank()) {
                                         Spacer(modifier = Modifier.height(8.dp))

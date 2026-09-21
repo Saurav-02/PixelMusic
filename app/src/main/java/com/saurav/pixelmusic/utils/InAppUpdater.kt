@@ -31,7 +31,11 @@ data class GithubAsset(
 
 sealed class UpdateState {
     object Checking : UpdateState()
-    data class UpToDate(val changelog: String? = null) : UpdateState()
+    data class UpToDate(
+        val versionName: String? = null,
+        val downloadUrl: String? = null,
+        val changelog: String? = null
+    ) : UpdateState()
     data class Available(
         val versionName: String, 
         val downloadUrl: String,
@@ -68,12 +72,24 @@ object InAppUpdater {
                         )
                     }
                 }
-                return@withContext UpdateState.UpToDate(changelog = release.body)
+                return@withContext UpdateState.UpToDate(
+                    versionName = release.tagName,
+                    downloadUrl = apkAsset?.downloadUrl,
+                    changelog = release.body
+                )
             }
-            return@withContext UpdateState.UpToDate(changelog = null)
+            return@withContext UpdateState.UpToDate(
+                versionName = null,
+                downloadUrl = null,
+                changelog = null
+            )
         } catch (e: Exception) {
             e.printStackTrace()
-            return@withContext UpdateState.UpToDate(changelog = null)
+            return@withContext UpdateState.UpToDate(
+                versionName = null,
+                downloadUrl = null,
+                changelog = null
+            )
         }
     }
 
@@ -147,10 +163,25 @@ object InAppUpdater {
         }
     }
 
+    fun createNotificationChannel(context: Context) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            val channel = android.app.NotificationChannel(
+                "app_updates", 
+                "App Updates", 
+                android.app.NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Notifications for app updates and download progress"
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
     fun startOrResumeDownload(context: Context, url: String, versionName: String) {
         if (downloadJob?.isActive == true) return
         
         appContext = context.applicationContext
+        createNotificationChannel(appContext!!)
         registerReceiverIfNeeded(appContext!!)
 
         currentDownloadUrl = url
@@ -161,29 +192,36 @@ object InAppUpdater {
         fun finishDownload() {
             downloadState.value = GlobalDownloadState.Finished(file, versionName)
             
-            val authority = "${appContext!!.packageName}.provider"
-            val apkUri = FileProvider.getUriForFile(appContext!!, authority, file)
-            val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(apkUri, "application/vnd.android.package-archive")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-            }
+            try {
+                val authority = "${appContext!!.packageName}.provider"
+                val apkUri = FileProvider.getUriForFile(appContext!!, authority, file)
+                val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(apkUri, "application/vnd.android.package-archive")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                }
 
-            val pendingInstall = android.app.PendingIntent.getActivity(
-                appContext, 0, installIntent, 
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-            )
-            
-            val finishedNotif = androidx.core.app.NotificationCompat.Builder(appContext!!, "app_updates")
-                .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setContentTitle("Download Complete")
-                .setContentText("Tap to install PixelMusic $versionName")
-                .setContentIntent(pendingInstall)
-                .setOngoing(false)
-                .setAutoCancel(true)
-                .build()
+                val pendingInstall = android.app.PendingIntent.getActivity(
+                    appContext, 0, installIntent, 
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                )
                 
-            val notificationManager = appContext!!.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-            notificationManager.notify(999, finishedNotif)
+                val finishedNotif = androidx.core.app.NotificationCompat.Builder(appContext!!, "app_updates")
+                    .setSmallIcon(com.saurav.pixelmusic.R.mipmap.ic_launcher)
+                    .setContentTitle("Download Complete")
+                    .setContentText("Tap to install PixelMusic $versionName")
+                    .setContentIntent(pendingInstall)
+                    .addAction(android.R.drawable.stat_sys_download_done, "Install", pendingInstall)
+                    .setOngoing(false)
+                    .setAutoCancel(true)
+                    .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+                    .build()
+                    
+                val notificationManager = appContext!!.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+                notificationManager.cancel(999)
+                notificationManager.notify(999, finishedNotif)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         if (downloadState.value is GlobalDownloadState.Finished && file.exists()) {
@@ -249,6 +287,10 @@ object InAppUpdater {
 
                     outputStream.write(buffer, 0, bytes)
                     downloadedBytes += bytes
+
+                    if (totalBytes > 0 && downloadedBytes >= totalBytes) {
+                        break
+                    }
 
                     val currentTime = System.currentTimeMillis()
                     // Push out progress if time elapsed
@@ -359,13 +401,37 @@ object InAppUpdater {
 
     fun installApk(context: Context, file: File) {
         if (file.exists()) {
-            val authority = "${context.packageName}.provider"
-            val apkUri = FileProvider.getUriForFile(context, authority, file)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(apkUri, "application/vnd.android.package-archive")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    if (!context.packageManager.canRequestPackageInstalls()) {
+                        android.widget.Toast.makeText(
+                            context,
+                            "Please allow installing unknown apps to update",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        val settingsIntent = Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                            data = android.net.Uri.parse("package:${context.packageName}")
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        context.startActivity(settingsIntent)
+                        return
+                    }
+                }
+                val authority = "${context.packageName}.provider"
+                val apkUri = FileProvider.getUriForFile(context, authority, file)
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(apkUri, "application/vnd.android.package-archive")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                }
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                android.widget.Toast.makeText(
+                    context,
+                    "Failed to open installer: ${e.message}",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
             }
-            context.startActivity(intent)
         }
     }
 }
