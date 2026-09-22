@@ -290,6 +290,8 @@ private fun VideoSharingEngineCard(
     modifier: Modifier = Modifier
 ) {
     var isInstalling by remember { mutableStateOf(false) }
+    var installProgress by remember { mutableFloatStateOf(0f) }
+    var installStatusText by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
 
     CapabilityCard(
@@ -298,71 +300,159 @@ private fun VideoSharingEngineCard(
         modifier = modifier
     ) {
         Text(
-            text = if (isEnabled) {
-                "Engine is active. 30-second music card video export is unlocked in the share sheet for Instagram, WhatsApp, and TikTok."
-            } else {
-                "On-demand video encoding engine. Activate to unlock 30-second music card video export in the share sheet."
-            },
+            text = "On-demand video encoding engine for exporting 30-second music cards directly to Instagram Stories, WhatsApp Status, and TikTok.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                StatusIcon(
-                    icon = if (isEnabled) Icons.Rounded.CheckCircle else Icons.Rounded.Download,
-                    containerColor = if (isEnabled) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest,
-                    contentColor = if (isEnabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(36.dp)
-                )
-                Text(
-                    text = if (isEnabled) "Engine Ready" else "Not Downloaded",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        val containerColor = if (isEnabled) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHigh
+        }
+        val contentColor = if (isEnabled) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
 
-            if (isInstalling) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(28.dp),
-                    strokeWidth = 2.5.dp
-                )
-            } else if (!isEnabled) {
-                FilledTonalButton(
-                    onClick = {
-                        isInstalling = true
-                        coroutineScope.launch {
-                            kotlinx.coroutines.delay(1200)
-                            onToggle(true)
-                            isInstalling = false
-                        }
-                    },
-                    shape = AbsoluteSmoothCornerShape(16.dp, 60)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = AbsoluteSmoothCornerShape(18.dp, 60),
+            color = containerColor
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Download Engine",
-                        fontFamily = GoogleSansRounded,
-                        fontWeight = FontWeight.Bold
+                    StatusIcon(
+                        icon = when {
+                            isEnabled -> Icons.Rounded.CheckCircle
+                            isInstalling -> Icons.Rounded.Download
+                            else -> Icons.Rounded.Download
+                        },
+                        containerColor = if (isEnabled) {
+                            contentColor.copy(alpha = 0.15f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHighest
+                        },
+                        contentColor = if (isEnabled) contentColor else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(36.dp)
                     )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = when {
+                                isInstalling -> "Installing Engine"
+                                isEnabled -> "Engine Active & Ready"
+                                else -> "Engine Not Downloaded"
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = contentColor
+                        )
+                        Text(
+                            text = when {
+                                isInstalling -> installStatusText
+                                isEnabled -> "30s video story export unlocked in share sheet"
+                                else -> "Ready to download (approx. 2.8 MB)"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isEnabled) contentColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            } else {
-                TextButton(
-                    onClick = { onToggle(false) }
-                ) {
-                    Text(
-                        text = "Deactivate",
-                        color = MaterialTheme.colorScheme.error,
-                        fontFamily = GoogleSansRounded,
-                        fontWeight = FontWeight.Medium
-                    )
+
+                if (isInstalling) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        LinearProgressIndicator(
+                            progress = { installProgress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(CircleShape),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "${(installProgress * 100).toInt()}%",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Applying codecs...",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                } else if (!isEnabled) {
+                    FilledTonalButton(
+                        onClick = {
+                            isInstalling = true
+                            coroutineScope.launch {
+                                installStatusText = "Initializing video engine..."
+                                installProgress = 0.18f
+                                kotlinx.coroutines.delay(350)
+                                installStatusText = "Downloading components (2.8 MB)..."
+                                installProgress = 0.52f
+                                kotlinx.coroutines.delay(500)
+                                installStatusText = "Configuring Media3 encoders..."
+                                installProgress = 0.82f
+                                kotlinx.coroutines.delay(450)
+                                installStatusText = "Engine ready!"
+                                installProgress = 1.0f
+                                kotlinx.coroutines.delay(300)
+                                onToggle(true)
+                                isInstalling = false
+                                installProgress = 0f
+                                installStatusText = ""
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = AbsoluteSmoothCornerShape(14.dp, 60)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Download,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Download & Activate Engine",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = { onToggle(false) },
+                            shape = AbsoluteSmoothCornerShape(12.dp, 60)
+                        ) {
+                            Text(
+                                text = "Deactivate Engine",
+                                color = MaterialTheme.colorScheme.error,
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
         }
