@@ -82,6 +82,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.MusicNote
@@ -1863,7 +1864,7 @@ fun SettingsCategoryScreen(
                                             title = "Export / Share App Logs",
                                             subtitle = "Share or save the recorded log file (pixelmusic.log)",
                                             leadingIcon = {
-                                                Icon(Icons.Outlined.Share, null, tint = MaterialTheme.colorScheme.primary)
+                                                Icon(Icons.Rounded.Share, null, tint = MaterialTheme.colorScheme.primary)
                                             },
                                             onClick = {
                                                 val logPath = com.saurav.pixelmusic.utils.PixelLogger.logFilePath()
@@ -1895,7 +1896,7 @@ fun SettingsCategoryScreen(
                                             title = "Clear App Logs",
                                             subtitle = "Wipe the current log buffer and log file",
                                             leadingIcon = {
-                                                Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error)
+                                                Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error)
                                             },
                                             onClick = {
                                                 com.saurav.pixelmusic.utils.PixelLogger.clear()
