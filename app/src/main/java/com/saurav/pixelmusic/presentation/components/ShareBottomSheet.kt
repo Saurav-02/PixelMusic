@@ -128,11 +128,12 @@ fun ShareBottomSheet(
     }
     val albumColorSchemeState by themeStateHolder.getAlbumColorSchemeFlow(song.albumArtUriString.orEmpty()).collectAsState()
 
+    val isVideoEngineEnabled by userPreferencesRepository.videoSharingEngineEnabledFlow.collectAsState(initial = false)
     val persistedFormat by userPreferencesRepository.shareCardFormatFlow.collectAsState(initial = com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO)
     var selectedFormat by remember { mutableStateOf(com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO) }
 
-    LaunchedEffect(persistedFormat) {
-        selectedFormat = persistedFormat
+    LaunchedEffect(persistedFormat, isVideoEngineEnabled) {
+        selectedFormat = if (isVideoEngineEnabled) persistedFormat else com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO
     }
 
     val scope = rememberCoroutineScope()
@@ -352,77 +353,79 @@ fun ShareBottomSheet(
                 }
 
                 // Share Format Switcher (Photo / 30s Video)
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp)
-                        .fillMaxWidth()
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    listOf(
-                        Pair(com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO, stringResource(R.string.share_format_photo)),
-                        Pair(com.saurav.pixelmusic.data.preferences.ShareCardFormat.VIDEO, stringResource(R.string.share_format_video))
-                    ).forEach { (format, label) ->
-                        val isSelected = selectedFormat == format
-                        val bgColor by animateColorAsState(
-                            targetValue = if (isSelected) primaryColor else Color.Transparent,
-                            animationSpec = tween(250),
-                            label = "formatBg_${format.name}"
-                        )
-                        val contentColor by animateColorAsState(
-                            targetValue = if (isSelected) onPrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                            animationSpec = tween(250),
-                            label = "formatText_${format.name}"
-                        )
-                        val formatScale by animateFloatAsState(
-                            targetValue = if (isSelected) 1.02f else 1f,
-                            label = "formatScale_${format.name}"
-                        )
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(38.dp)
-                                .graphicsLayer {
-                                    scaleX = formatScale
-                                    scaleY = formatScale
-                                }
-                                .clip(CircleShape)
-                                .background(bgColor)
-                                .clickable {
-                                    if (selectedFormat != format) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        selectedFormat = format
-                                        scope.launch {
-                                            userPreferencesRepository.setShareCardFormat(format)
-                                        }
+                if (isVideoEngineEnabled) {
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp)
+                            .fillMaxWidth()
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf(
+                            Pair(com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO, stringResource(R.string.share_format_photo)),
+                            Pair(com.saurav.pixelmusic.data.preferences.ShareCardFormat.VIDEO, stringResource(R.string.share_format_video))
+                        ).forEach { (format, label) ->
+                            val isSelected = selectedFormat == format
+                            val bgColor by animateColorAsState(
+                                targetValue = if (isSelected) primaryColor else Color.Transparent,
+                                animationSpec = tween(250),
+                                label = "formatBg_${format.name}"
+                            )
+                            val contentColor by animateColorAsState(
+                                targetValue = if (isSelected) onPrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                animationSpec = tween(250),
+                                label = "formatText_${format.name}"
+                            )
+                            val formatScale by animateFloatAsState(
+                                targetValue = if (isSelected) 1.02f else 1f,
+                                label = "formatScale_${format.name}"
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(38.dp)
+                                    .graphicsLayer {
+                                        scaleX = formatScale
+                                        scaleY = formatScale
                                     }
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    .clip(CircleShape)
+                                    .background(bgColor)
+                                    .clickable {
+                                        if (selectedFormat != format) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            selectedFormat = format
+                                            scope.launch {
+                                                userPreferencesRepository.setShareCardFormat(format)
+                                            }
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = if (format == com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO) Icons.Rounded.Image else Icons.Rounded.Videocam,
-                                    contentDescription = null,
-                                    tint = contentColor,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = label,
-                                    fontFamily = GoogleSansRounded,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = contentColor,
-                                    style = MaterialTheme.typography.labelMedium
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (format == com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO) Icons.Rounded.Image else Icons.Rounded.Videocam,
+                                        contentDescription = null,
+                                        tint = contentColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = label,
+                                        fontFamily = GoogleSansRounded,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = contentColor,
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                }
                             }
                         }
                     }
+                    Spacer(Modifier.height(12.dp))
                 }
-                Spacer(Modifier.height(12.dp))
 
                 if (selectedCardMode == 1) {
                     Row(

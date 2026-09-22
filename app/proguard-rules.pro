@@ -50,9 +50,14 @@
 -keep class androidx.media3.decoder.ffmpeg.** { *; }
 -keep class androidx.media3.exoplayer.ffmpeg.** { *; }
 
-# Media3 full suite for Transformer, Extractors, Common, DataSource, Decoder, and Effects
--keep class androidx.media3.** { *; }
--dontwarn androidx.media3.**
+# Media3 Transformer and required components only
+-keep class androidx.media3.transformer.** { *; }
+-keep class androidx.media3.effect.** { *; }
+-keep class androidx.media3.datasource.DataSourceBitmapLoader { *; }
+-keep class androidx.media3.common.util.BitmapLoader { *; }
+-keep class androidx.media3.extractor.** { *; }
+-dontwarn androidx.media3.transformer.**
+-dontwarn androidx.media3.effect.**
 
 # ExoPlayer MIDI extension and JSyn synthesizer
 -keep class androidx.media3.decoder.midi.** { *; }

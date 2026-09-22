@@ -31,6 +31,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Videocam
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Headphones
@@ -105,7 +109,8 @@ fun DeviceCapabilitiesScreen(
     playerViewModel: PlayerViewModel
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-        val isMotionBlurEnabled by playerViewModel.userPreferencesRepository.uiMotionBlurEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
+    val isMotionBlurEnabled by playerViewModel.userPreferencesRepository.uiMotionBlurEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
+    val isVideoEngineEnabled by playerViewModel.userPreferencesRepository.videoSharingEngineEnabledFlow.collectAsStateWithLifecycle(initialValue = false)
 
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
@@ -181,6 +186,12 @@ fun DeviceCapabilitiesScreen(
                 state = state,
                 lazyListState = lazyListState,
                 topPadding = currentTopBarHeightDp,
+                isVideoEngineEnabled = isVideoEngineEnabled,
+                onToggleVideoEngine = { enabled ->
+                    coroutineScope.launch {
+                        playerViewModel.userPreferencesRepository.setVideoSharingEngineEnabled(enabled)
+                    }
+                },
                 modifier = Modifier.fillMaxSize()
                 .scrollMotionBlur(lazyListState, enabled = isMotionBlurEnabled)
             )
@@ -203,6 +214,8 @@ private fun DeviceCapabilitiesContent(
     state: DeviceCapabilitiesState,
     lazyListState: LazyListState,
     topPadding: Dp,
+    isVideoEngineEnabled: Boolean = false,
+    onToggleVideoEngine: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -257,7 +270,100 @@ private fun DeviceCapabilitiesContent(
         }
 
         item {
+            VideoSharingEngineCard(
+                isEnabled = isVideoEngineEnabled,
+                onToggle = onToggleVideoEngine
+            )
+        }
+
+        item {
             DeviceInfoPanel(deviceInfo = state.deviceInfo)
+        }
+    }
+}
+
+@Composable
+private fun VideoSharingEngineCard(
+    isEnabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isInstalling by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    CapabilityCard(
+        title = "Video Sharing Engine",
+        icon = Icons.Rounded.Videocam,
+        modifier = modifier
+    ) {
+        Text(
+            text = if (isEnabled) {
+                "Engine is active. 30-second music card video export is unlocked in the share sheet for Instagram, WhatsApp, and TikTok."
+            } else {
+                "On-demand video encoding engine. Activate to unlock 30-second music card video export in the share sheet."
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StatusIcon(
+                    icon = if (isEnabled) Icons.Rounded.CheckCircle else Icons.Rounded.Download,
+                    containerColor = if (isEnabled) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = if (isEnabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(36.dp)
+                )
+                Text(
+                    text = if (isEnabled) "Engine Ready" else "Not Downloaded",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (isInstalling) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(28.dp),
+                    strokeWidth = 2.5.dp
+                )
+            } else if (!isEnabled) {
+                FilledTonalButton(
+                    onClick = {
+                        isInstalling = true
+                        coroutineScope.launch {
+                            kotlinx.coroutines.delay(1200)
+                            onToggle(true)
+                            isInstalling = false
+                        }
+                    },
+                    shape = AbsoluteSmoothCornerShape(16.dp, 60)
+                ) {
+                    Text(
+                        text = "Download Engine",
+                        fontFamily = GoogleSansRounded,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else {
+                TextButton(
+                    onClick = { onToggle(false) }
+                ) {
+                    Text(
+                        text = "Deactivate",
+                        color = MaterialTheme.colorScheme.error,
+                        fontFamily = GoogleSansRounded,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
     }
 }

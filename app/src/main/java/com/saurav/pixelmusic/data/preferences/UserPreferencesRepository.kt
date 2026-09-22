@@ -370,6 +370,7 @@ constructor(
         val SCROBBLE_MIN_SONG_DURATION = intPreferencesKey("scrobble_min_song_duration")
         val SCROBBLE_DELAY_SECONDS = intPreferencesKey("scrobble_delay_seconds")
         val GENERATED_PLAYLISTS_RETENTION_PERIOD = stringPreferencesKey("generated_playlists_retention_period")
+        val VIDEO_SHARING_ENGINE_ENABLED = booleanPreferencesKey("video_sharing_engine_enabled")
     }
 
     val lastUpdatePromptTimeFlow: Flow<Long> =
@@ -745,6 +746,19 @@ constructor(
     suspend fun setShareCardFormat(format: ShareCardFormat) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.SHARE_CARD_FORMAT] = format.name
+        }
+    }
+
+    val videoSharingEngineEnabledFlow: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.VIDEO_SHARING_ENGINE_ENABLED] ?: false
+    }.distinctUntilChanged()
+
+    suspend fun setVideoSharingEngineEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.VIDEO_SHARING_ENGINE_ENABLED] = enabled
+            if (!enabled) {
+                preferences[PreferencesKeys.SHARE_CARD_FORMAT] = ShareCardFormat.PHOTO.name
+            }
         }
     }
 

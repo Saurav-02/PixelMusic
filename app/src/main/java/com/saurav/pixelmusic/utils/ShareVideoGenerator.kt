@@ -273,9 +273,9 @@ object ShareVideoGenerator {
         val cacheDir = File(context.cacheDir, "share_cards").also { it.mkdirs() }
         val frameFile = File(cacheDir, "temp_video_frame_${System.currentTimeMillis()}.png")
 
-        // Standard 1080x1920 Full HD (9:16 aspect ratio, even dimensions for H.264)
-        val targetWidth = 1080
-        val targetHeight = 1920
+        // Standard 720x1280 resolution (9:16 aspect ratio, balanced for small video file size)
+        val targetWidth = 720
+        val targetHeight = 1280
         val scaledBitmap = Bitmap.createScaledBitmap(cardBitmap, targetWidth, targetHeight, true)
 
         FileOutputStream(frameFile).use { out ->
@@ -341,7 +341,7 @@ object ShareVideoGenerator {
                         .build()
                 )
                     .setDurationUs(clipDurationMs * 1000L)
-                    .setFrameRate(30)
+                    .setFrameRate(15)
                     .setRemoveAudio(true)
                     .build()
 
@@ -364,7 +364,7 @@ object ShareVideoGenerator {
                 val composition = Composition.Builder(listOf(videoSequence, audioSequence)).build()
 
                 val videoEncoderSettings = VideoEncoderSettings.Builder()
-                    .setBitrate(1_000_000) // 1.0 Mbps video bitrate = ~3.8 MB total for 30s
+                    .setBitrate(750_000) // 750 kbps video bitrate = ~2.8 - 3.2 MB total for 30s
                     .build()
 
                 val encoderFactory = DefaultEncoderFactory.Builder(context)
