@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import dev.shreyaspatil.capturable.capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import coil.size.Size
 import com.saurav.pixelmusic.R
 import com.saurav.pixelmusic.data.model.Song
 import com.saurav.pixelmusic.ui.theme.GoogleSansRounded
@@ -479,7 +480,7 @@ fun ShareBottomSheet(
                     ) { (mode, lyricsList, solidMode) ->
                         ShareableCard(
                             modifier = Modifier
-                                .fillMaxWidth(0.70f)
+                                .fillMaxWidth(0.82f)
                                 .capturable(captureController),
                             song = song,
                             isLyricsMode = mode == 1,
@@ -1085,9 +1086,10 @@ private fun ShareableCard(
             ShareThemeStyle.BLURRED_ARTWORK -> {
                 Box(modifier = Modifier.fillMaxSize()) {
                     SmartImage(
-                        model = song.albumArtUriString,
+                        model = com.saurav.pixelmusic.data.remote.youtube.YoutubeHelper.getHighResThumbnailUrl(song.albumArtUriString) ?: song.albumArtUriString,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
+                        targetSize = Size.ORIGINAL,
                         modifier = Modifier.fillMaxSize()
                     )
                     Box(
@@ -1164,37 +1166,6 @@ private fun ShareableCard(
                     )
                 )
         )
-
-        if (isVideoMode) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 16.dp, end = 16.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.45f))
-                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Videocam,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(11.dp)
-                    )
-                    Text(
-                        text = "30s Clip",
-                        fontFamily = GoogleSansRounded,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 9.sp,
-                        color = Color.White
-                    )
-                }
-            }
-        }
 
         Column(
             modifier = Modifier
@@ -1376,9 +1347,10 @@ private fun SongMiniCard(
         horizontalAlignment = Alignment.Start
     ) {
         SmartImage(
-            model = song.albumArtUriString,
+            model = com.saurav.pixelmusic.data.remote.youtube.YoutubeHelper.getHighResThumbnailUrl(song.albumArtUriString) ?: song.albumArtUriString,
             contentDescription = null,
             contentScale = ContentScale.Crop,
+            targetSize = Size.ORIGINAL,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)

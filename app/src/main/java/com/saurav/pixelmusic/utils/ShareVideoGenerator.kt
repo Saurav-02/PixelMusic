@@ -8,8 +8,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
+import androidx.media3.transformer.DefaultEncoderFactory
 import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.EditedMediaItemSequence
+import androidx.media3.transformer.VideoEncoderSettings
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.ProgressHolder
@@ -271,9 +273,9 @@ object ShareVideoGenerator {
         val cacheDir = File(context.cacheDir, "share_cards").also { it.mkdirs() }
         val frameFile = File(cacheDir, "temp_video_frame_${System.currentTimeMillis()}.png")
 
-        // Standard 720x1280 resolution (9:16 aspect ratio, even dimensions for H.264)
-        val targetWidth = 720
-        val targetHeight = 1280
+        // Standard 1080x1920 Full HD (9:16 aspect ratio, even dimensions for H.264)
+        val targetWidth = 1080
+        val targetHeight = 1920
         val scaledBitmap = Bitmap.createScaledBitmap(cardBitmap, targetWidth, targetHeight, true)
 
         FileOutputStream(frameFile).use { out ->
@@ -361,9 +363,19 @@ object ShareVideoGenerator {
                 val audioSequence = EditedMediaItemSequence.Builder(audioMediaItem).build()
                 val composition = Composition.Builder(listOf(videoSequence, audioSequence)).build()
 
+                val videoEncoderSettings = VideoEncoderSettings.Builder()
+                    .setBitrate(1_000_000) // 1.0 Mbps video bitrate = ~3.8 MB total for 30s
+                    .build()
+
+                val encoderFactory = DefaultEncoderFactory.Builder(context)
+                    .setRequestedVideoEncoderSettings(videoEncoderSettings)
+                    .setEnableFallback(true)
+                    .build()
+
                 val transformer = Transformer.Builder(context)
                     .setVideoMimeType(MimeTypes.VIDEO_H264)
                     .setAudioMimeType(MimeTypes.AUDIO_AAC)
+                    .setEncoderFactory(encoderFactory)
                     .build()
 
                 val progressHolder = ProgressHolder()
