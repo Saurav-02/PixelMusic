@@ -1,15 +1,15 @@
 package com.saurav.pixelmusic.data.remote.youtube
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.fuel.json.responseJson
-import com.github.kittinunf.result.Result
 import com.saurav.pixelmusic.data.model.youtube.UmihiSettings
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.buildJsonArray
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
 
 object YoutubeRequestHelper {
+    private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+
     fun browse(browseId: String, settings: UmihiSettings): String {
         return requestWithContext(
             url = Constants.YoutubeApi.Browse.URL,
@@ -68,7 +68,6 @@ object YoutubeRequestHelper {
         )
     }
 
-
     private fun requestWithTarget(
         url: String,
         videoId: String,
@@ -85,20 +84,7 @@ object YoutubeRequestHelper {
         }
 
         val headers = YoutubeAuthHelper.getHeaders(settings.cookies)
-
-        val (_, _, result) = url.httpPost().jsonBody(body.toString())
-            .header(headers)
-            .responseJson()
-
-        return when (result) {
-            is Result.Success -> {
-                result.value.content
-            }
-
-            is Result.Failure -> {
-                throw result.error.exception
-            }
-        }
+        return executePost(url, body.toString(), headers)
     }
 
     private fun requestWithContext(
@@ -107,9 +93,7 @@ object YoutubeRequestHelper {
         id: String,
         settings: UmihiSettings? = null
     ): String {
-        val body =
-            YoutubeAuthHelper.buildContextBody(idName, id, settings)
-
+        val body = YoutubeAuthHelper.buildContextBody(idName, id, settings)
         val headers = if (settings != null) {
             YoutubeAuthHelper.getHeaders(settings.cookies)
         } else {
@@ -119,21 +103,34 @@ object YoutubeRequestHelper {
                 "Sec-Fetch-Mode" to "navigate"
             )
         }
+        return executePost(url, body.toString(), headers)
+    }
 
-        val (_, _, result) = url.httpPost().jsonBody(body.toString())
-            .header(
-                headers
-            )
-            .responseJson()
+    private fun executePost(url: String, jsonBody: String, headers: Map<String, String>): String {
+        val requestBody = jsonBody.toRequestBody(jsonMediaType)
+        val builder = okhttp3.Request.Builder()
+            .url(url)
+            .post(requestBody)
 
-        return when (result) {
-            is Result.Success -> {
-                result.value.content
+        headers.forEach { (key, value) ->
+            builder.addHeader(key, value)
+        }
+
+        val streamProxy = saurav.shru.pixelmusic.innertube.YouTube.streamProxy
+        val client = if (streamProxy != null) {
+            okhttp3.OkHttpClient.Builder()
+                .connectionPool(okhttp3.ConnectionPool(10, 5, java.util.concurrent.TimeUnit.MINUTES))
+                .proxy(streamProxy)
+                .build()
+        } else {
+            YoutubeHelper.client
+        }
+
+        client.newCall(builder.build()).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IOException("HTTP ${response.code}: ${response.message}")
             }
-
-            is Result.Failure -> {
-                throw result.error.exception
-            }
+            return response.body?.string().orEmpty()
         }
     }
 }

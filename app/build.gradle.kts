@@ -208,9 +208,7 @@ dependencies {
     implementation(libs.brotli)
     implementation(libs.re2j)
 
-    // Fuel HTTP library (required by YoutubeRequestHelper)
-    implementation(libs.fuel.android)
-    implementation(libs.fuel.json)
+
 
     // Core & Optimization
     implementation(libs.androidx.profileinstaller)
@@ -239,7 +237,7 @@ dependencies {
     implementation("androidx.webkit:webkit:1.16.0")
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
-    implementation("io.github.dokar3:quickjs-kt:1.0.14")
+
 
     // DI & Navigation
     implementation(libs.hilt.android)
