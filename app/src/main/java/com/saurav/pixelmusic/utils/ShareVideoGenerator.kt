@@ -37,13 +37,17 @@ object ShareVideoGenerator {
 
     private val httpClient by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(20, TimeUnit.SECONDS)
-            .readTimeout(45, TimeUnit.SECONDS)
+            .connectTimeout(25, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
             .followRedirects(true)
             .build()
     }
 
-    suspend fun resolveAudioFile(context: Context, song: Song): File? = withContext(Dispatchers.IO) {
+    suspend fun resolveAudioFile(
+        context: Context,
+        song: Song,
+        onProgress: (Float, String) -> Unit = { _, _ -> }
+    ): File? = withContext(Dispatchers.IO) {
         PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Resolving audio for '${song.title}', id='${song.id}', path='${song.path}', uri='${song.contentUriString}'")
 
         // 1. Direct local file path
@@ -51,11 +55,12 @@ object ShareVideoGenerator {
             val file = File(song.path)
             if (file.exists() && file.length() > 0 && file.canRead()) {
                 PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Local file exists: ${file.absolutePath} (${file.length()} bytes)")
+                onProgress(0.35f, "Found local audio track…")
                 return@withContext file
             }
         }
 
-        // 2. Local content URI or file URI: copy to a temporary audio file in cache so Media3 has 100% direct file access
+        // 2. Local content URI or file URI: copy to a temporary audio file in cache
         val contentUriStr = song.contentUriString
         if (contentUriStr.isNotBlank() && (contentUriStr.startsWith("content://") || contentUriStr.startsWith("file://") || contentUriStr.startsWith("/"))) {
             try {
@@ -64,11 +69,13 @@ object ShareVideoGenerator {
                     val f = File(uri.path ?: contentUriStr)
                     if (f.exists() && f.length() > 0) {
                         PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "File URI valid: ${f.absolutePath}")
+                        onProgress(0.35f, "Found local audio track…")
                         return@withContext f
                     }
                 } else if (uri.scheme == "content") {
                     val tempAudioFile = File(context.cacheDir, "share_cards/temp_content_${System.currentTimeMillis()}.m4a")
                     tempAudioFile.parentFile?.mkdirs()
+                    onProgress(0.15f, "Extracting audio from storage…")
                     context.contentResolver.openInputStream(uri)?.use { input ->
                         FileOutputStream(tempAudioFile).use { output ->
                             input.copyTo(output)
@@ -76,6 +83,7 @@ object ShareVideoGenerator {
                     }
                     if (tempAudioFile.exists() && tempAudioFile.length() > 0) {
                         PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Extracted content URI to cache file: ${tempAudioFile.length()} bytes")
+                        onProgress(0.35f, "Local audio track ready…")
                         return@withContext tempAudioFile
                     }
                 }
@@ -99,6 +107,7 @@ object ShareVideoGenerator {
                     val f = File(ytSong.audioFilePath)
                     if (f.exists() && f.length() > 0) {
                         PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Found downloaded YouTube audio file: ${f.absolutePath}")
+                        onProgress(0.35f, "Found offline audio track…")
                         return@withContext f
                     }
                 }
@@ -106,8 +115,17 @@ object ShareVideoGenerator {
                 PixelLogger.w(PixelLogger.Category.PLAYER, "ShareVideo", "Error querying YouTube DB", e)
             }
 
+            // Check if audio file for this video was already cached from a previous attempt
+            val cachedShareAudio = File(context.cacheDir, "share_cards/yt_audio_${videoId}.m4a")
+            if (cachedShareAudio.exists() && cachedShareAudio.length() > 50_000) {
+                PixelLogger.i(PixelLogger.Category.PLAYER, "ShareVideo", "Reusing cached audio file: ${cachedShareAudio.absolutePath} (${cachedShareAudio.length()} bytes)")
+                onProgress(0.35f, "Audio track ready…")
+                return@withContext cachedShareAudio
+            }
+
             // 4. Online stream URL: download audio stream to temporary cache file
             try {
+                onProgress(0.05f, "Connecting to audio stream…")
                 PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Fetching stream URL for YouTube track: $videoId")
                 val ytModelSong = com.saurav.pixelmusic.data.model.youtube.Song(
                     youtubeId = videoId,
@@ -118,18 +136,17 @@ object ShareVideoGenerator {
                 val streamUrl = YoutubeHelper.getDownloadUrl(context, ytModelSong).ifBlank {
                     YoutubeHelper.getSongPlayerUrl(context, ytModelSong, allowLocal = true)
                 }
-                PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Resolved stream URL: ${streamUrl.take(70)}...")
+                PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Resolved stream URL: ${streamUrl.take(70)}…")
                 if (streamUrl.isNotBlank()) {
                     if (streamUrl.startsWith("/")) {
                         val f = File(streamUrl)
                         if (f.exists() && f.length() > 0) return@withContext f
                     } else if (streamUrl.startsWith("http")) {
-                        val tempAudioFile = File(context.cacheDir, "share_cards/temp_yt_${videoId}_${System.currentTimeMillis()}.m4a")
-                        tempAudioFile.parentFile?.mkdirs()
-                        downloadStreamToFile(streamUrl, tempAudioFile)
-                        if (tempAudioFile.exists() && tempAudioFile.length() > 0) {
-                            PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Downloaded stream to file: ${tempAudioFile.length()} bytes")
-                            return@withContext tempAudioFile
+                        downloadStreamToFile(streamUrl, cachedShareAudio, onProgress)
+                        if (cachedShareAudio.exists() && cachedShareAudio.length() > 0) {
+                            PixelLogger.d(PixelLogger.Category.PLAYER, "ShareVideo", "Downloaded stream to file: ${cachedShareAudio.length()} bytes")
+                            onProgress(0.35f, "Audio track downloaded…")
+                            return@withContext cachedShareAudio
                         }
                     }
                 }
@@ -162,20 +179,48 @@ object ShareVideoGenerator {
         return@withContext null
     }
 
-    private fun downloadStreamToFile(url: String, destination: File) {
+    private fun downloadStreamToFile(
+        url: String,
+        destination: File,
+        onProgress: (Float, String) -> Unit
+    ) {
         val request = Request.Builder()
             .url(url)
             .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
             .build()
+
+        destination.parentFile?.mkdirs()
+        val tempPartFile = File(destination.parentFile, "${destination.name}.part")
+        if (tempPartFile.exists()) tempPartFile.delete()
 
         httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 throw IOException("Download stream failed HTTP code: ${response.code} ${response.message}")
             }
             val body = response.body ?: throw IOException("Response body is null")
-            destination.outputStream().use { out ->
-                body.byteStream().copyTo(out)
+            val totalBytes = body.contentLength()
+            var bytesCopied = 0L
+            val buffer = ByteArray(16384)
+
+            val inStream = body.byteStream()
+            val outStream = FileOutputStream(tempPartFile)
+            try {
+                var read: Int
+                while (inStream.read(buffer).also { read = it } != -1) {
+                    outStream.write(buffer, 0, read)
+                    bytesCopied += read
+                    if (totalBytes > 0) {
+                        val fraction = (bytesCopied.toFloat() / totalBytes).coerceIn(0f, 1f)
+                        onProgress(0.05f + fraction * 0.30f, "Downloading audio: ${(fraction * 100).toInt()}%")
+                    }
+                }
+                outStream.flush()
+            } finally {
+                outStream.close()
+                inStream.close()
             }
+            if (destination.exists()) destination.delete()
+            tempPartFile.renameTo(destination)
         }
     }
 
@@ -204,13 +249,15 @@ object ShareVideoGenerator {
         song: Song,
         currentPositionMs: Long = 0L,
         desiredDurationSec: Int = 30,
-        onProgress: (Float) -> Unit = {}
+        onProgress: (Float, String) -> Unit = { _, _ -> }
     ): File {
         PixelLogger.i(PixelLogger.Category.UI, "ShareVideo", "Starting video generation for '${song.title}', duration=${desiredDurationSec}s, currentPositionMs=$currentPositionMs")
+        onProgress(0.02f, "Preparing audio track…")
 
-        val audioFile = resolveAudioFile(context, song)
+        val audioFile = resolveAudioFile(context, song, onProgress)
             ?: throw IllegalStateException("Audio source could not be resolved or downloaded for this track.")
 
+        onProgress(0.38f, "Rendering card visuals…")
         val frameFile = prepareVideoCardFrame(context, cardBitmap)
 
         val desiredClipDurationMs = (desiredDurationSec * 1000L).coerceAtLeast(5000L)
@@ -237,12 +284,14 @@ object ShareVideoGenerator {
         val outputFile = File(cacheDir, "pixelmusic_video_${System.currentTimeMillis()}.mp4")
         if (outputFile.exists()) outputFile.delete()
 
+        onProgress(0.40f, "Encoding 30s video…")
+
         return withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { continuation ->
                 val imageMediaItem = EditedMediaItem.Builder(
                     MediaItem.Builder()
                         .setUri(Uri.fromFile(frameFile))
-                        .setMimeType(MimeTypes.IMAGE_PNG) // CRITICAL: Explicitly specify IMAGE_PNG
+                        .setMimeType(MimeTypes.IMAGE_PNG)
                         .setImageDurationMs(clipDurationMs)
                         .build()
                 )
@@ -278,9 +327,10 @@ object ShareVideoGenerator {
                     while (isActive) {
                         val state = transformer.getProgress(progressHolder)
                         if (state == Transformer.PROGRESS_STATE_AVAILABLE) {
-                            onProgress(progressHolder.progress / 100f)
+                            val percent = (progressHolder.progress / 100f).coerceIn(0f, 1f)
+                            onProgress(0.40f + percent * 0.58f, "Encoding 30s video: ${(percent * 100).toInt()}%")
                         }
-                        delay(250)
+                        delay(200)
                     }
                 }
 
@@ -288,6 +338,7 @@ object ShareVideoGenerator {
                     override fun onCompleted(composition: Composition, exportResult: ExportResult) {
                         progressJob.cancel()
                         frameFile.delete()
+                        onProgress(1f, "Video ready!")
                         PixelLogger.i(PixelLogger.Category.UI, "ShareVideo", "Transformer completed successfully! Output: ${outputFile.absolutePath} (${outputFile.length()} bytes)")
                         if (continuation.isActive) {
                             continuation.resume(outputFile)
@@ -302,7 +353,7 @@ object ShareVideoGenerator {
                         progressJob.cancel()
                         frameFile.delete()
                         outputFile.delete()
-                        PixelLogger.e(PixelLogger.Category.UI, "ShareVideo", "Transformer export failed with exception: ${exportException.errorCodeName}", exportException)
+                        PixelLogger.e(PixelLogger.Category.UI, "ShareVideo", "Transformer export failed: ${exportException.errorCodeName}", exportException)
                         if (continuation.isActive) {
                             continuation.resumeWithException(exportException)
                         }
@@ -314,7 +365,7 @@ object ShareVideoGenerator {
                     transformer.cancel()
                     frameFile.delete()
                     outputFile.delete()
-                    PixelLogger.w(PixelLogger.Category.UI, "ShareVideo", "Video generation cancelled by user")
+                    PixelLogger.w(PixelLogger.Category.UI, "ShareVideo", "Video generation cancelled")
                 }
 
                 try {

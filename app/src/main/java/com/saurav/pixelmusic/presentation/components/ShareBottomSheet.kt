@@ -135,6 +135,7 @@ fun ShareBottomSheet(
     }
 
     val scope = rememberCoroutineScope()
+    val applicationScope = remember { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main) }
     val haptic = LocalHapticFeedback.current
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
@@ -160,6 +161,7 @@ fun ShareBottomSheet(
     var isCapturing by remember { mutableStateOf(false) }
     var isGeneratingVideo by remember { mutableStateOf(false) }
     var videoProgress by remember { mutableStateOf(0f) }
+    var videoStatus by remember { mutableStateOf("Preparing 30s video…") }
     var videoJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     val captureController = rememberCaptureController()
 
@@ -184,11 +186,14 @@ fun ShareBottomSheet(
     ) {
         if (selectedFormat == com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO) {
             isCapturing = true
-            scope.launch {
+            applicationScope.launch {
                 try {
                     val bitmap = captureController.captureAsync().await().asAndroidBitmap()
                     actionPhoto(bitmap)
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    com.saurav.pixelmusic.utils.PixelLogger.i(com.saurav.pixelmusic.utils.PixelLogger.Category.UI, "ShareBottomSheet", "Photo share cancelled")
                 } catch (e: Exception) {
+                    com.saurav.pixelmusic.utils.PixelLogger.e(com.saurav.pixelmusic.utils.PixelLogger.Category.UI, "ShareBottomSheet", "Failed to capture card", e)
                     Toast.makeText(context, "Failed to capture card", Toast.LENGTH_SHORT).show()
                 } finally {
                     isCapturing = false
@@ -197,12 +202,16 @@ fun ShareBottomSheet(
         } else {
             isGeneratingVideo = true
             videoProgress = 0f
-            videoJob = scope.launch {
+            videoStatus = "Preparing card artwork…"
+            videoJob = applicationScope.launch {
                 try {
                     val bitmap = captureController.captureAsync().await().asAndroidBitmap()
                     actionVideo(bitmap)
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    com.saurav.pixelmusic.utils.PixelLogger.i(com.saurav.pixelmusic.utils.PixelLogger.Category.UI, "ShareBottomSheet", "Video generation cancelled")
                 } catch (e: Exception) {
                     val errorMsg = e.localizedMessage ?: "Unknown error"
+                    com.saurav.pixelmusic.utils.PixelLogger.e(com.saurav.pixelmusic.utils.PixelLogger.Category.UI, "ShareBottomSheet", "Video generation failed: $errorMsg", e)
                     Toast.makeText(context, context.getString(R.string.share_video_failed, errorMsg), Toast.LENGTH_LONG).show()
                 } finally {
                     isGeneratingVideo = false
@@ -230,7 +239,7 @@ fun ShareBottomSheet(
         )
     }
     ModalBottomSheet(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!isGeneratingVideo) onDismiss() },
         sheetState = sheetState,
         containerColor = colorScheme.surfaceContainer,
         shape = sheetShape,
@@ -673,7 +682,7 @@ fun ShareBottomSheet(
                                                 song = song,
                                                 currentPositionMs = currentPlaybackPositionMs,
                                                 desiredDurationSec = 30,
-                                                onProgress = { videoProgress = it }
+                                                onProgress = { p, s -> videoProgress = p; videoStatus = s }
                                             )
                                             val uri = FileProvider.getUriForFile(
                                                 context,
@@ -746,7 +755,7 @@ fun ShareBottomSheet(
                                             song = song,
                                             currentPositionMs = currentPlaybackPositionMs,
                                             desiredDurationSec = 30,
-                                            onProgress = { videoProgress = it }
+                                            onProgress = { p, s -> videoProgress = p; videoStatus = s }
                                         )
                                         withContext(Dispatchers.IO) {
                                             try {
@@ -846,7 +855,7 @@ fun ShareBottomSheet(
                                             song = song,
                                             currentPositionMs = currentPlaybackPositionMs,
                                             desiredDurationSec = 30,
-                                            onProgress = { videoProgress = it }
+                                            onProgress = { p, s -> videoProgress = p; videoStatus = s }
                                         )
                                         val uri = FileProvider.getUriForFile(
                                             context,
@@ -891,106 +900,114 @@ fun ShareBottomSheet(
     }
 
     if (isGeneratingVideo) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.55f))
-                .clickable(enabled = false) {},
-            contentAlignment = Alignment.Center
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = {},
+            properties = androidx.compose.ui.window.DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false,
+                usePlatformDefaultWidth = false
+            )
         ) {
-            Card(
+            Box(
                 modifier = Modifier
-                    .padding(32.dp)
-                    .fillMaxWidth(0.85f),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.65f)),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
+                Card(
                     modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = 28.dp)
+                        .fillMaxWidth(0.88f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(primaryColor.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Videocam,
-                            contentDescription = null,
-                            tint = primaryColor,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-
                     Column(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(
-                            text = stringResource(R.string.share_video_progress_title),
-                            fontFamily = GoogleSansRounded,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = stringResource(R.string.share_video_progress_subtitle),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-
-                    if (videoProgress > 0f) {
-                        LinearProgressIndicator(
-                            progress = { videoProgress },
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .clip(CircleShape),
-                            color = primaryColor,
-                            trackColor = primaryColor.copy(alpha = 0.2f)
-                        )
-                        Text(
-                            text = "${(videoProgress * 100).toInt()}%",
-                            fontFamily = GoogleSansRounded,
-                            fontWeight = FontWeight.SemiBold,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = primaryColor
-                        )
-                    } else {
-                        LinearProgressIndicator(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .clip(CircleShape),
-                            color = primaryColor,
-                            trackColor = primaryColor.copy(alpha = 0.2f)
-                        )
-                    }
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(primaryColor.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Videocam,
+                                contentDescription = null,
+                                tint = primaryColor,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
 
-                    TextButton(
-                        onClick = {
-                            videoJob?.cancel()
-                            isGeneratingVideo = false
-                        },
-                        shape = CircleShape
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            fontFamily = GoogleSansRounded,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.share_video_progress_title),
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = videoStatus,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        if (videoProgress > 0f) {
+                            LinearProgressIndicator(
+                                progress = { videoProgress },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(CircleShape),
+                                color = primaryColor,
+                                trackColor = primaryColor.copy(alpha = 0.2f)
+                            )
+                            Text(
+                                text = "${(videoProgress * 100).toInt()}%",
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.SemiBold,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = primaryColor
+                            )
+                        } else {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(CircleShape),
+                                color = primaryColor,
+                                trackColor = primaryColor.copy(alpha = 0.2f)
+                            )
+                        }
+
+                        TextButton(
+                            onClick = {
+                                videoJob?.cancel()
+                                isGeneratingVideo = false
+                            },
+                            shape = CircleShape
+                        ) {
+                            Text(
+                                text = "Cancel",
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
