@@ -53,11 +53,13 @@
 # Media3 Transformer and required components only
 -keep class androidx.media3.transformer.** { *; }
 -keep class androidx.media3.effect.** { *; }
+-keep class androidx.media3.muxer.** { *; }
 -keep class androidx.media3.datasource.DataSourceBitmapLoader { *; }
 -keep class androidx.media3.common.util.BitmapLoader { *; }
 -keep class androidx.media3.extractor.** { *; }
 -dontwarn androidx.media3.transformer.**
 -dontwarn androidx.media3.effect.**
+-dontwarn androidx.media3.muxer.**
 
 # ExoPlayer MIDI extension and JSyn synthesizer
 -keep class androidx.media3.decoder.midi.** { *; }

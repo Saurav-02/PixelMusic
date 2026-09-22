@@ -98,6 +98,7 @@ import kotlinx.coroutines.launch
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import kotlin.math.roundToInt
 import com.saurav.pixelmusic.ui.modifiers.scrollMotionBlur
+import com.saurav.pixelmusic.ui.theme.GoogleSansRounded
 
 
 
