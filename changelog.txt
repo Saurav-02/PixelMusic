@@ -6,6 +6,7 @@ Before updating, please take a full backup of your data:
 2. Go to **Accounts** -> **Account management** -> **Copy cookies** for faster login (or you can manually sign in).
 3. Then install the latest version, import your backup, and you're done! Enjoy ♥️
 
+![Explore Screen Preview](https://github.com/atappu805/PixelMusic/blob/main/assets/screenshot2.jpg)
 ---
 
 **Sub release 4.4.0**
