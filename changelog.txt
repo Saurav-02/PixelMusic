@@ -8,6 +8,24 @@ Before updating, please take a full backup of your data:
 
 ---
 
+**Sub release 4.4.0**
+
+* 📶 **Adaptive Streaming Quality:** Added dynamic "Auto" streaming audio quality that automatically adjusts bitrate based on network connectivity (Wi-Fi vs Cellular).
+
+* 🤖 **AI Lyrics Rescue (Beta) & YTM Fixes:** Integrated AI-powered fallback lyrics generation when standard sources are missing. Fixed YouTube Music lyrics extraction and synced lyric parsing.
+
+* 🔍 **Lyrics Matching Engine:** Overhauled lyrics matching with smart filename/title normalization (removes remix tags, feat markers, and brackets for higher match rates), resolved lyric dismiss loops, and improved async concurrency.
+
+* 🎙️ **Music Recognition Polish:** Isolated recognition overlay activity in its own task so invoking recognition doesn't bring the main app forward. Added release-to-recognize confirmation gesture with tactile haptics to the Home Shuffle button.
+
+* 🖼️ **Unified Thumbnail Quality & Shared Cache:** Unified image resolution settings across all screens based on user preferences. Optimized Coil image caching to avoid redundant reloads on scrolling and reduced memory overhead.
+
+* 🔄 **Resilient In-App Updater & SemVer:** Implemented 3-part Semantic Versioning and numerical version comparison (`isNewerVersion`) to eliminate false downgrade prompts. Added HTTP 206 Partial Content checks during download resume to prevent APK corruption. Fixed notification icons, direct installer launches, and unified the `"app_updates"` notification channel with deep-link navigation to the About / Update screen.
+
+* 🧹 **Compose Modernization & Code Cleanup:** Migrated deprecated `rememberModalBottomSheetState` to `rememberBottomSheetState` across all components and screens. Resolved compiler warnings and deprecated calls across data, UI, and build configurations.
+
+---
+
 *Sub release 4.3*
 Fixed some download related bugs on Samsung devices.
 
