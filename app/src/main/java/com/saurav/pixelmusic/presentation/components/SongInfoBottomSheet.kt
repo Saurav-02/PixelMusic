@@ -567,7 +567,7 @@ fun SongInfoBottomSheet(
                                                     }
                                                 ) {
                                                     Icon(
-                                                        if (removeFromListTrigger != null) Icons.Default.RemoveCircleOutline else Icons.Default.DeleteForever,
+                                                        if (removeFromListTrigger != null) Icons.Default.Delete else Icons.Default.DeleteForever,
                                                         contentDescription = stringResource(if (removeFromListTrigger != null) R.string.presentation_batch_e_cd_remove_from_playlist else R.string.delete_action)
                                                     )
                                                     Spacer(Modifier.width(8.dp))

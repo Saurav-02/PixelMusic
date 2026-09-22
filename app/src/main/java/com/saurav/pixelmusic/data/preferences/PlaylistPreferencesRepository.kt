@@ -398,14 +398,6 @@ class PlaylistPreferencesRepository @Inject constructor(
             ytPlaylistRepo.deleteCrossRef(playlistId, "youtube_$rawId")
         } catch (_: Exception) {}
 
-        try {
-            val localSongs = localPlaylistDao.getPlaylistSongs(playlistId)
-            if (localSongs.isNotEmpty()) {
-                val remaining = localSongs.map { it.songId }.filterNot { it in variants || it == rawId || it == "youtube_$rawId" }
-                localPlaylistDao.replacePlaylistSongs(playlistId, remaining)
-            }
-        } catch (_: Exception) {}
-
         val existing = userPlaylistsFlow.first().find { it.id == playlistId }
         if (existing != null) {
             val updatedSongIds = existing.songIds.filterNot { it in variants || it == rawId || it == "youtube_$rawId" }
