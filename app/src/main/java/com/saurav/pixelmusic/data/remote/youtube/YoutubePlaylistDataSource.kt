@@ -46,7 +46,7 @@ class YoutubePlaylistDataSource {
                         PlaylistInfo(
                             id = item.id,
                             title = item.title,
-                            coverHref = item.thumbnail?.let { com.saurav.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality(it) }
+                            coverHref = item.thumbnail?.let { com.saurav.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality(it) } ?: ""
                         )
                     } ?: emptyList()
             }

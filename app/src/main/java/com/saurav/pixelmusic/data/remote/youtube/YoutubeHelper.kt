@@ -160,7 +160,7 @@ object YoutubeHelper {
                 if (browseId.isNullOrBlank() || browseId == "SE") continue
 
                 val thumbnailUrl = item["thumbnailRenderer"]?.let { getBestThumbnailUrl(it) } ?: item["thumbnail"]?.let { getBestThumbnailUrl(it) }
-                playlistInfos.add(PlaylistInfo(id = browseId, title = title, coverHref = upgradeThumbnailUrlToHighQuality(thumbnailUrl)))
+                playlistInfos.add(PlaylistInfo(id = browseId, title = title, coverHref = upgradeThumbnailUrlToHighQuality(thumbnailUrl ?: "")))
             }
 
             val continuationToken = findContinuationToken(root)
