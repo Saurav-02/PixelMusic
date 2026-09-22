@@ -239,6 +239,13 @@ object AppModule {
         return ImageLoader.Builder(context)
             .dispatcher(Dispatchers.Default) // Use CPU-bound dispatcher for decoding
             .allowHardware(true) // Re-enable hardware bitmaps for better performance
+            .components {
+                if (android.os.Build.VERSION.SDK_INT >= 28) {
+                    add(coil.decode.ImageDecoderDecoder.Factory())
+                } else {
+                    add(coil.decode.GifDecoder.Factory())
+                }
+            }
             .memoryCache {
                 MemoryCache.Builder(context)
                     .maxSizePercent(0.20) // Use 20% of app memory for image cache

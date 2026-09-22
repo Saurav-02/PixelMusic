@@ -11,14 +11,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.imageLoader
 import com.saurav.pixelmusic.R
 import com.saurav.pixelmusic.presentation.components.subcomps.MaterialYouVectorDrawable
 import com.saurav.pixelmusic.presentation.components.subcomps.SineWaveLine
@@ -470,18 +472,23 @@ private fun BulletItemView(bullet: ChangelogItem.Bullet) {
                         bullet.tags.forEach { contributor ->
                             Surface(
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.75f),
                                 modifier = Modifier.clickable {
-                                    uriHandler.openUri("https://github.com/$contributor")
+                                    uriHandler.openUri("https://t.me/$contributor")
                                 }
                             ) {
-                                Text(
-                                    text = "@$contributor",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "✈️ @$contributor",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
                             }
                         }
                     }
@@ -491,8 +498,28 @@ private fun BulletItemView(bullet: ChangelogItem.Bullet) {
     }
 }
 
+fun normalizeMediaUrl(rawUrl: String): String {
+    val trimmed = rawUrl.trim()
+    // Convert github.com/owner/repo/blob/branch/path or /raw/branch/path to raw.githubusercontent.com/owner/repo/branch/path
+    val ghRegex = Regex("""^https?://github\.com/([^/]+)/([^/]+)/(?:blob|raw)/([^/]+)/(.*)""")
+    val ghMatch = ghRegex.find(trimmed)
+    if (ghMatch != null) {
+        val owner = ghMatch.groupValues[1]
+        val repo = ghMatch.groupValues[2]
+        val branch = ghMatch.groupValues[3]
+        val path = ghMatch.groupValues[4]
+        return "https://raw.githubusercontent.com/$owner/$repo/$branch/$path"
+    }
+    return trimmed
+}
+
 @Composable
 private fun ImageItemView(img: ChangelogItem.Image) {
+    val context = LocalContext.current
+    val normalizedUrl = remember(img.url) { normalizeMediaUrl(img.url) }
+    var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
+
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -503,21 +530,73 @@ private fun ImageItemView(img: ChangelogItem.Image) {
             .clip(RoundedCornerShape(16.dp))
     ) {
         Column {
-            AsyncImage(
-                model = img.url,
-                contentDescription = img.alt ?: "Changelog Preview",
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 120.dp, max = 260.dp),
-                contentScale = ContentScale.Crop
-            )
+                    .heightIn(min = 120.dp, max = 360.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(32.dp),
+                        strokeWidth = 3.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                if (isError) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Could not load image preview",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+
+                AsyncImage(
+                    model = coil.request.ImageRequest.Builder(context)
+                        .data(normalizedUrl)
+                        .crossfade(true)
+                        .build(),
+                    imageLoader = context.imageLoader,
+                    contentDescription = img.alt ?: "Changelog Preview",
+                    onLoading = {
+                        isLoading = true
+                        isError = false
+                    },
+                    onSuccess = {
+                        isLoading = false
+                        isError = false
+                    },
+                    onError = {
+                        isLoading = false
+                        isError = true
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 120.dp, max = 360.dp),
+                    contentScale = ContentScale.FillWidth
+                )
+            }
+
             if (!img.alt.isNullOrBlank()) {
                 Text(
                     text = img.alt,
                     style = MaterialTheme.typography.labelSmall,
                     fontStyle = FontStyle.Italic,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                 )
             }
         }
@@ -575,12 +654,12 @@ private fun parseRichMarkdown(
                     append(label)
                 }
             }
-            // @user or [@user]
+            // @user or [@user] -> Telegram profile
             groups[3] != null -> {
                 val user = groups[3]!!.value
                 withLink(
                     LinkAnnotation.Url(
-                        url = "https://github.com/$user",
+                        url = "https://t.me/$user",
                         styles = TextLinkStyles(
                             style = SpanStyle(
                                 color = tertiaryColor,
@@ -711,10 +790,11 @@ private fun parseChangelog(rawText: String?): List<ChangelogItem> {
             continue
         }
 
-        // 3. Image: ![alt](url) or <img src="url" /> or standalone image url
+        // 3. Image & GIF Detection: ![alt](url) or <img src="url" /> or direct image/gif url
         val mdImageMatch = Regex("""^!\[(.*?)\]\((https?://[^\s)]+)\)""").find(line)
         val htmlImageMatch = Regex("""^<img\s+[^>]*src=["'](https?://[^"']+)["'][^>]*>""", RegexOption.IGNORE_CASE).find(line)
-        val standaloneImageMatch = Regex("""^(https?://[^\s]+\.(?:png|jpg|jpeg|webp|gif)(?:\?[^\s]*)?)$""", RegexOption.IGNORE_CASE).find(line)
+        val directMediaMatch = Regex("""^(https?://[^\s]+?\.(?:png|jpg|jpeg|webp|gif)(?:\?[^\s]*)?)$""", RegexOption.IGNORE_CASE).find(line)
+        val gifPlatformMatch = Regex("""^(https?://(?:media\d*\.giphy\.com|c\.tenor\.com|i\.imgur\.com)[^\s]+)$""", RegexOption.IGNORE_CASE).find(line)
 
         if (mdImageMatch != null) {
             val alt = mdImageMatch.groupValues[1]
@@ -727,8 +807,13 @@ private fun parseChangelog(rawText: String?): List<ChangelogItem> {
             items.add(ChangelogItem.Image(url = url, alt = null))
             i++
             continue
-        } else if (standaloneImageMatch != null) {
-            val url = standaloneImageMatch.groupValues[1]
+        } else if (directMediaMatch != null) {
+            val url = directMediaMatch.groupValues[1]
+            items.add(ChangelogItem.Image(url = url, alt = null))
+            i++
+            continue
+        } else if (gifPlatformMatch != null) {
+            val url = gifPlatformMatch.groupValues[1]
             items.add(ChangelogItem.Image(url = url, alt = null))
             i++
             continue
@@ -750,7 +835,7 @@ private fun parseChangelog(rawText: String?): List<ChangelogItem> {
             continue
         }
 
-        // 5. Section Header
+        // 5. Section Header (#, ##, ###)
         if (line.startsWith("#")) {
             val level = line.takeWhile { it == '#' }.length
             val title = line.drop(level).trim().replace(Regex("\\*\\*"), "")
@@ -759,7 +844,7 @@ private fun parseChangelog(rawText: String?): List<ChangelogItem> {
             continue
         }
 
-        // 6. Bullet Items
+        // 6. Bullet Items (*, -, •, 1.)
         val bulletMatch = Regex("""^(\*|-|•|\d+\.)\s+(.*)""").find(line)
         if (bulletMatch != null) {
             val rawContent = bulletMatch.groupValues[2].trim()
