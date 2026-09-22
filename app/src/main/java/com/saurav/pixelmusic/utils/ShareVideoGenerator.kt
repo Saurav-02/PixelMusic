@@ -28,6 +28,8 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -184,43 +186,84 @@ object ShareVideoGenerator {
         destination: File,
         onProgress: (Float, String) -> Unit
     ) {
-        val request = Request.Builder()
-            .url(url)
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            .build()
-
         destination.parentFile?.mkdirs()
         val tempPartFile = File(destination.parentFile, "${destination.name}.part")
         if (tempPartFile.exists()) tempPartFile.delete()
 
-        httpClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                throw IOException("Download stream failed HTTP code: ${response.code} ${response.message}")
-            }
-            val body = response.body ?: throw IOException("Response body is null")
-            val totalBytes = body.contentLength()
-            var bytesCopied = 0L
-            val buffer = ByteArray(16384)
+        var totalBytes = parseTotalBytesFromUrl(url)
+        val chunkSize = 2 * 1024 * 1024L // 2MB chunked range requests bypass YouTube CDN rate limiting
+        var startByte = 0L
+        var isFinished = false
 
-            val inStream = body.byteStream()
-            val outStream = FileOutputStream(tempPartFile)
-            try {
-                var read: Int
-                while (inStream.read(buffer).also { read = it } != -1) {
-                    outStream.write(buffer, 0, read)
-                    bytesCopied += read
-                    if (totalBytes > 0) {
-                        val fraction = (bytesCopied.toFloat() / totalBytes).coerceIn(0f, 1f)
-                        onProgress(0.05f + fraction * 0.30f, "Downloading audio: ${(fraction * 100).toInt()}%")
-                    }
+        FileOutputStream(tempPartFile, true).use { output ->
+            while (!isFinished) {
+                val endByte = if (totalBytes > 0) minOf(startByte + chunkSize - 1, totalBytes - 1) else startByte + chunkSize - 1
+                val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 15000
+                    readTimeout = 30000
+                    requestMethod = "GET"
+                    setRequestProperty("Range", "bytes=$startByte-$endByte")
+                    setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    setRequestProperty("Origin", "https://music.youtube.com")
+                    setRequestProperty("Referer", "https://music.youtube.com/")
+                    instanceFollowRedirects = true
                 }
-                outStream.flush()
-            } finally {
-                outStream.close()
-                inStream.close()
+
+                try {
+                    connection.connect()
+                    val responseCode = connection.responseCode
+                    if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_PARTIAL) {
+                        throw IOException("Chunk download failed. HTTP Code: $responseCode")
+                    }
+
+                    if (totalBytes <= 0) {
+                        val contentRange = connection.getHeaderField("Content-Range")
+                        if (contentRange != null && contentRange.contains("/")) {
+                            totalBytes = contentRange.substringAfterLast("/").trim().toLongOrNull() ?: -1L
+                        }
+                        if (totalBytes <= 0 && responseCode == HttpURLConnection.HTTP_OK) {
+                            totalBytes = connection.contentLengthLong
+                        }
+                    }
+
+                    val inputStream = connection.inputStream
+                    val buffer = ByteArray(64 * 1024)
+                    var bytesRead: Int
+                    var chunkReadTotal = 0L
+
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        output.write(buffer, 0, bytesRead)
+                        chunkReadTotal += bytesRead
+                        startByte += bytesRead
+
+                        if (totalBytes > 0) {
+                            val fraction = (startByte.toFloat() / totalBytes).coerceIn(0f, 1f)
+                            val pct = (fraction * 100).toInt()
+                            onProgress(0.05f + fraction * 0.30f, "Downloading audio: $pct%")
+                        }
+                    }
+
+                    if (chunkReadTotal < chunkSize || (totalBytes > 0 && startByte >= totalBytes) || responseCode == HttpURLConnection.HTTP_OK) {
+                        isFinished = true
+                    }
+                    inputStream.close()
+                } finally {
+                    connection.disconnect()
+                }
             }
-            if (destination.exists()) destination.delete()
-            tempPartFile.renameTo(destination)
+            output.flush()
+        }
+
+        if (destination.exists()) destination.delete()
+        tempPartFile.renameTo(destination)
+    }
+
+    private fun parseTotalBytesFromUrl(url: String): Long {
+        return try {
+            val clen = url.substringAfter("clen=", "").substringBefore("&")
+            if (clen.isNotEmpty()) clen.toLongOrNull() ?: -1L else -1L
+        } catch (_: Exception) {
+            -1L
         }
     }
 
@@ -296,6 +339,7 @@ object ShareVideoGenerator {
                         .build()
                 )
                     .setDurationUs(clipDurationMs * 1000L)
+                    .setFrameRate(30)
                     .setRemoveAudio(true)
                     .build()
 
