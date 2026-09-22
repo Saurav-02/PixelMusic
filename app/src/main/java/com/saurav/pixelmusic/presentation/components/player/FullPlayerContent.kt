@@ -1246,7 +1246,8 @@ fun FullPlayerContent(
                 showPlaylistBottomSheet = true
             },
             colorScheme = LocalMaterialTheme.current,
-            lyricsLines = lyricsLines
+            lyricsLines = lyricsLines,
+            currentPlaybackPositionMs = currentPositionProvider()
         )
     }
 

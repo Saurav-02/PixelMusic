@@ -10,6 +10,8 @@ Before updating, please take a full backup of your data:
 
 **Sub release 4.4.0**
 
+* 🎬 **Share as 30s Video & Format Switcher:** Added capability to generate and share 30-second video clips featuring the song's audio and card artwork for Instagram Stories, status, and messaging apps, with instant photo/video format switching and remembered user preferences.
+
 * 📶 **Adaptive Streaming Quality:** Added dynamic "Auto" streaming audio quality that automatically adjusts bitrate based on network connectivity (Wi-Fi vs Cellular).
 
 * 🤖 **AI Lyrics Rescue (Beta) & YTM Fixes:** Integrated AI-powered fallback lyrics generation when standard sources are missing. Fixed YouTube Music lyrics extraction and synced lyric parsing.

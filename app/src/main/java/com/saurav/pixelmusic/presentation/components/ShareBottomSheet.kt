@@ -113,7 +113,8 @@ fun ShareBottomSheet(
     onDismiss: () -> Unit,
     onAddToPlaylist: () -> Unit,
     colorScheme: ColorScheme = MaterialTheme.colorScheme,
-    lyricsLines: List<String> = emptyList()
+    lyricsLines: List<String> = emptyList(),
+    currentPlaybackPositionMs: Long = 0L
 ) {
     val context = LocalContext.current
     val appContext = context.applicationContext
@@ -121,7 +122,17 @@ fun ShareBottomSheet(
         EntryPointAccessors.fromApplication(appContext, ShareBottomSheetEntryPoint::class.java)
     }
     val themeStateHolder = entryPoint.themeStateHolder()
+    val userPreferencesRepository = remember(entryPoint) {
+        entryPoint.userPreferencesRepository()
+    }
     val albumColorSchemeState by themeStateHolder.getAlbumColorSchemeFlow(song.albumArtUriString.orEmpty()).collectAsState()
+
+    val persistedFormat by userPreferencesRepository.shareCardFormatFlow.collectAsState(initial = com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO)
+    var selectedFormat by remember { mutableStateOf(com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO) }
+
+    LaunchedEffect(persistedFormat) {
+        selectedFormat = persistedFormat
+    }
 
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -147,6 +158,9 @@ fun ShareBottomSheet(
 
     var activeThemeStyle by remember { mutableStateOf(ShareThemeStyle.DYNAMIC_PALETTE) }
     var isCapturing by remember { mutableStateOf(false) }
+    var isGeneratingVideo by remember { mutableStateOf(false) }
+    var videoProgress by remember { mutableStateOf(0f) }
+    var videoJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     val captureController = rememberCaptureController()
 
     val instagramInstalled = remember { isPackageInstalled(context, INSTAGRAM_PACKAGE) }
@@ -164,16 +178,36 @@ fun ShareBottomSheet(
         cornerRadiusBL = 24.dp, smoothnessAsPercentTR = 60
     )
 
-    fun captureAndShare(action: suspend (Bitmap) -> Unit) {
-        isCapturing = true
-        scope.launch {
-            try {
-                val bitmap = captureController.captureAsync().await().asAndroidBitmap()
-                action(bitmap)
-            } catch (e: Exception) {
-                Toast.makeText(context, "Failed to capture card", Toast.LENGTH_SHORT).show()
-            } finally {
-                isCapturing = false
+    fun processAndShare(
+        actionPhoto: suspend (Bitmap) -> Unit,
+        actionVideo: suspend (Bitmap) -> Unit
+    ) {
+        if (selectedFormat == com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO) {
+            isCapturing = true
+            scope.launch {
+                try {
+                    val bitmap = captureController.captureAsync().await().asAndroidBitmap()
+                    actionPhoto(bitmap)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Failed to capture card", Toast.LENGTH_SHORT).show()
+                } finally {
+                    isCapturing = false
+                }
+            }
+        } else {
+            isGeneratingVideo = true
+            videoProgress = 0f
+            videoJob = scope.launch {
+                try {
+                    val bitmap = captureController.captureAsync().await().asAndroidBitmap()
+                    actionVideo(bitmap)
+                } catch (e: Exception) {
+                    val errorMsg = e.localizedMessage ?: "Unknown error"
+                    Toast.makeText(context, context.getString(R.string.share_video_failed, errorMsg), Toast.LENGTH_LONG).show()
+                } finally {
+                    isGeneratingVideo = false
+                    videoJob = null
+                }
             }
         }
     }
@@ -307,6 +341,79 @@ fun ShareBottomSheet(
                     Spacer(Modifier.height(12.dp))
                 }
 
+                // Share Format Switcher (Photo / 30s Video)
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .fillMaxWidth()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    listOf(
+                        Pair(com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO, stringResource(R.string.share_format_photo)),
+                        Pair(com.saurav.pixelmusic.data.preferences.ShareCardFormat.VIDEO, stringResource(R.string.share_format_video))
+                    ).forEach { (format, label) ->
+                        val isSelected = selectedFormat == format
+                        val bgColor by animateColorAsState(
+                            targetValue = if (isSelected) primaryColor else Color.Transparent,
+                            animationSpec = tween(250),
+                            label = "formatBg_${format.name}"
+                        )
+                        val contentColor by animateColorAsState(
+                            targetValue = if (isSelected) onPrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                            animationSpec = tween(250),
+                            label = "formatText_${format.name}"
+                        )
+                        val formatScale by animateFloatAsState(
+                            targetValue = if (isSelected) 1.02f else 1f,
+                            label = "formatScale_${format.name}"
+                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(38.dp)
+                                .graphicsLayer {
+                                    scaleX = formatScale
+                                    scaleY = formatScale
+                                }
+                                .clip(CircleShape)
+                                .background(bgColor)
+                                .clickable {
+                                    if (selectedFormat != format) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        selectedFormat = format
+                                        scope.launch {
+                                            userPreferencesRepository.setShareCardFormat(format)
+                                        }
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (format == com.saurav.pixelmusic.data.preferences.ShareCardFormat.PHOTO) Icons.Rounded.Image else Icons.Rounded.Videocam,
+                                    contentDescription = null,
+                                    tint = contentColor,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = label,
+                                    fontFamily = GoogleSansRounded,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = contentColor,
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+
                 if (selectedCardMode == 1) {
                     Row(
                         modifier = Modifier
@@ -372,7 +479,9 @@ fun ShareBottomSheet(
                             colorScheme = colorScheme,
                             cardShape = cardShape,
                             albumColorScheme = albumColorSchemeState,
-                            useSolidLyricsCard = solidMode
+                            useSolidLyricsCard = solidMode,
+                            isVideoMode = selectedFormat == com.saurav.pixelmusic.data.preferences.ShareCardFormat.VIDEO,
+                            currentPositionMs = currentPlaybackPositionMs
                         )
                     }
                 }
@@ -540,81 +649,134 @@ fun ShareBottomSheet(
                                 containerColor = Color(0xFFE1306C).copy(alpha = 0.12f),
                                 contentColor = Color(0xFFE1306C),
                                 onClick = {
-                                    captureAndShare { bitmap ->
-                                        val file = saveBitmapToCache(bitmap)
-                                        val uri = FileProvider.getUriForFile(
-                                            context,
-                                            "${context.packageName}.fileprovider",
-                                            file
-                                        )
-                                        val topColor = when (activeThemeStyle) {
-                                            ShareThemeStyle.DYNAMIC_PALETTE -> colorScheme.primaryContainer
-                                            ShareThemeStyle.SOOTHING_GRADIENT -> primaryColor
-                                            ShareThemeStyle.BLURRED_ARTWORK -> primaryColor.copy(alpha = 0.5f)
-                                            ShareThemeStyle.MIDNIGHT_MINIMAL -> Color(0xFF0A0A0A)
-                                            ShareThemeStyle.VIBRANT_GLOW -> primaryColor
+                                    processAndShare(
+                                        actionPhoto = { bitmap ->
+                                            val file = saveBitmapToCache(bitmap)
+                                            val uri = FileProvider.getUriForFile(
+                                                context,
+                                                "${context.packageName}.fileprovider",
+                                                file
+                                            )
+                                            val (topColor, bottomColor) = getGradientColors(activeThemeStyle, colorScheme, primaryColor, secondaryColor)
+                                            shareToInstagramStory(
+                                                context = context,
+                                                mediaUri = uri,
+                                                isVideo = false,
+                                                topColorHex = topColor.toInstagramHex(),
+                                                bottomColorHex = bottomColor.toInstagramHex()
+                                            )
+                                        },
+                                        actionVideo = { bitmap ->
+                                            val videoFile = com.saurav.pixelmusic.utils.ShareVideoGenerator.generateVideo(
+                                                context = context,
+                                                cardBitmap = bitmap,
+                                                song = song,
+                                                currentPositionMs = currentPlaybackPositionMs,
+                                                desiredDurationSec = 30,
+                                                onProgress = { videoProgress = it }
+                                            )
+                                            val uri = FileProvider.getUriForFile(
+                                                context,
+                                                "${context.packageName}.fileprovider",
+                                                videoFile
+                                            )
+                                            val (topColor, bottomColor) = getGradientColors(activeThemeStyle, colorScheme, primaryColor, secondaryColor)
+                                            shareToInstagramStory(
+                                                context = context,
+                                                mediaUri = uri,
+                                                isVideo = true,
+                                                topColorHex = topColor.toInstagramHex(),
+                                                bottomColorHex = bottomColor.toInstagramHex()
+                                            )
                                         }
-                                        val bottomColor = when (activeThemeStyle) {
-                                            ShareThemeStyle.DYNAMIC_PALETTE -> colorScheme.surfaceContainerLow
-                                            ShareThemeStyle.SOOTHING_GRADIENT -> colorScheme.surfaceContainerHighest
-                                            ShareThemeStyle.BLURRED_ARTWORK -> Color(0xFF141414)
-                                            ShareThemeStyle.MIDNIGHT_MINIMAL -> Color(0xFF0A0A0A)
-                                            ShareThemeStyle.VIBRANT_GLOW -> secondaryColor
-                                        }
-                                        shareToInstagramStory(
-                                            context = context,
-                                            imageUri = uri,
-                                            topColorHex = topColor.toInstagramHex(),
-                                            bottomColorHex = bottomColor.toInstagramHex()
-                                        )
-                                    }
+                                    )
                                 }
                             )
                         }
                     }
 
                     item {
+                        val isVideoMode = selectedFormat == com.saurav.pixelmusic.data.preferences.ShareCardFormat.VIDEO
                         ShareActionChip(
                             icon = {
                                 Icon(
-                                    imageVector = Icons.Rounded.Download,
+                                    imageVector = if (isVideoMode) Icons.Rounded.VideoFile else Icons.Rounded.Download,
                                     contentDescription = null,
                                     modifier = Modifier.size(22.dp)
                                 )
                             },
-                            label = stringResource(R.string.share_action_download_card),
+                            label = if (isVideoMode) stringResource(R.string.share_action_download_video) else stringResource(R.string.share_action_download_card),
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                             onClick = {
-                                captureAndShare { bitmap ->
-                                    scope.launch {
+                                processAndShare(
+                                    actionPhoto = { bitmap ->
+                                        scope.launch {
+                                            withContext(Dispatchers.IO) {
+                                                try {
+                                                    val resolver = context.contentResolver
+                                                    val contentValues = android.content.ContentValues().apply {
+                                                        put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, "PixelMusic_${song.title.take(20)}_${System.currentTimeMillis()}.png")
+                                                        put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                                                        put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/PixelMusic")
+                                                    }
+
+                                                    val uri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                                                        ?: throw Exception("Failed to create MediaStore entry")
+
+                                                    resolver.openOutputStream(uri)?.use { out ->
+                                                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                                                    }
+
+                                                    withContext(Dispatchers.Main) {
+                                                        Toast.makeText(context, context.getString(R.string.share_card_saved), Toast.LENGTH_SHORT).show()
+                                                    }
+                                                } catch (e: Exception) {
+                                                    withContext(Dispatchers.Main) {
+                                                        Toast.makeText(context, "Failed to save card", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    actionVideo = { bitmap ->
+                                        val videoFile = com.saurav.pixelmusic.utils.ShareVideoGenerator.generateVideo(
+                                            context = context,
+                                            cardBitmap = bitmap,
+                                            song = song,
+                                            currentPositionMs = currentPlaybackPositionMs,
+                                            desiredDurationSec = 30,
+                                            onProgress = { videoProgress = it }
+                                        )
                                         withContext(Dispatchers.IO) {
                                             try {
                                                 val resolver = context.contentResolver
                                                 val contentValues = android.content.ContentValues().apply {
-                                                    put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, "PixelMusic_${song.title.take(20)}_${System.currentTimeMillis()}.png")
-                                                    put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                                                    put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/PixelMusic")
+                                                    put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, "PixelMusic_${song.title.take(20)}_${System.currentTimeMillis()}.mp4")
+                                                    put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+                                                    put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_MOVIES + "/PixelMusic")
                                                 }
 
-                                                val uri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-                                                    ?: throw Exception("Failed to create MediaStore entry")
+                                                val uri = resolver.insert(android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+                                                    ?: throw Exception("Failed to create MediaStore video entry")
 
                                                 resolver.openOutputStream(uri)?.use { out ->
-                                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                                                    videoFile.inputStream().use { input ->
+                                                        input.copyTo(out)
+                                                    }
                                                 }
 
                                                 withContext(Dispatchers.Main) {
-                                                    Toast.makeText(context, context.getString(R.string.share_card_saved), Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, context.getString(R.string.share_video_saved), Toast.LENGTH_SHORT).show()
                                                 }
                                             } catch (e: Exception) {
                                                 withContext(Dispatchers.Main) {
-                                                    Toast.makeText(context, "Failed to save card", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, "Failed to save video", Toast.LENGTH_SHORT).show()
                                                 }
                                             }
                                         }
                                     }
-                                }
+                                )
                             }
                         )
                     }
@@ -643,6 +805,7 @@ fun ShareBottomSheet(
                     }
 
                     item {
+                        val isVideoMode = selectedFormat == com.saurav.pixelmusic.data.preferences.ShareCardFormat.VIDEO
                         ShareActionChip(
                             icon = {
                                 Icon(
@@ -651,30 +814,59 @@ fun ShareBottomSheet(
                                     modifier = Modifier.size(22.dp)
                                 )
                             },
-                            label = stringResource(R.string.share_action_more_apps),
+                            label = if (isVideoMode) stringResource(R.string.share_action_share_video) else stringResource(R.string.share_action_more_apps),
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             onClick = {
-                                captureAndShare { bitmap ->
-                                    val file = saveBitmapToCache(bitmap)
-                                    val uri = FileProvider.getUriForFile(
-                                        context,
-                                        "${context.packageName}.fileprovider",
-                                        file
-                                    )
-                                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                        type = "image/png"
-                                        putExtra(Intent.EXTRA_STREAM, uri)
-                                        putExtra(
-                                            Intent.EXTRA_TEXT,
-                                            "${song.title}\n🎵 $GITHUB_LINK"
+                                processAndShare(
+                                    actionPhoto = { bitmap ->
+                                        val file = saveBitmapToCache(bitmap)
+                                        val uri = FileProvider.getUriForFile(
+                                            context,
+                                            "${context.packageName}.fileprovider",
+                                            file
                                         )
-                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "image/png"
+                                            putExtra(Intent.EXTRA_STREAM, uri)
+                                            putExtra(
+                                                Intent.EXTRA_TEXT,
+                                                "${song.title} • ${song.displayArtist}\n🎵 $GITHUB_LINK"
+                                            )
+                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        }
+                                        context.startActivity(
+                                            Intent.createChooser(shareIntent, context.getString(R.string.share_sheet_chooser_title))
+                                        )
+                                    },
+                                    actionVideo = { bitmap ->
+                                        val videoFile = com.saurav.pixelmusic.utils.ShareVideoGenerator.generateVideo(
+                                            context = context,
+                                            cardBitmap = bitmap,
+                                            song = song,
+                                            currentPositionMs = currentPlaybackPositionMs,
+                                            desiredDurationSec = 30,
+                                            onProgress = { videoProgress = it }
+                                        )
+                                        val uri = FileProvider.getUriForFile(
+                                            context,
+                                            "${context.packageName}.fileprovider",
+                                            videoFile
+                                        )
+                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "video/mp4"
+                                            putExtra(Intent.EXTRA_STREAM, uri)
+                                            putExtra(
+                                                Intent.EXTRA_TEXT,
+                                                "${song.title} • ${song.displayArtist}\n🎵 $GITHUB_LINK"
+                                            )
+                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        }
+                                        context.startActivity(
+                                            Intent.createChooser(shareIntent, context.getString(R.string.share_sheet_chooser_title))
+                                        )
                                     }
-                                    context.startActivity(
-                                        Intent.createChooser(shareIntent, context.getString(R.string.share_sheet_chooser_title))
-                                    )
-                                }
+                                )
                             }
                         )
                     }
@@ -691,10 +883,117 @@ fun ShareBottomSheet(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.3f)),
+                .background(Color.Black.copy(alpha = 0.35f)),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        }
+    }
+
+    if (isGeneratingVideo) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.55f))
+                .clickable(enabled = false) {},
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier
+                    .padding(32.dp)
+                    .fillMaxWidth(0.85f),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(primaryColor.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Videocam,
+                            contentDescription = null,
+                            tint = primaryColor,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.share_video_progress_title),
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = stringResource(R.string.share_video_progress_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    if (videoProgress > 0f) {
+                        LinearProgressIndicator(
+                            progress = { videoProgress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(CircleShape),
+                            color = primaryColor,
+                            trackColor = primaryColor.copy(alpha = 0.2f)
+                        )
+                        Text(
+                            text = "${(videoProgress * 100).toInt()}%",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = primaryColor
+                        )
+                    } else {
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(CircleShape),
+                            color = primaryColor,
+                            trackColor = primaryColor.copy(alpha = 0.2f)
+                        )
+                    }
+
+                    TextButton(
+                        onClick = {
+                            videoJob?.cancel()
+                            isGeneratingVideo = false
+                        },
+                        shape = CircleShape
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -709,7 +1008,9 @@ private fun ShareableCard(
     colorScheme: ColorScheme,
     cardShape: Shape,
     albumColorScheme: ColorSchemePair?,
-    useSolidLyricsCard: Boolean = false
+    useSolidLyricsCard: Boolean = false,
+    isVideoMode: Boolean = false,
+    currentPositionMs: Long = 0L
 ) {
     val cardRatio = 9f / 16f
     val darkScheme = albumColorScheme?.dark ?: DarkColorScheme
@@ -847,6 +1148,37 @@ private fun ShareableCard(
                 )
         )
 
+        if (isVideoMode) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 16.dp, end = 16.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.45f))
+                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Videocam,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(11.dp)
+                    )
+                    Text(
+                        text = "30s Clip",
+                        fontFamily = GoogleSansRounded,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 9.sp,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -895,7 +1227,7 @@ private fun ShareableCard(
                     ),
                     border = BorderStroke(1.2.dp, Color.White.copy(alpha = 0.45f))
                 ) {
-                    SongMiniCard(song = song, lightScheme = lightScheme)
+                    SongMiniCard(song = song, lightScheme = lightScheme, currentPositionMs = currentPositionMs)
                 }
                 } 
             } else {
@@ -988,7 +1320,8 @@ private fun ShareableCard(
 @Composable
 private fun SongMiniCard(
     song: Song,
-    lightScheme: ColorScheme
+    lightScheme: ColorScheme,
+    currentPositionMs: Long = 0L
 ) {
     val formattedDuration = remember(song.duration) {
         val totalSecs = song.duration / 1000
@@ -996,11 +1329,24 @@ private fun SongMiniCard(
         val secs = totalSecs % 60
         String.format("%02d:%02d", mins, secs)
     }
-    val formattedProgress = remember(song.duration) {
-        val progressSecs = (song.duration * 0.4f / 1000).toLong()
-        val mins = progressSecs / 60
-        val secs = progressSecs % 60
+    val effectiveProgressSecs = remember(song.duration, currentPositionMs) {
+        if (currentPositionMs > 0L) {
+            (currentPositionMs / 1000).coerceAtLeast(0L)
+        } else {
+            (song.duration * 0.4f / 1000).toLong()
+        }
+    }
+    val formattedProgress = remember(effectiveProgressSecs) {
+        val mins = effectiveProgressSecs / 60
+        val secs = effectiveProgressSecs % 60
         String.format("%02d:%02d", mins, secs)
+    }
+    val progressFraction = remember(song.duration, currentPositionMs) {
+        if (song.duration > 0 && currentPositionMs > 0L) {
+            (currentPositionMs.toFloat() / song.duration).coerceIn(0f, 1f)
+        } else {
+            0.4f
+        }
     }
 
     val density = LocalDensity.current
@@ -1070,7 +1416,7 @@ private fun SongMiniCard(
                     color = lightScheme.onPrimaryContainer.copy(alpha = 0.6f)
                 )
                 LinearWavyProgressIndicator(
-                    progress = { 0.4f },
+                    progress = { progressFraction },
                     modifier = Modifier
                         .weight(1f)
                         .height(12.dp),
@@ -1396,17 +1742,42 @@ private fun Color.toInstagramHex(): String {
     return String.format("#%06X", 0xFFFFFF and this.toArgb())
 }
 
+private fun getGradientColors(
+    style: ShareThemeStyle,
+    colorScheme: ColorScheme,
+    primaryColor: Color,
+    secondaryColor: Color
+): Pair<Color, Color> {
+    val topColor = when (style) {
+        ShareThemeStyle.DYNAMIC_PALETTE -> colorScheme.primaryContainer
+        ShareThemeStyle.SOOTHING_GRADIENT -> primaryColor
+        ShareThemeStyle.BLURRED_ARTWORK -> primaryColor.copy(alpha = 0.5f)
+        ShareThemeStyle.MIDNIGHT_MINIMAL -> Color(0xFF0A0A0A)
+        ShareThemeStyle.VIBRANT_GLOW -> primaryColor
+    }
+    val bottomColor = when (style) {
+        ShareThemeStyle.DYNAMIC_PALETTE -> colorScheme.surfaceContainerLow
+        ShareThemeStyle.SOOTHING_GRADIENT -> colorScheme.surfaceContainerHighest
+        ShareThemeStyle.BLURRED_ARTWORK -> Color(0xFF141414)
+        ShareThemeStyle.MIDNIGHT_MINIMAL -> Color(0xFF0A0A0A)
+        ShareThemeStyle.VIBRANT_GLOW -> secondaryColor
+    }
+    return Pair(topColor, bottomColor)
+}
+
 private fun shareToInstagramStory(
     context: Context,
-    imageUri: android.net.Uri,
+    mediaUri: android.net.Uri,
+    isVideo: Boolean = false,
     topColorHex: String? = null,
     bottomColorHex: String? = null
 ) {
-    context.grantUriPermission(INSTAGRAM_PACKAGE, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    context.grantUriPermission(INSTAGRAM_PACKAGE, mediaUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    val mimeType = if (isVideo) "video/mp4" else "image/png"
 
     val intent = Intent("com.instagram.share.ADD_TO_STORY").apply {
-        type = "image/png"
-        putExtra("interactive_asset_uri", imageUri)
+        type = mimeType
+        putExtra("interactive_asset_uri", mediaUri)
         putExtra("content_url", GITHUB_LINK)
         putExtra("source_application", "1703718787517231")
         
@@ -1418,7 +1789,7 @@ private fun shareToInstagramStory(
         }
         `package` = INSTAGRAM_PACKAGE
         
-        clipData = ClipData.newRawUri("", imageUri)
+        clipData = ClipData.newRawUri("", mediaUri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
     
@@ -1426,8 +1797,8 @@ private fun shareToInstagramStory(
         context.startActivity(intent)
     } catch (e: Exception) {
         val fallback = Intent(Intent.ACTION_SEND).apply {
-            type = "image/png"
-            putExtra(Intent.EXTRA_STREAM, imageUri)
+            type = mimeType
+            putExtra(Intent.EXTRA_STREAM, mediaUri)
             `package` = INSTAGRAM_PACKAGE
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
@@ -1443,4 +1814,5 @@ private fun shareToInstagramStory(
 @InstallIn(SingletonComponent::class)
 interface ShareBottomSheetEntryPoint {
     fun themeStateHolder(): ThemeStateHolder
+    fun userPreferencesRepository(): com.saurav.pixelmusic.data.preferences.UserPreferencesRepository
 }

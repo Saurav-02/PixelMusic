@@ -244,6 +244,15 @@
     <string name="share_card_saved">Card saved to Pictures</string>
     <string name="share_link_copied">Link copied to clipboard</string>
     <string name="share_text_format">Now listening to \"%1$s\" by %2$s 🎵\n%3$s</string>
+    <string name="share_format_photo">Photo</string>
+    <string name="share_format_video">30s Video</string>
+    <string name="share_action_download_video">Save\nVideo</string>
+    <string name="share_action_share_video">Share\nVideo</string>
+    <string name="share_video_saved">Video saved to Movies/PixelMusic</string>
+    <string name="share_video_generating">Creating 30s video…</string>
+    <string name="share_video_failed">Failed to create video: %1$s</string>
+    <string name="share_video_progress_title">Creating 30s Video</string>
+    <string name="share_video_progress_subtitle">Encoding card artwork with song audio…</string>
 
     <!-- Player Share / Options Menu -->
     <string name="player_menu_share_card">Share Story Card</string>

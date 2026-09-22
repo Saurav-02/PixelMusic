@@ -112,6 +112,11 @@ enum class NowPlayingLyricsStyle {
     HIDDEN, KARAOKE
 }
 
+enum class ShareCardFormat {
+    PHOTO,
+    VIDEO
+}
+
 val LanguageCodeToName = mapOf(
     "en" to "English",
     "es" to "Español",
@@ -244,6 +249,7 @@ constructor(
         val FULL_PLAYER_SWITCH_ON_DRAG_RELEASE = booleanPreferencesKey("full_player_switch_on_drag_release")
         val FULL_PLAYER_DELAY_THRESHOLD = intPreferencesKey("full_player_delay_threshold_percent")
         val FULL_PLAYER_CLOSE_THRESHOLD = intPreferencesKey("full_player_close_threshold_percent")
+        val SHARE_CARD_FORMAT = stringPreferencesKey("share_card_format_v1")
         // Deprecated experiment key kept only for one-time cleanup after removing the legacy player sheet.
         val USE_PLAYER_SHEET_V2 = booleanPreferencesKey("use_player_sheet_v2")
 
@@ -724,6 +730,23 @@ constructor(
         preferences[PreferencesKeys.NOW_PLAYING_LYRICS_STYLE] = style.name
     }
 }
+
+    val shareCardFormatFlow: Flow<ShareCardFormat> =
+        dataStore.data.map { preferences ->
+            try {
+                ShareCardFormat.valueOf(
+                    preferences[PreferencesKeys.SHARE_CARD_FORMAT] ?: ShareCardFormat.PHOTO.name
+                )
+            } catch (e: Exception) {
+                ShareCardFormat.PHOTO
+            }
+        }.distinctUntilChanged()
+
+    suspend fun setShareCardFormat(format: ShareCardFormat) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SHARE_CARD_FORMAT] = format.name
+        }
+    }
 
     // ===== App Background Settings =====
 

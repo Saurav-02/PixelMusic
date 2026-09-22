@@ -139,6 +139,7 @@ androidx-media3-exoplayer-hls = { module = "androidx.media3:media3-exoplayer-hls
 androidx-media3-exoplayer-midi = { module = "androidx.media3:media3-exoplayer-midi", version.ref = "media3Session" }
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3Session" }
 androidx-media3-transformer = { module = "androidx.media3:media3-transformer", version.ref = "media3Transformer" }
+androidx-media3-effect = { module = "androidx.media3:media3-effect", version.ref = "media3Transformer" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3Session" }
 androidx-media3-exoplayer-ffmpeg = { module = "org.jellyfin.media3:media3-ffmpeg-decoder", version = "1.9.0+1" }
 androidx-media-router = { module = "androidx.mediarouter:mediarouter", version.ref = "mediaRouter" }

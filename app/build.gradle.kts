@@ -274,6 +274,7 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.ffmpeg)
     implementation(libs.androidx.media3.exoplayer.midi)
     implementation(libs.androidx.media3.transformer)
+    implementation(libs.androidx.media3.effect)
     implementation(libs.androidx.mediarouter)
     implementation(libs.androidx.media)
     implementation(libs.coil.compose)
