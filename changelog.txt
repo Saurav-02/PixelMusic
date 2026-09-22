@@ -26,95 +26,63 @@ Before updating, please take a full backup of your data:
 
 ---
 
-*Sub release 4.3*
-Fixed some download related bugs on Samsung devices.
-
 **Sub release 4.3**
-Fixed some crashes reported by users. 
+Fixed some download related bugs on Samsung devices and resolved crashes reported by users.
+
+---
 
 **Sub release 4.2**
 
-* 🎨 **Explore & Home Redesign:** Fresh, minimal layouts on both screens with fading titles, a smooth fog scrim over the status bar, motion-blur artifacts eliminated, and a fully reactive shuffle FAB with spring-back swipe gestures.[@Xyg901]
+* 🎨 **Explore & Home Redesign:** Fresh, minimal layouts on both screens with fading titles, a smooth fog scrim over the status bar, motion-blur artifacts eliminated, and a fully reactive shuffle FAB with spring-back swipe gestures. [@Xyg901]
 
-* 🔍 **Settings Search:** Powerful new search across every setting with fuzzy matching, recent-history, auto-scroll to the target, and a pulsing highlight when you land on it. The main search history UI was redesigned to match.[@Xyg901]
+* 🔍 **Settings Search:** Powerful new search across every setting with fuzzy matching, recent-history, auto-scroll to the target, and a pulsing highlight when you land on it. The main search history UI was redesigned to match. [@Xyg901]
 
-* 🎭 **Mood Browsing & Charts Resilience:** New expressive mood chips on Explore let you instantly browse by vibe (Relax, Workout, Party…). Charts now gracefully recover with a Retry button if the initial fetch fails.[@Xyg901]
+* 🎭 **Mood Browsing & Charts Resilience:** New expressive mood chips on Explore let you instantly browse by vibe (Relax, Workout, Party…). Charts now gracefully recover with a Retry button if the initial fetch fails. [@Xyg901]
 
-* 🔄 **Revamped Update Screen:** Rolled out a redesigned, user-friendly in-app update screen to make downloading future beta releases seamless.[@Saurav124x]
+* 🔄 **Revamped Update Screen:** Rolled out a redesigned, user-friendly in-app update screen to make downloading future beta releases seamless. [@Saurav124x]
+
+---
 
 **Sub release 3.7** 
 
-*Fixed double notification on lock screen.[@Saurav124x]
-*Lyrics on the Now Playing screen in Immersive or Immersive Extended mode.[@Saurav124x]
-*Fixed car play.[@Xyg901]
-*Updated and polished music recognition animation. ✨ [@Saurav124x]
-*Dynamic Island support. (Origin os special,considering it's an incredibly big achievement because I've not seen anyone successfully accomplish this perfectly yet🤭)[@Saurav124x]
-*Motion blur.(Android 13+, in developement)[@Xyg901]
-*Fixed Home screen shuffle button position.[@Xyg901]
+* 🔔 **Lock Screen Notifications:** Fixed double notification on lock screen. [@Saurav124x]
+* 🎤 **Lyrics Everywhere:** Added lyrics on the Now Playing screen in Immersive or Immersive Extended mode. [@Saurav124x]
+* 🚗 **CarPlay / Android Auto:** Fixed automotive media controls. [@Xyg901]
+* ✨ **Music Recognition Animation:** Updated and polished music recognition animation. [@Saurav124x]
+* 🏝️ **Dynamic Island Support:** OriginOS special status bar capsule integration. [@Saurav124x]
+* 🌀 **Motion Blur:** Android 13+ motion blur in development. [@Xyg901]
+* 🎛️ **FAB Alignment:** Fixed Home screen shuffle button position. [@Xyg901]
+
+---
 
 ------Final Release 3.5-------
 
 **Pixel Music Beta-3**
 
-* ⚡ **The Core Breakthrough — High-Performance Direct Streaming Engine:** We completely rebuilt stream playback from the ground up! Pixel Music now features a resilient Direct Streaming architecture. Audio streams are resolved directly to clean, unencrypted GoogleVideo CDN links (Opus & M4A), bypassing YouTube tracking, slashing UI overhead, and ending 403 playback errors for good.[@Saurav124x]
-
+* ⚡ **The Core Breakthrough — High-Performance Direct Streaming Engine:** We completely rebuilt stream playback from the ground up! Pixel Music now features a resilient Direct Streaming architecture. Audio streams are resolved directly to clean, unencrypted GoogleVideo CDN links (Opus & M4A), bypassing YouTube tracking, slashing UI overhead, and ending 403 playback errors for good. [@Saurav124x]
 
 * 🏝️ **Native Dynamic Island Support:** Fully integrated status bar capsule support for OriginOS, HyperOS, Realme UI, OxygenOS, and ColorOS. View live playback progress directly in your system's dynamic island.
-* 🏗️ **Native Stream Architecture:** Completely transitioned to direct CDN stream resolution with optimized pre-buffering for instant start times and rock-solid playback reliability.[@Saurav124x]
 
+* 🏗️ **Native Stream Architecture:** Completely transitioned to direct CDN stream resolution with optimized pre-buffering for instant start times and rock-solid playback reliability. [@Saurav124x]
 
-* 🎨 **Material You Expressive Account Management:** Reimagined the expandable account card with modern Material 3 Expressive surface cards. Tapping your profile reveals a unified management hub with direct access to your connected cloud accounts, removing redundant menus from the main Settings page.[@Saurav124x]
+* 🎨 **Material You Expressive Account Management:** Reimagined the expandable account card with modern Material 3 Expressive surface cards. Tapping your profile reveals a unified management hub with direct access to your connected cloud accounts, removing redundant menus from the main Settings page. [@Saurav124x]
 
+* 🌈 **Dynamic Ambient Profile Ring:** Profile avatars now feature an adaptive, flowing sweep gradient ring that harmoniously shifts its colors to match your active Material You theme and wallpaper palette. [@Saurav124x]
 
-* 🌈 **Dynamic Ambient Profile Ring:** Profile avatars now feature an adaptive, flowing sweep gradient ring that harmoniously shifts its colors to match your active Material You theme and wallpaper palette.[@Saurav124x]
+* 📊 **Accurate Audio Specs & Bitrate Fix:** Resolved the playback metadata bug that caused the player to display "0 kbps". Implemented an intelligent `itag` resolution map and bitrate normalizer, accurately showcasing live bitrate (e.g., 160 kbps OPUS, 128 kbps AAC) and sample frequencies. [@Saurav124x]
 
+* ♾️ **Endless Explore Feed:** Wired automated continuation pagination to the Explore page. Scrolling down now seamlessly pulls endless personalized YouTube Music shelves. [@Saurav124x]
 
-* 📊 **Accurate Audio Specs & Bitrate Fix:** Resolved the playback metadata bug that caused the player to display "0 kbps". Implemented an intelligent `itag` resolution map and bitrate normalizer, accurately showcasing live bitrate (e.g., 160 kbps OPUS, 128 kbps AAC) and sample frequencies.[@Saurav124x]
+* 🔍 **Search Result Polish:** Fixed an issue where online YouTube playlists in search results defaulted to showing "0 Song" before being saved or downloaded. [@Saurav124x]
 
+* 📋 **Streamlined Playlist Detail View:** Online YouTube playlists now automatically hide irrelevant local editing actions and spotlight streaming, queueing, and downloading. Cleaned up delete actions to "Remove from Library" for cloud-linked playlists. [@Xyg901]
 
-* ♾️ **Endless Explore Feed:** Wired automated continuation pagination to the Explore page. Scrolling down now seamlessly pulls endless personalized YouTube Music shelves, including "Mixed for you", "Your daily discover", "Trending community playlists", and related artist mixes.[@Saurav124x]
+* 💾 **Resilient Download Engine:** Built a robust, pauseable, and cancelable playlist download manager with precise byte-level resumption. [@Saurav124x]
 
-
-* 🔍 **Search Result Polish:** Fixed an issue where online YouTube playlists in search results defaulted to showing "0 Song" before being saved or downloaded.[@Saurav124x]
-
-
-* 📋 **Streamlined Playlist Detail View:** Online YouTube playlists now automatically hide irrelevant local editing actions (pin, local reorder, add/remove files) and spotlight streaming, queueing, and downloading. Cleaned up delete actions to "Remove from Library" for cloud-linked playlists.[@Xyg901]
-
-
-* 💾 **Resilient Download Engine:** Built a robust, pauseable, and cancelable playlist download manager with precise byte-level resumption.[@Saurav124x]
-
-
-* ✨ **Next-Gen Fluid Animations (Android 13+):** Introduced smooth, high-quality AGSL (Android Graphics Shading Language) visual animations that react beautifully to your music.[@Xyg901]
-
+* ✨ **Next-Gen Fluid Animations (Android 13+):** Introduced smooth, high-quality AGSL visual animations that react beautifully to your music. [@Xyg901]
 
 * 🎵 **Music Recognition Anywhere:** Added a dedicated Quick Settings Tile service to identify tracks playing around you from the home screen, lock screen, or other apps.
 
+* 📱 **UI & Navigation Polish:** Fixed an overlapping layout bug affecting the shuffle button when using traditional 3-button system navigation. [@Xyg901]
 
-* 📱 **UI & Navigation Polish:** Fixed an overlapping layout bug affecting the shuffle button when using traditional 3-button system navigation.[@Xyg901]
-
-
-* 🐛 **Under-the-Hood Polish & Bug Fixes:** Squashed various background bugs, memory leaks, and edge-case crashes for a rock-solid listening experience.[@Saurav124x][@Xyg901]
-
-
-
-**Pixel Music Beta-2**
-
-* 🔐 **Enhanced Login Architecture:** Rebuilt the authentication flow to include advanced, seamless login methods (including manual token inputs) for a much more reliable connection to your library.[@Saurav124x]
-
-
-* 🚀 **New Splash Screen:** Welcoming you with a newly designed, highly polished splash screen for a smoother app cold-start experience.[@Saurav124x]
-
-
-* 🎛️ **Equalizer Stability Fix:** Resolved a critical bug where the System Equalizer (e.g., Dolby Atmos, Dirac, Viper4Android) would suddenly disconnect or drop out when changing tracks or triggering a crossfade.[@Saurav124x]
-
-
-
-**Pixel Music Beta-1**
-
-* 📉 **Extreme Performance & Data Optimization:** Massively optimized the playback engine to drastically reduce background network usage. The app smartly limits bitrates and stops aggressive queue preloading on metered/cellular networks to save your data.[@Saurav124x]
-
-
-* 🚨 **Automated Crash Reporting:** Integrated an automated crash reporting system to catch and log fatal errors, helping resolve device-specific issues rapidly.[@Saurav124x]
-
-
-* 🔄 **Revamped Update Screen:** Rolled out a redesigned, user-friendly in-app update screen to make downloading future beta releases seamless.[@Saurav124x]
+* 🐛 **Under-the-Hood Polish & Bug Fixes:** Squashed various background bugs, memory leaks, and edge-case crashes for a rock-solid listening experience. [@Saurav124x] [@Xyg901]
