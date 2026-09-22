@@ -50,7 +50,7 @@ class AccountsViewModel @Inject constructor(
 
     fun syncLibrary() {
         viewModelScope.launch {
-            syncManager.sync()
+            syncManager.fullSync()
         }
     }
 

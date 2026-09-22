@@ -1505,11 +1505,8 @@ constructor(
                         musicDao.deleteSongsAndRelatedData(toDelete)
                     }
                 }
-                // Also delete all YouTube playlists in the main DB
-                allPlaylists.filter { it.source == "YOUTUBE" }.forEach {
-                    playlistPreferencesRepository.deletePlaylist(it.id)
-                }
-                Log.d(TAG, "No YouTube songs/playlists to sync.")
+                // Preserves existing synced playlists to prevent accidental library wipe if remote returns empty
+                Log.d(TAG, "No YouTube songs/playlists to sync. Preserving local library.")
                 return
             }
 
@@ -1637,9 +1634,11 @@ constructor(
             // Sync YouTube Playlists to user preferences/database
             val syncedPlaylistIds = youtubePlaylists.map { it.info.id }.toSet()
 
-            // Delete orphaned synced playlists
-            allPlaylists.filter { it.source == "YOUTUBE" && it.id !in syncedPlaylistIds }.forEach {
-                playlistPreferencesRepository.deletePlaylist(it.id)
+            // Delete orphaned synced playlists only if remote playlists were successfully fetched
+            if (remotePlaylistsSuccess && youtubePlaylists.isNotEmpty()) {
+                allPlaylists.filter { it.source == "YOUTUBE" && it.id !in syncedPlaylistIds }.forEach {
+                    playlistPreferencesRepository.deletePlaylist(it.id)
+                }
             }
 
             // Upsert actual YouTube playlists

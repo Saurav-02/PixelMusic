@@ -953,7 +953,7 @@ private val inFlightResolutions = java.util.concurrent.ConcurrentHashMap<String,
         onTransitionDisplayPlayerListeners.forEach { it(incomingPlayer) }
 
         val duration = settings.durationMs.toLong().coerceAtLeast(500L)
-        val stepMs = 32L
+        val stepMs = 16L
         val startedAtMs = SystemClock.elapsedRealtime()
 
         while (true) {

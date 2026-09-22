@@ -135,16 +135,9 @@ object QueuePreloadManager {
 
             val (currentIndex, totalCount) = playerState
             
-            val entryPoint = try {
-                dagger.hilt.android.EntryPointAccessors.fromApplication(
-                    ctx,
-                    com.saurav.pixelmusic.presentation.components.SmartImageEntryPoint::class.java
-                )
-            } catch (_: Exception) { null }
-            val isMetered = entryPoint?.connectivityStateHolder()?.isMeteredNetwork?.value ?: false
-            val effectivePreloadSize = if (isMetered) 1 else settings.preloadQueueSize
+            // Strictly respect user's configured queue preload size preference
             val indicesAhead = 
-                (currentIndex + 1)..(currentIndex + effectivePreloadSize).coerceAtMost(totalCount - 1)
+                (currentIndex + 1)..(currentIndex + settings.preloadQueueSize).coerceAtMost(totalCount - 1)
 
             for (i in indicesAhead) {
                 val mediaItem = withContext(Dispatchers.Main) {

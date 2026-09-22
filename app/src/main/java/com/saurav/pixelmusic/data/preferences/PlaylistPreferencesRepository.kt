@@ -199,6 +199,11 @@ class PlaylistPreferencesRepository @Inject constructor(
         ensureMigratedIfNeeded()
         localPlaylistDao.deletePlaylist(playlistId)
         localPlaylistDao.clearPlaylistSongs(playlistId)
+        try {
+            val ytPlaylistRepo = AppDatabase.getInstance(context).playlistRepository()
+            ytPlaylistRepo.deletePlaylistById(playlistId)
+            ytPlaylistRepo.deleteCrossRefsByPlaylistId(playlistId)
+        } catch (_: Exception) {}
         clearPlaylistSongOrderMode(playlistId)
         coverPrefs.edit().apply {
             remove("${playlistId}_coverImageUri")
@@ -278,23 +283,44 @@ class PlaylistPreferencesRepository @Inject constructor(
                     null
                 }
             }
-            val ytSongs = songEntities.map { entity ->
-                val yId = entity.contentUriString.removePrefix("youtube://")
-                    .takeIf { it != entity.contentUriString }
-                    ?: if (entity.id < 0) {
-                        entity.contentUriString.removePrefix("youtube://")
-                    } else {
-                        entity.id.toString()
-                    }
-                com.saurav.pixelmusic.data.model.youtube.Song(
-                    youtubeId = yId,
-                    title = entity.title,
-                    artist = entity.artistName,
-                    duration = com.saurav.pixelmusic.utils.formatDuration(entity.duration),
-                    thumbnailHref = entity.albumArtUriString ?: "",
-                    thumbnailPath = if (entity.filePath.isNotBlank()) entity.albumArtUriString else null,
-                    audioFilePath = if (entity.filePath.isNotBlank()) entity.filePath else null
-                )
+            val ytSongs = songIdsToAdd.map { songIdStr ->
+                val songIdLong = songIdStr.toLongOrNull()
+                val entity = if (songIdLong != null) {
+                    musicDao.getSongByIdOnce(songIdLong)
+                } else if (songIdStr.startsWith("youtube_")) {
+                    val yId = songIdStr.removePrefix("youtube_")
+                    val expectedLongId = -(15_000_000_000_000L + yId.hashCode().toLong().absoluteValue)
+                    musicDao.getSongByIdOnce(expectedLongId)
+                } else {
+                    null
+                }
+                if (entity != null) {
+                    val yId = entity.contentUriString.removePrefix("youtube://")
+                        .takeIf { it != entity.contentUriString }
+                        ?: if (entity.id < 0) {
+                            entity.contentUriString.removePrefix("youtube://")
+                        } else {
+                            entity.id.toString()
+                        }
+                    com.saurav.pixelmusic.data.model.youtube.Song(
+                        youtubeId = yId,
+                        title = entity.title,
+                        artist = entity.artistName,
+                        duration = com.saurav.pixelmusic.utils.formatDuration(entity.duration),
+                        thumbnailHref = entity.albumArtUriString ?: "",
+                        thumbnailPath = if (entity.filePath.isNotBlank()) entity.albumArtUriString else null,
+                        audioFilePath = if (entity.filePath.isNotBlank()) entity.filePath else null
+                    )
+                } else {
+                    val rawYtId = songIdStr.removePrefix("youtube_")
+                    com.saurav.pixelmusic.data.model.youtube.Song(
+                        youtubeId = rawYtId,
+                        title = "Song",
+                        artist = "",
+                        duration = "",
+                        thumbnailHref = "https://i.ytimg.com/vi/$rawYtId/hqdefault.jpg"
+                    )
+                }
             }
             if (ytSongs.isNotEmpty()) {
                 songRepository.createAll(ytSongs)
@@ -366,10 +392,9 @@ class PlaylistPreferencesRepository @Inject constructor(
         val ytPlaylist = AppDatabase.getInstance(context).playlistRepository().getPlaylistById(playlistId)
         
         if (ytPlaylist != null) {
-            AppDatabase.getInstance(context).playlistRepository().deleteCrossRef(
-                playlistId, 
-                variants.find { !it.startsWith("youtube_") && it.toLongOrNull() == null } ?: songIdToRemove.removePrefix("youtube_")
-            )
+            val rawId = variants.find { !it.startsWith("youtube_") && it.toLongOrNull() == null } ?: songIdToRemove.removePrefix("youtube_")
+            AppDatabase.getInstance(context).playlistRepository().deleteCrossRef(playlistId, rawId)
+            AppDatabase.getInstance(context).playlistRepository().deleteCrossRef(playlistId, songIdToRemove)
         } else {
             val existing = userPlaylistsFlow.first().find { it.id == playlistId } ?: return
             updatePlaylist(existing.copy(songIds = existing.songIds.filterNot { it in variants }))

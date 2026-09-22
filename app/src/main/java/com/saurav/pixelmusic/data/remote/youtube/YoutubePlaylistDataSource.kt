@@ -20,13 +20,40 @@ class YoutubePlaylistDataSource {
      * Returns all playlist info entries visible in the user's YouTube Music library.
      */
     fun retrieveAll(settings: UmihiSettings): List<PlaylistInfo> {
-        return YoutubeHelper.extractPlaylists(
-            YoutubeRequestHelper.browse(
+        val directPlaylists = try {
+            val json = YoutubeRequestHelper.browse(
                 Constants.YoutubeApi.Browse.PLAYLIST_BROWSE_ID,
                 settings
-            ),
-            settings
-        )
+            )
+            YoutubeHelper.extractPlaylists(json, settings)
+        } catch (e: Exception) {
+            UmihiHelper.printe("retrieveAll via browse failed: ${e.message}")
+            emptyList()
+        }
+
+        if (directPlaylists.isNotEmpty()) {
+            return directPlaylists
+        }
+
+        // Fallback: Fetch via InnerTube library endpoint
+        return try {
+            kotlinx.coroutines.runBlocking {
+                saurav.shru.pixelmusic.innertube.YouTube.library(Constants.YoutubeApi.Browse.PLAYLIST_BROWSE_ID)
+                    .getOrNull()
+                    ?.items
+                    ?.filterIsInstance<saurav.shru.pixelmusic.innertube.models.PlaylistItem>()
+                    ?.map { item ->
+                        PlaylistInfo(
+                            id = item.id,
+                            title = item.title,
+                            coverHref = item.thumbnail?.let { com.saurav.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality(it) }
+                        )
+                    } ?: emptyList()
+            }
+        } catch (e: Exception) {
+            UmihiHelper.printe("retrieveAll via InnerTube fallback failed: ${e.message}")
+            emptyList()
+        }
     }
 
     /**
