@@ -278,6 +278,11 @@ NewPipe.init(object : Downloader() {
             }
             .components {
                 add(localArtworkCoilFetcherFactory.get())
+                if (android.os.Build.VERSION.SDK_INT >= 28) {
+                    add(coil.decode.ImageDecoderDecoder.Factory())
+                } else {
+                    add(coil.decode.GifDecoder.Factory())
+                }
             }
             .build()
     }

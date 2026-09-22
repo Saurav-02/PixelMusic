@@ -1,5 +1,8 @@
 package com.saurav.pixelmusic.presentation.components
 
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.AnimatedImageDrawable
+import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,7 +39,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.imageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
 import com.saurav.pixelmusic.R
 import com.saurav.pixelmusic.presentation.components.subcomps.MaterialYouVectorDrawable
 import com.saurav.pixelmusic.presentation.components.subcomps.SineWaveLine
@@ -472,7 +477,8 @@ private fun BulletItemView(bullet: ChangelogItem.Bullet) {
                         bullet.tags.forEach { contributor ->
                             Surface(
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.75f),
+                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f)),
                                 modifier = Modifier.clickable {
                                     uriHandler.openUri("https://t.me/$contributor")
                                 }
@@ -499,7 +505,7 @@ private fun BulletItemView(bullet: ChangelogItem.Bullet) {
 }
 
 fun normalizeMediaUrl(rawUrl: String): String {
-    val trimmed = rawUrl.trim()
+    var trimmed = rawUrl.trim()
     // Convert github.com/owner/repo/blob/branch/path or /raw/branch/path to raw.githubusercontent.com/owner/repo/branch/path
     val ghRegex = Regex("""^https?://github\.com/([^/]+)/([^/]+)/(?:blob|raw)/([^/]+)/(.*)""")
     val ghMatch = ghRegex.find(trimmed)
@@ -508,7 +514,7 @@ fun normalizeMediaUrl(rawUrl: String): String {
         val repo = ghMatch.groupValues[2]
         val branch = ghMatch.groupValues[3]
         val path = ghMatch.groupValues[4]
-        return "https://raw.githubusercontent.com/$owner/$repo/$branch/$path"
+        trimmed = "https://raw.githubusercontent.com/$owner/$repo/$branch/$path"
     }
     return trimmed
 }
@@ -519,6 +525,33 @@ private fun ImageItemView(img: ChangelogItem.Image) {
     val normalizedUrl = remember(img.url) { normalizeMediaUrl(img.url) }
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
+
+    val gifImageLoader = remember(context) {
+        coil.ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .respectCacheHeaders(false)
+            .build()
+    }
+
+    val imageRequest = remember(normalizedUrl, context) {
+        ImageRequest.Builder(context)
+            .data(normalizedUrl)
+            .apply {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    decoderFactory(ImageDecoderDecoder.Factory())
+                } else {
+                    decoderFactory(GifDecoder.Factory())
+                }
+            }
+            .crossfade(true)
+            .build()
+    }
 
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -557,7 +590,7 @@ private fun ImageItemView(img: ChangelogItem.Image) {
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Could not load image preview",
+                            text = "Could not load preview",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -565,19 +598,23 @@ private fun ImageItemView(img: ChangelogItem.Image) {
                 }
 
                 AsyncImage(
-                    model = coil.request.ImageRequest.Builder(context)
-                        .data(normalizedUrl)
-                        .crossfade(true)
-                        .build(),
-                    imageLoader = context.imageLoader,
+                    model = imageRequest,
+                    imageLoader = gifImageLoader,
                     contentDescription = img.alt ?: "Changelog Preview",
                     onLoading = {
                         isLoading = true
                         isError = false
                     },
-                    onSuccess = {
+                    onSuccess = { state ->
                         isLoading = false
                         isError = false
+                        val drawable = state.result.drawable
+                        if (Build.VERSION.SDK_INT >= 28 && drawable is AnimatedImageDrawable) {
+                            drawable.repeatCount = AnimatedImageDrawable.REPEAT_INFINITE
+                            drawable.start()
+                        } else if (drawable is Animatable) {
+                            drawable.start()
+                        }
                     },
                     onError = {
                         isLoading = false
@@ -790,11 +827,15 @@ private fun parseChangelog(rawText: String?): List<ChangelogItem> {
             continue
         }
 
-        // 3. Image & GIF Detection: ![alt](url) or <img src="url" /> or direct image/gif url
+        // 3. Image & GIF Detection:
+        // Markdown: ![alt](url)
         val mdImageMatch = Regex("""^!\[(.*?)\]\((https?://[^\s)]+)\)""").find(line)
+        // HTML: <img src="url" />
         val htmlImageMatch = Regex("""^<img\s+[^>]*src=["'](https?://[^"']+)["'][^>]*>""", RegexOption.IGNORE_CASE).find(line)
-        val directMediaMatch = Regex("""^(https?://[^\s]+?\.(?:png|jpg|jpeg|webp|gif)(?:\?[^\s]*)?)$""", RegexOption.IGNORE_CASE).find(line)
-        val gifPlatformMatch = Regex("""^(https?://(?:media\d*\.giphy\.com|c\.tenor\.com|i\.imgur\.com)[^\s]+)$""", RegexOption.IGNORE_CASE).find(line)
+        // Direct media URL ending in image/gif extension
+        val directMediaMatch = Regex("""^(https?://[^\s]+?\.(?:png|jpg|jpeg|webp|gif|svg)(?:\?[^\s]*)?)$""", RegexOption.IGNORE_CASE).find(line)
+        // Direct link containing assets or gif hosting platforms
+        val mediaUrlMatch = Regex("""^(https?://[^\s]+(?:/assets/[^\s]+|giphy\.com|tenor\.com|imgur\.com)[^\s]*)$""", RegexOption.IGNORE_CASE).find(line)
 
         if (mdImageMatch != null) {
             val alt = mdImageMatch.groupValues[1]
@@ -812,8 +853,8 @@ private fun parseChangelog(rawText: String?): List<ChangelogItem> {
             items.add(ChangelogItem.Image(url = url, alt = null))
             i++
             continue
-        } else if (gifPlatformMatch != null) {
-            val url = gifPlatformMatch.groupValues[1]
+        } else if (mediaUrlMatch != null) {
+            val url = mediaUrlMatch.groupValues[1]
             items.add(ChangelogItem.Image(url = url, alt = null))
             i++
             continue
