@@ -167,13 +167,7 @@
 -keep class com.saurav.pixelmusic.data.model.youtube.** { *; }
 
 -keep class org.schabi.newpipe.extractor.** { *; }
--keep class org.mozilla.javascript.** { *; }
 -keep class com.grack.nanojson.** { *; }
-
-
-# Mozilla Rhino JS engine references missing javax.script API
--dontwarn javax.script.**
--dontwarn org.mozilla.javascript.engine.**
 
 # Keep desugared library classes (prevent R8 from stripping backported JDK APIs)
 -keep class j$.** { *; }
@@ -188,8 +182,7 @@
 -dontwarn io.ktor.client.plugins.HttpTimeout**
 -dontwarn io.ktor.client.plugins.contentnegotiation.**
 
-# Ignore missing jdk.dynalink classes referenced by Mozilla Rhino JS engine
--dontwarn jdk.dynalink.**
+
 
 # OkHttp + kotlinx.serialization JSON tree parsing for GeminiAiClient
 -dontwarn okhttp3.**

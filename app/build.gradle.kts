@@ -207,7 +207,6 @@ dependencies {
     implementation(libs.ktor.client.encoding)
     implementation(libs.brotli)
     implementation(libs.re2j)
-    implementation(libs.rhino)
 
     // Fuel HTTP library (required by YoutubeRequestHelper)
     implementation(libs.fuel.android)
@@ -230,23 +229,17 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.animation)
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.material)
-    implementation("androidx.palette:palette-ktx:1.0.0")
     implementation(libs.androidx.appcompat)
     implementation("androidx.webkit:webkit:1.16.0")
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
     implementation("io.github.dokar3:quickjs-kt:1.0.14")
-    
-    // FIX: Restored Automotive Dependencies
-    implementation(libs.androidx.app)
-    implementation(libs.androidx.app.projected)
 
     // DI & Navigation
     implementation(libs.hilt.android)
@@ -283,7 +276,6 @@ dependencies {
     implementation(libs.jaudiotagger)
     implementation(libs.vorbisjava.core)
     implementation(libs.wavy.slider)
-    implementation(libs.androidx.graphics.shapes)
 
     // Networking & Serialization
     implementation(libs.androidx.media3.exoplayer.hls)
@@ -299,18 +291,12 @@ dependencies {
 
     // Identity & Background
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.credentials)
-    implementation(libs.credentials.play.services.auth)
-    implementation(libs.googleid)
-    implementation(libs.androidx.security.crypto)
     implementation(libs.google.play.services.cast.framework)
 
     // UI Utilities & Extra
     implementation(libs.timber)
     implementation(libs.smooth.corner.rect.android.compose)
     implementation(libs.reorderables)
-    implementation(libs.codeview)
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
