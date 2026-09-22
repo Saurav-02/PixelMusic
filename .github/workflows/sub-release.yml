@@ -34,31 +34,31 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> keystore.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> keystore.properties
 
-      - name: 📈 Increment Version Code (+1) & Name (+0.1)
+      - name: 📈 Increment Version Code (+1) & Patch Version (+0.0.1)
         id: versioning
         run: |
           BASE_CODE=$(grep "^APP_VERSION_CODE=" gradle.properties | cut -d'=' -f2 | tr -d '\r' | tr -d ' ')
           RAW_NAME=$(grep "^APP_VERSION_NAME=" gradle.properties | cut -d'=' -f2 | tr -d '\r' | tr -d ' ')
-          
-          BASE_NAME=$(echo "$RAW_NAME" | grep -oE '^[0-9]+(\.[0-9]+)?')
-          if [[ ! "$BASE_NAME" == *.* ]]; then
-            BASE_NAME="${BASE_NAME}.0"
-          fi
-          
+
+          IFS='.' read -r MAJOR MINOR PATCH EXTRA <<< "$RAW_NAME"
+          MAJOR=${MAJOR:-4}
+          MINOR=${MINOR:-4}
+          PATCH=${PATCH:-0}
+
+          NEW_PATCH=$((PATCH + 1))
+          NEW_NAME="${MAJOR}.${MINOR}.${NEW_PATCH}"
           NEW_CODE=$((BASE_CODE + 1))
-          # This adds exactly 0.1 to the current version
-          NEW_NAME=$(awk "BEGIN {printf \"%.1f\", $BASE_NAME + 0.1}")
-          
+
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG_NAME=${GITHUB_REF#refs/tags/}
             NEW_NAME=${TAG_NAME#v}
           else
             TAG_NAME="v${NEW_NAME}"
           fi
-          
+
           sed -i "s/^APP_VERSION_CODE=.*/APP_VERSION_CODE=${NEW_CODE}/" gradle.properties
           sed -i "s/^APP_VERSION_NAME=.*/APP_VERSION_NAME=${NEW_NAME}/" gradle.properties
-          
+
           echo "NEW_CODE=${NEW_CODE}" >> $GITHUB_ENV
           echo "NEW_NAME=${NEW_NAME}" >> $GITHUB_ENV
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
@@ -85,26 +85,6 @@ jobs:
           echo -e "\n\n---\n*📦 Current Version Code: ${{ env.NEW_CODE }}*" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: 🧹 Delete Previous Releases and Tags (From SOURCE Repo)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release list --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
-            if [ -n "$tag" ]; then
-              gh release delete "$tag" --cleanup-tag -y
-            fi
-          done
-
-      - name: 🧹 Delete Previous Releases and Tags (From TARGET Repo)
-        env:
-          GH_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
-        run: |
-          gh release list -R ${{ env.TARGET_REPO }} --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
-            if [ -n "$tag" ]; then
-              gh release delete "$tag" -R ${{ env.TARGET_REPO }} --cleanup-tag -y
-            fi
-          done
-
       - name: 🚀 Create GitHub Release (To SOURCE Repo)
         uses: softprops/action-gh-release@v2
         with:
@@ -124,4 +104,24 @@ jobs:
           name: 🔧 Sub-Release ${{ env.TAG_NAME }}
           body: ${{ env.RELEASE_BODY }}
           files: app/build/outputs/apk/release/*.apk
+
+      - name: 🧹 Clean Up Older Releases from SOURCE Repo (Keep Current)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release list --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
+            if [ -n "$tag" ] && [ "$tag" != "${{ env.TAG_NAME }}" ]; then
+              gh release delete "$tag" --cleanup-tag -y || true
+            fi
+          done
+
+      - name: 🧹 Clean Up Older Releases from TARGET Repo (Keep Current)
+        env:
+          GH_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+        run: |
+          gh release list -R ${{ env.TARGET_REPO }} --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
+            if [ -n "$tag" ] && [ "$tag" != "${{ env.TAG_NAME }}" ]; then
+              gh release delete "$tag" -R ${{ env.TARGET_REPO }} --cleanup-tag -y || true
+            fi
+          done
           

@@ -92,6 +92,13 @@
                 <action android:name="com.saurav.pixelmusic.action.OPEN_PLAYER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <!-- Handle In-App Updater Notification Deep Links -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="pixelmusic" />
+            </intent-filter>
             <!-- Open M3U/M3U8 playlists shared from other apps -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

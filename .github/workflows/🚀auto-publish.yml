@@ -37,39 +37,30 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> keystore.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> keystore.properties
 
-      - name: 📈 Increment Version Code (+1) & Name (+0.5)
+      - name: 📈 Increment Version Code (+1) & Minor Version (+0.1.0)
         id: versioning
         run: |
-          # 1. Grab the current code and name from gradle.properties
           BASE_CODE=$(grep "^APP_VERSION_CODE=" gradle.properties | cut -d'=' -f2 | tr -d '\r' | tr -d ' ')
           RAW_NAME=$(grep "^APP_VERSION_NAME=" gradle.properties | cut -d'=' -f2 | tr -d '\r' | tr -d ' ')
-          
-          # 2. Clean up messy versions (e.g., "2.0.0.8" becomes "2.0")
-          BASE_NAME=$(echo "$RAW_NAME" | grep -oE '^[0-9]+(\.[0-9]+)?')
-          if [[ ! "$BASE_NAME" == *.* ]]; then
-            BASE_NAME="${BASE_NAME}.0"
-          fi
-          
-          # 3. Calculate new values (+1 Code, Round up to nearest 0.5 for Name)
+
+          IFS='.' read -r MAJOR MINOR PATCH EXTRA <<< "$RAW_NAME"
+          MAJOR=${MAJOR:-4}
+          MINOR=${MINOR:-4}
+
+          NEW_MINOR=$((MINOR + 1))
+          NEW_NAME="${MAJOR}.${NEW_MINOR}.0"
           NEW_CODE=$((BASE_CODE + 1))
-          
-          # This automatically rounds up to the next .5 or .0 milestone
-          # 3.0 -> 3.5 | 3.2 -> 3.5 | 3.5 -> 4.0 | 3.8 -> 4.0
-          NEW_NAME=$(awk "BEGIN {printf \"%.1f\", int($BASE_NAME * 2 + 1) / 2.0}")
-          
-          # 4. Set Tag Name
+
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG_NAME=${GITHUB_REF#refs/tags/}
             NEW_NAME=${TAG_NAME#v}
           else
             TAG_NAME="v${NEW_NAME}"
           fi
-          
-          # 5. Update the gradle.properties file locally
+
           sed -i "s/^APP_VERSION_CODE=.*/APP_VERSION_CODE=${NEW_CODE}/" gradle.properties
           sed -i "s/^APP_VERSION_NAME=.*/APP_VERSION_NAME=${NEW_NAME}/" gradle.properties
-          
-          # 6. Save to environment variables for later steps
+
           echo "NEW_CODE=${NEW_CODE}" >> $GITHUB_ENV
           echo "NEW_NAME=${NEW_NAME}" >> $GITHUB_ENV
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
@@ -98,28 +89,6 @@ jobs:
           echo -e "\n\n---\n*📦 Current Version Code: ${{ env.NEW_CODE }}*" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: 🧹 Delete Previous Releases and Tags (From SOURCE Repo)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release list --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
-            if [ -n "$tag" ]; then
-              echo "💥 Wiping out old release and tag from source: $tag"
-              gh release delete "$tag" --cleanup-tag -y
-            fi
-          done
-
-      - name: 🧹 Delete Previous Releases and Tags (From TARGET Repo)
-        env:
-          GH_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
-        run: |
-          gh release list -R ${{ env.TARGET_REPO }} --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
-            if [ -n "$tag" ]; then
-              echo "💥 Wiping out old release and tag from target: $tag"
-              gh release delete "$tag" -R ${{ env.TARGET_REPO }} --cleanup-tag -y
-            fi
-          done
-
       - name: 🚀 Create GitHub Release & Upload APK (To SOURCE Repo)
         uses: softprops/action-gh-release@v2
         with:
@@ -139,6 +108,28 @@ jobs:
           name: 🌟 Release ${{ env.TAG_NAME }}
           body: ${{ env.RELEASE_BODY }}
           files: app/build/outputs/apk/release/*.apk
+
+      - name: 🧹 Clean Up Older Releases from SOURCE Repo (Keep Current)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release list --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
+            if [ -n "$tag" ] && [ "$tag" != "${{ env.TAG_NAME }}" ]; then
+              echo "Wiping old release and tag from source: $tag"
+              gh release delete "$tag" --cleanup-tag -y || true
+            fi
+          done
+
+      - name: 🧹 Clean Up Older Releases from TARGET Repo (Keep Current)
+        env:
+          GH_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+        run: |
+          gh release list -R ${{ env.TARGET_REPO }} --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
+            if [ -n "$tag" ] && [ "$tag" != "${{ env.TAG_NAME }}" ]; then
+              echo "Wiping old release and tag from target: $tag"
+              gh release delete "$tag" -R ${{ env.TARGET_REPO }} --cleanup-tag -y || true
+            fi
+          done
 
       - name: 📦 Upload Signed Release APK artifact
         uses: actions/upload-artifact@v4

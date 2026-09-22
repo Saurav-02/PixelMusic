@@ -382,10 +382,9 @@ fun HomeScreen(
 
         when (updateState) {
             is com.saurav.pixelmusic.utils.UpdateState.Available -> {
-                val cleanLatest = updateState.versionName.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
-                val cleanCurrent = currentAppVersion.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
+                val isNewer = com.saurav.pixelmusic.utils.InAppUpdater.isNewerVersion(updateState.versionName, currentAppVersion)
 
-                if (cleanLatest > cleanCurrent) {
+                if (isNewer) {
                     if (now - lastPrompt > oneDayMs) {
                         isUpdateAvailableState = true
                         sheetVersionName = updateState.versionName

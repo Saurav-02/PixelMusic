@@ -37,7 +37,7 @@ class UpdateWorker(
     }
 
     private fun showNotification(versionName: String) {
-        val channelId = "pixelmusic_update_channel"
+        val channelId = "app_updates"
         
         // Create the NotificationChannel (Required for Android 8.0+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -54,7 +54,7 @@ class UpdateWorker(
 
         // Launch MainActivity and pass an extra to route to the About screen
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
             putExtra("NAVIGATE_TO_ABOUT", true) 
         }
         
@@ -74,7 +74,7 @@ class UpdateWorker(
         with(NotificationManagerCompat.from(context)) {
             // Your manifest already has POST_NOTIFICATIONS, just double checking permission
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                notify(999, builder.build())
+                notify(998, builder.build())
             }
         }
     }

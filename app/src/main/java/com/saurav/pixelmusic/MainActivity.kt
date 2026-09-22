@@ -203,6 +203,7 @@ class MainActivity : ComponentActivity() {
     lateinit var syncManager: SyncManager
     // For handling shortcut navigation - using StateFlow so composables can observe changes
     private val _pendingPlaylistNavigation = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+    private val _pendingRouteNavigation = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
     private val _pendingShuffleAll = kotlinx.coroutines.flow.MutableStateFlow(false)
     /** URI of an M3U/M3U8 file shared/opened from another app, waiting to be imported. */
     val pendingM3uImportUri = kotlinx.coroutines.flow.MutableStateFlow<android.net.Uri?>(null)
@@ -442,6 +443,11 @@ class MainActivity : ComponentActivity() {
                 intent.action = null
             }
 
+            intent.getBooleanExtra("NAVIGATE_TO_ABOUT", false) -> {
+                _pendingRouteNavigation.value = Screen.About.route
+                intent.removeExtra("NAVIGATE_TO_ABOUT")
+            }
+
             intent.getBooleanExtra("ACTION_SHOW_PLAYER", false) -> {
                 playerViewModel.showPlayer()
             }
@@ -677,6 +683,13 @@ class MainActivity : ComponentActivity() {
         
         // Observe pending playlist navigation
         val pendingPlaylistNav by _pendingPlaylistNavigation.collectAsStateWithLifecycle()
+        val pendingRouteNav by _pendingRouteNavigation.collectAsStateWithLifecycle()
+        LaunchedEffect(pendingRouteNav) {
+            pendingRouteNav?.let { route ->
+                navController.navigateSafely(route)
+                _pendingRouteNavigation.value = null
+            }
+        }
         var processedPlaylistId by remember { mutableStateOf<String?>(null) }
         
         LaunchedEffect(pendingPlaylistNav, isMediaControllerReady) {

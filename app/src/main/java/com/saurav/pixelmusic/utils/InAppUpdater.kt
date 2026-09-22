@@ -48,6 +48,34 @@ object InAppUpdater {
     private val gson = Gson()
     private const val REPO_URL = "https://api.github.com/repos/Saurav-02/PixelMusic/releases/latest"
 
+    fun isNewerVersion(latest: String?, current: String?): Boolean {
+        if (latest.isNullOrBlank() || current.isNullOrBlank()) return false
+
+        if (latest.contains("test-build", ignoreCase = true) && current.contains("test-build", ignoreCase = true)) {
+            val numLatest = latest.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
+            val numCurrent = current.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
+            return numLatest > numCurrent
+        }
+
+        val cleanL = latest.replace(Regex("[^0-9.]"), "").trim('.')
+        val cleanC = current.replace(Regex("[^0-9.]"), "").trim('.')
+
+        if (cleanL.isBlank() || cleanC.isBlank()) return false
+        if (cleanL == cleanC) return false
+
+        val partsL = cleanL.split('.').mapNotNull { it.toIntOrNull() }
+        val partsC = cleanC.split('.').mapNotNull { it.toIntOrNull() }
+
+        val maxLen = maxOf(partsL.size, partsC.size)
+        for (i in 0 until maxLen) {
+            val vL = partsL.getOrElse(i) { 0 }
+            val vC = partsC.getOrElse(i) { 0 }
+            if (vL > vC) return true
+            if (vL < vC) return false
+        }
+        return false
+    }
+
     suspend fun checkForUpdate(currentVersion: String): UpdateState = withContext(Dispatchers.IO) {
         try {
             val request = Request.Builder().url(REPO_URL).build()
@@ -57,12 +85,11 @@ object InAppUpdater {
                 val body = response.body.string()
                 val release = gson.fromJson(body, GithubRelease::class.java)
                 
-                val cleanLatest = release.tagName.replace(Regex("[^0-9.]"), "")
-                val cleanCurrent = currentVersion.replace(Regex("[^0-9.]"), "")
+                val isUpdate = isNewerVersion(release.tagName, currentVersion)
                 val apkAssets = release.assets.filter { it.name.endsWith(".apk") }
                 val apkAsset = selectBestApkForDevice(apkAssets)
                 
-                if (cleanLatest != cleanCurrent && apkAsset != null) {
+                if (isUpdate && apkAsset != null) {
                     return@withContext UpdateState.Available(
                         versionName = release.tagName, 
                         downloadUrl = apkAsset.downloadUrl,
@@ -254,13 +281,20 @@ object InAppUpdater {
                     return@launch
                 }
 
+                val isPartial = response.code == 206
+                if (!isPartial && downloadedBytes > 0) {
+                    downloadedBytes = 0L
+                    totalBytes = 0L
+                }
+
                 val body = response.body
-                if (totalBytes == 0L) {
-                    totalBytes = body.contentLength() + downloadedBytes 
+                if (totalBytes <= 0L) {
+                    val len = body.contentLength()
+                    if (len > 0) totalBytes = len + downloadedBytes
                 }
 
                 val inputStream = body.byteStream()
-                val outputStream = java.io.FileOutputStream(file, downloadedBytes > 0)
+                val outputStream = java.io.FileOutputStream(file, isPartial && downloadedBytes > 0)
                 val buffer = ByteArray(8 * 1024)
                 var bytes = inputStream.read(buffer)
                 var lastEmitTime = System.currentTimeMillis()
