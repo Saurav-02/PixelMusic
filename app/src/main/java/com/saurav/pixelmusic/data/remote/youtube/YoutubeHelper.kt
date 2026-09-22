@@ -52,28 +52,11 @@ import saurav.shru.pixelmusic.innertube.models.response.PlayerResponse
 import com.saurav.pixelmusic.data.preferences.PlayerStreamClient
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.withTimeoutOrNull
-import com.saurav.pixelmusic.data.remote.youtube.cipher.FaradayCipherEngine
-import io.ktor.client.HttpClient
-import io.ktor.http.parseQueryString
-import kotlinx.coroutines.asCoroutineDispatcher
-import java.util.concurrent.Executors
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import com.saurav.pixelmusic.utils.PixelHttpLoggingInterceptor
 
-
-
 object YoutubeHelper {
-    private val jsThread = Executors.newSingleThreadExecutor { runnable ->
-        Thread(null, runnable, "QuickJs", 32L * 1024L * 1024L)
-    }.asCoroutineDispatcher()
-
-    private val faradayEngine by lazy {
-        FaradayCipherEngine(
-            httpClient = HttpClient(),
-            jsThread = jsThread
-        )
-    }
     val client = OkHttpClient.Builder()
     .connectionPool(okhttp3.ConnectionPool(15, 5, java.util.concurrent.TimeUnit.MINUTES))
     .connectTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
@@ -542,96 +525,8 @@ object YoutubeHelper {
         return ""
     }
 
-    private fun isCipheredFormat(format: PlayerResponse.StreamingData.Format): Boolean {
-        return format.url == null && (format.signatureCipher != null || format.cipher != null)
-    }
-
-    private fun shouldSkipCipheredWebCandidate(client: YouTubeClient, format: PlayerResponse.StreamingData.Format, authState: PlaybackAuthState): Boolean {
-        val isWebClient = StreamClientUtils.isWebClient(client.clientName)
-        val isCiphered = isCipheredFormat(format)
-        val hasGvsPoToken = !authState.resolveGvsPoToken(client).isNullOrBlank()
-        if (authState.webClientPoTokenEnabled && isWebClient && isCiphered && !hasGvsPoToken) return true
-        return false
-    }
-
-    private fun isStreamClientTemporarilyBlocked(videoId: String, clientKey: String?, authFingerprint: String): Boolean {
-        val normalizedClientKey = StreamClientUtils.normalizeClientKey(clientKey)
-        if (normalizedClientKey.isEmpty()) return false
-        val key = "$authFingerprint:$videoId:$normalizedClientKey"
-        val until = failedStreamClientsUntil[key] ?: return false
-        if (until <= System.currentTimeMillis()) {
-            failedStreamClientsUntil.remove(key)
-            return false
-        }
-        return true
-    }
-
-    private fun markStreamClientFailed(videoId: String, clientKey: String?, httpStatusCode: Int, authFingerprint: String) {
-        if (httpStatusCode !in setOf(403, 404, 410, 416)) return
-        val normalizedClientKey = StreamClientUtils.normalizeClientKey(clientKey)
-        if (normalizedClientKey.isEmpty()) return
-        val key = "$authFingerprint:$videoId:$normalizedClientKey"
-        failedStreamClientsUntil[key] = System.currentTimeMillis() + FAILED_CLIENT_BACKOFF_MS
-    }
-
-    private fun validateStatus(url: String): Boolean {
-        val expireParam = url.substringAfter("expire=", "").substringBefore("&")
-        if (expireParam.isNotEmpty()) {
-            val expireSecs = expireParam.toLongOrNull()
-            if (expireSecs != null) {
-                val currentSecs = System.currentTimeMillis() / 1000
-                if (expireSecs > currentSecs + 60) return true
-            }
-        }
-        try {
-            val requestProfile = StreamClientUtils.resolveRequestProfile(url)
-            val rangeRequest = StreamClientUtils.applyRequestProfile(okhttp3.Request.Builder().get().header("Range", "bytes=0-0").url(url), requestProfile).build()
-            val streamProxy = saurav.shru.pixelmusic.innertube.YouTube.streamProxy
-            val httpClient = if (streamProxy != null) {
-                OkHttpClient.Builder().connectionPool(okhttp3.ConnectionPool(10, 5, java.util.concurrent.TimeUnit.MINUTES)).proxy(streamProxy).build()
-            } else { client }
-            return httpClient.newCall(rangeRequest).execute().use { response ->
-                val code = response.code
-                if (code == 403) return@use false
-                if (code !in 200..399 && code != 416) return@use false
-                val contentType = response.header("Content-Type").orEmpty().lowercase(Locale.US)
-                if (contentType.startsWith("text/html") || contentType.startsWith("text/plain") || contentType.startsWith("application/json") || contentType.startsWith("application/xml") || contentType.startsWith("text/xml")) return@use false
-                if (code == 416) return@use true
-                response.body.source().request(1)
-            }
-        } catch (e: Exception) { UmihiHelper.printe("validateStatus: probe failed: ${e.message}") }
-        return false
-    }
-
     fun getMimeTypeForCachedUrl(cacheKey: String): String? = streamMimeTypeLruCache.get(cacheKey)
     fun getBitrateForCachedUrl(cacheKey: String): Int? = streamBitrateLruCache.get(cacheKey)
-
-    private fun selectCandidates(playerResponse: PlayerResponse, lowQuality: Boolean, maxBitrateKbps: Int, requireM4a: Boolean = false): List<PlayerResponse.StreamingData.Format> {
-        val formats = playerResponse.streamingData?.adaptiveFormats?.filter { 
-                it.mimeType.contains("audio", ignoreCase = true) && it.bitrate > 0 && !it.mimeType.contains("mp3", ignoreCase = true) && !it.mimeType.contains("mpeg", ignoreCase = true) && !it.mimeType.contains("mpga", ignoreCase = true)
-            }.orEmpty()
-        if (formats.isEmpty()) return emptyList()
-
-        val opusFormats = formats.filter { it.mimeType.contains("opus", ignoreCase = true) }
-        val m4aFormats = formats.filter { (it.mimeType.contains("mp4", ignoreCase = true) || it.mimeType.contains("m4a", ignoreCase = true) || it.mimeType.contains("mp4a", ignoreCase = true)) && !it.mimeType.contains("opus", ignoreCase = true) }
-        val webmFormats = formats.filter { it.mimeType.contains("webm", ignoreCase = true) && !it.mimeType.contains("opus", ignoreCase = true) }
-        val otherFormats = formats.filter { !it.mimeType.contains("opus", ignoreCase = true) && !it.mimeType.contains("mp4", ignoreCase = true) && !it.mimeType.contains("m4a", ignoreCase = true) && !it.mimeType.contains("mp4a", ignoreCase = true) && !it.mimeType.contains("webm", ignoreCase = true) }
-
-        fun sortGroup(group: List<PlayerResponse.StreamingData.Format>): List<PlayerResponse.StreamingData.Format> {
-            if (group.isEmpty()) return emptyList()
-            return when {
-                lowQuality -> group.sortedBy { it.bitrate }
-                maxBitrateKbps > 0 -> {
-                    val bpsCeiling = maxBitrateKbps * 1000
-                    val withinCeiling = group.filter { it.bitrate <= bpsCeiling }
-                    if (withinCeiling.isNotEmpty()) withinCeiling.sortedByDescending { it.bitrate } else group.sortedBy { it.bitrate }
-                }
-                else -> group.sortedByDescending { it.bitrate }
-            }
-        }
-        if (requireM4a) return sortGroup(m4aFormats) + sortGroup(otherFormats)
-        return sortGroup(opusFormats) + sortGroup(m4aFormats) + sortGroup(webmFormats) + sortGroup(otherFormats)
-    }
 
 private suspend fun getSongUrlFromYoutube(
     context: Context,
@@ -689,16 +584,10 @@ private suspend fun getSongUrlFromYoutube(
                 val expireTimeSecs = expireParam.toLongOrNull()
                 if (expireTimeSecs != null) {
                     val currentTimeSecs = System.currentTimeMillis() / 1000
-                    if (expireTimeSecs > currentTimeSecs + 60) return@withContext true
+                    return@withContext expireTimeSecs > currentTimeSecs + 60
                 }
             }
-
-            val request = Request.Builder().url(url).head().build()
-            val streamProxy = saurav.shru.pixelmusic.innertube.YouTube.streamProxy
-            val httpClient = if (streamProxy != null) {
-                OkHttpClient.Builder().connectionPool(okhttp3.ConnectionPool(10, 5, java.util.concurrent.TimeUnit.MINUTES)).proxy(streamProxy).build()
-            } else { client }
-            httpClient.newCall(request).execute().use { response -> return@withContext response.isSuccessful }
+            return@withContext false
         } catch (_: Exception) { return@withContext false }
     }
 

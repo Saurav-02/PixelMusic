@@ -127,20 +127,18 @@ object SongDownloader {
             val imageDownloadJob = async(Dispatchers.IO) {
                 if (!song.albumArtUriString.isNullOrBlank()) {
                     try {
-                        val url = URL(song.albumArtUriString)
-                        val connection = (url.openConnection() as HttpURLConnection).apply {
-                            connectTimeout = 15000
-                            readTimeout = 15000
-                            instanceFollowRedirects = true
-                        }
-                        if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                            connection.inputStream.use { input ->
-                                FileOutputStream(tempImageFile).use { output ->
-                                    input.copyTo(output)
+                        val req = okhttp3.Request.Builder()
+                            .url(song.albumArtUriString)
+                            .build()
+                        YoutubeHelper.client.newCall(req).execute().use { resp ->
+                            if (resp.isSuccessful) {
+                                resp.body?.byteStream()?.use { input ->
+                                    FileOutputStream(tempImageFile).use { output ->
+                                        input.copyTo(output)
+                                    }
                                 }
                             }
                         }
-                        connection.disconnect()
                     } catch (_: Exception) {}
                 }
             }
@@ -166,70 +164,74 @@ object SongDownloader {
                     }
 
                     val endByte = startByte + CHUNK_SIZE - 1
-                    val connection = (URL(streamUrl).openConnection() as HttpURLConnection).apply {
-                        connectTimeout = 15000
-                        readTimeout = 60000
-                        requestMethod = "GET"
-                        setRequestProperty("Range", "bytes=$startByte-$endByte")
-                        setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                        setRequestProperty("Origin", "https://music.youtube.com")
-                        setRequestProperty("Referer", "https://music.youtube.com/")
-                        instanceFollowRedirects = true
-                    }
+                    val chunkRequest = okhttp3.Request.Builder()
+                        .url(streamUrl)
+                        .header("Range", "bytes=$startByte-$endByte")
+                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                        .header("Origin", "https://music.youtube.com")
+                        .header("Referer", "https://music.youtube.com/")
+                        .build()
 
                     try {
-                        connection.connect()
-                        val responseCode = connection.responseCode
-                        if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_PARTIAL) {
+                        val response = YoutubeHelper.client.newCall(chunkRequest).execute()
+                        val responseCode = response.code
+                        if (!response.isSuccessful && responseCode != 206) {
+                            response.close()
                             throw Exception("Chunk download failed. HTTP Code: $responseCode")
                         }
 
                         if (totalBytes <= 0) {
-                            val contentRange = connection.getHeaderField("Content-Range")
+                            val contentRange = response.header("Content-Range")
                             if (contentRange != null && contentRange.contains("/")) {
                                 totalBytes = contentRange.substringAfterLast("/").trim().toLongOrNull() ?: -1L
                             }
-                            if (totalBytes <= 0 && responseCode == HttpURLConnection.HTTP_OK) {
-                                totalBytes = connection.contentLengthLong
+                            if (totalBytes <= 0 && responseCode == 200) {
+                                totalBytes = response.body?.contentLength() ?: -1L
                             }
                         }
 
-                        val inputStream = connection.inputStream
+                        val inputStream = response.body?.byteStream()
+                            ?: throw Exception("Empty response body from stream")
                         val buffer = ByteArray(64 * 1024)
                         var bytesRead: Int
                         var chunkReadTotal = 0L
 
-                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                            if (isCancelled || isPaused) {
-                                break // Drop connection instantly to pause or cancel
-                            }
+                        inputStream.use { stream ->
+                            while (stream.read(buffer).also { bytesRead = it } != -1) {
+                                if (isCancelled || isPaused) {
+                                    break
+                                }
 
-                            output.write(buffer, 0, bytesRead)
-                            chunkReadTotal += bytesRead
-                            totalDownloaded += bytesRead
-                            startByte += bytesRead // Precisely track bytes for seamless resume
+                                output.write(buffer, 0, bytesRead)
+                                chunkReadTotal += bytesRead
+                                totalDownloaded += bytesRead
+                                startByte += bytesRead
 
-                            val now = System.currentTimeMillis()
-                            if (now - lastNotificationUpdateTime > 500L) {
-                                lastNotificationUpdateTime = now
-                                updateLiveProgress(
-                                    context,
-                                    notificationManager,
-                                    notificationId,
-                                    notificationBuilder,
-                                    totalDownloaded,
-                                    totalBytes,
-                                    playlistProgress
-                                )
+                                val now = System.currentTimeMillis()
+                                if (now - lastNotificationUpdateTime > 500L) {
+                                    lastNotificationUpdateTime = now
+                                    updateLiveProgress(
+                                        context,
+                                        notificationManager,
+                                        notificationId,
+                                        notificationBuilder,
+                                        totalDownloaded,
+                                        totalBytes,
+                                        playlistProgress
+                                    )
+                                }
                             }
                         }
 
                         if (!isCancelled && !isPaused && chunkReadTotal < CHUNK_SIZE) {
                             isFinished = true
                         }
-                        inputStream.close()
-                    } finally {
-                        connection.disconnect()
+                    } catch (e: Exception) {
+                        if (isCancelled || isPaused) {
+                            // Suppress exceptions when manually interrupted
+                        } else {
+                            throw e
+                        }
                     }
                 }
                 output.flush()

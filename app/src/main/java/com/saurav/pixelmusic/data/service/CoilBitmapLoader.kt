@@ -85,7 +85,8 @@ class CoilBitmapLoader(private val context: Context, private val scope: Coroutin
                 }
 
                 val finalDataStr = finalData.toString()
-                val request = ImageRequest.Builder(context)
+                val fallbackArtworkUrl = com.saurav.pixelmusic.utils.ThumbnailUrlUtils.getFallbackArtworkUrl(finalDataStr)
+                val requestBuilder = ImageRequest.Builder(context)
                     .data(finalData)
                     .diskCacheKey(finalDataStr)
                     .size(requestedSizePx, requestedSizePx)
@@ -93,7 +94,11 @@ class CoilBitmapLoader(private val context: Context, private val scope: Coroutin
                     .allowHardware(false)
                     .memoryCachePolicy(CachePolicy.DISABLED)
                     .diskCachePolicy(CachePolicy.ENABLED)
-                    .build()
+
+                if (fallbackArtworkUrl != null) {
+                    requestBuilder.error(fallbackArtworkUrl)
+                }
+                val request = requestBuilder.build()
                 
                 val result = context.imageLoader.execute(request)
                 val drawable = result.drawable

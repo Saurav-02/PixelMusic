@@ -78,4 +78,16 @@ object ThumbnailUrlUtils {
 
         return transformed
     }
+
+    /**
+     * Fallback URL in case maxresdefault.jpg or sddefault.jpg returns HTTP 404
+     */
+    fun getFallbackArtworkUrl(url: String?): String? {
+        if (url.isNullOrBlank()) return null
+        return when {
+            url.contains("maxresdefault") -> url.replace("maxresdefault", "hqdefault")
+            url.contains("sddefault") -> url.replace("sddefault", "hqdefault")
+            else -> null
+        }
+    }
 }
