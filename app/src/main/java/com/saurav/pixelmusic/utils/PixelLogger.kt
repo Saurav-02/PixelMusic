@@ -34,7 +34,7 @@ object PixelLogger {
 
     data class Entry(
         val timestampMs: Long,
-        val level: Char,           // D, I, W, E
+        val level: Char,           // V, D, I, W, E, A
         val category: Category,
         val tag: String,
         val message: String,
@@ -48,7 +48,7 @@ object PixelLogger {
         }
     }
 
-    private const val MAX_BUFFER = 2000
+    private const val MAX_BUFFER = 5000
     private const val MAX_FILE_BYTES = 2L * 1024L * 1024L
     private const val MAX_ROTATED_FILES = 5
 
@@ -68,62 +68,99 @@ object PixelLogger {
     private var logDir: File? = null
     private var currentLogFile: File? = null
 
-/** Call once from Application.onCreate() */
-fun init(context: Context) {
-    if (!started.compareAndSet(false, true)) return
+    /** Call once from Application.onCreate() */
+    fun init(context: Context) {
+        if (!started.compareAndSet(false, true)) return
 
-    // Unconditional probes. Bypass the enabled flag, bypass any level filter.
-    // If any of these five reach LogFox, we know the process is alive and
-    // which levels the OS / LogFox are letting through.
-    Log.v("PM-BOOT", "init: v probe")
-    Log.d("PM-BOOT", "init: d probe")
-    Log.i("PM-BOOT", "init: i probe")
-    Log.w("PM-BOOT", "init: w probe")
-    Log.e("PM-BOOT", "init: e probe")
+        val dir = File(context.filesDir, "logs").apply { mkdirs() }
+        logDir = dir
+        currentLogFile = File(dir, "pixelmusic.log")
+        ioScope.launch { drainToFile() }
+    }
 
-    val dir = File(context.filesDir, "logs").apply { mkdirs() }
-    logDir = dir
-    currentLogFile = File(dir, "pixelmusic.log")
-    ioScope.launch { drainToFile() }
-}
+    fun isEnabled(): Boolean = _enabled.value
 
     fun setEnabled(value: Boolean) {
-    val previous = _enabled.value
-    _enabled.value = value
-    if (previous != value) {
-        Log.e("PM-BOOT", "setEnabled($value)")
-        if (value) i(Category.MISC, "Logger", "Enabled")
-    }
+        val previous = _enabled.value
+        _enabled.value = value
+        if (previous != value) {
+            if (value) {
+                Log.i("PM-BOOT", "Universal Logging Enabled (All log levels active)")
+                i(Category.MISC, "Logger", "Universal logging system enabled")
+            } else {
+                Log.i("PM-BOOT", "Universal Logging Disabled (All logs silenced)")
+            }
+        }
     }
 
     fun clear() {
-        buffer.clear()
-        _entries.value = emptyList()
+        synchronized(buffer) {
+            buffer.clear()
+            _entries.value = emptyList()
+        }
         ioScope.launch {
             currentLogFile?.delete()
             currentLogFile = logDir?.let { File(it, "pixelmusic.log") }
         }
     }
 
-    fun snapshot(): List<Entry> = _entries.value
+    fun snapshot(): List<Entry> = synchronized(buffer) { buffer.toList() }
 
     fun exportText(): String = buildString {
         snapshot().forEach { appendLine(it.format()) }
     }
 
-    // ---- public logging API ----
+    // ---- Public logging API ----
 
-    fun d(category: Category, tag: String, message: String) =
-        log('D', category, tag, message, null)
+    fun v(category: Category, tag: String, message: String, throwable: Throwable? = null) =
+        log('V', category, tag, message, throwable)
 
-    fun i(category: Category, tag: String, message: String) =
-        log('I', category, tag, message, null)
+    fun d(category: Category, tag: String, message: String, throwable: Throwable? = null) =
+        log('D', category, tag, message, throwable)
+
+    fun i(category: Category, tag: String, message: String, throwable: Throwable? = null) =
+        log('I', category, tag, message, throwable)
 
     fun w(category: Category, tag: String, message: String, throwable: Throwable? = null) =
         log('W', category, tag, message, throwable)
 
     fun e(category: Category, tag: String, message: String, throwable: Throwable? = null) =
         log('E', category, tag, message, throwable)
+
+    fun wtf(category: Category, tag: String, message: String, throwable: Throwable? = null) =
+        log('A', category, tag, message, throwable)
+
+    fun log(priority: Int, tag: String?, message: String, throwable: Throwable? = null) {
+        if (!isEnabled()) return
+        val level = when (priority) {
+            Log.VERBOSE -> 'V'
+            Log.DEBUG -> 'D'
+            Log.INFO -> 'I'
+            Log.WARN -> 'W'
+            Log.ERROR -> 'E'
+            Log.ASSERT -> 'A'
+            else -> 'D'
+        }
+        val category = inferCategory(tag)
+        log(level, category, tag ?: "PixelMusic", message, throwable)
+    }
+
+    fun inferCategory(tag: String?): Category {
+        if (tag == null) return Category.MISC
+        val lower = tag.lowercase()
+        return when {
+            lower.contains("net") || lower.contains("http") || lower.contains("api") || lower.contains("yt") || lower.contains("down") -> Category.NETWORK
+            lower.contains("play") || lower.contains("exo") || lower.contains("audio") || lower.contains("service") || lower.contains("dual") -> Category.PLAYER
+            lower.contains("queue") -> Category.QUEUE
+            lower.contains("lyric") -> Category.LYRICS
+            lower.contains("auth") || lower.contains("login") || lower.contains("token") -> Category.AUTH
+            lower.contains("sync") || lower.contains("work") -> Category.SYNC
+            lower.contains("db") || lower.contains("room") || lower.contains("dao") || lower.contains("repo") -> Category.DB
+            lower.contains("life") || lower.contains("activity") || lower.contains("app") -> Category.LIFE
+            lower.contains("ui") || lower.contains("screen") || lower.contains("view") || lower.contains("compose") || lower.contains("sheet") -> Category.UI
+            else -> Category.MISC
+        }
+    }
 
     private fun log(
         level: Char,
@@ -132,10 +169,7 @@ fun init(context: Context) {
         message: String,
         throwable: Throwable?,
     ) {
-        val enabledNow = _enabled.value
-        // Always mirror to Logcat when enabled — never when disabled
-        // so a released build with logging off is zero-cost.
-        if (!enabledNow) return
+        if (!_enabled.value) return
 
         val entry = Entry(
             timestampMs = System.currentTimeMillis(),
@@ -146,24 +180,22 @@ fun init(context: Context) {
             throwable = throwable,
         )
 
-// Android drops tags longer than 23 chars on some OEM ROMs.
-// Format: PM-<3-char category>/<up to 12 chars of tag>  = max 20 chars.
-val logTag = "PM-${category.shortName}/${tag.take(12)}"
-when (level) {
-    'D' -> Log.d(logTag, message)
-    'I' -> Log.i(logTag, message)
-    'W' -> Log.w(logTag, message, throwable)
-    'E' -> Log.e(logTag, message, throwable)
-}
+        val logTag = "PM-${category.shortName}/${tag.take(12)}"
+        when (level) {
+            'V' -> Log.v(logTag, message, throwable)
+            'D' -> Log.d(logTag, message, throwable)
+            'I' -> Log.i(logTag, message, throwable)
+            'W' -> Log.w(logTag, message, throwable)
+            'E' -> Log.e(logTag, message, throwable)
+            'A' -> Log.wtf(logTag, message, throwable)
+        }
 
-        // Ring buffer
         synchronized(buffer) {
             if (buffer.size >= MAX_BUFFER) buffer.removeFirst()
             buffer.addLast(entry)
             _entries.value = buffer.toList()
         }
 
-        // File sink
         writeChannel.trySend(entry)
     }
 
@@ -182,10 +214,9 @@ when (level) {
     private suspend fun rotate() = withContext(Dispatchers.IO) {
         val dir = logDir ?: return@withContext
         val current = currentLogFile ?: return@withContext
-        // Shift pixelmusic.4.log -> pixelmusic.5.log ... pixelmusic.log -> pixelmusic.1.log
         for (i in MAX_ROTATED_FILES - 1 downTo 1) {
             val from = File(dir, if (i == 1) "pixelmusic.log" else "pixelmusic.$i.log")
-            val to = File(dir, "pixelmusic.${i + 1}.log")
+            val to = File(dir, if (i == 1) "pixelmusic.2.log" else "pixelmusic.${i + 1}.log")
             if (from.exists()) from.renameTo(to)
         }
         val oldest = File(dir, "pixelmusic.${MAX_ROTATED_FILES}.log")

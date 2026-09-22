@@ -208,12 +208,8 @@ NewPipe.init(object : Downloader() {
             CrashHandler.install(this)
         }
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        } else {
-            // Release tree: only WARN/ERROR/WTF - no DEBUG/VERBOSE/INFO
-            Timber.plant(ReleaseTree())
-        }
+        Timber.uprootAll()
+        Timber.plant(ReleaseTree())
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(

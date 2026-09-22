@@ -1850,14 +1850,59 @@ fun SettingsCategoryScreen(
                                     addBottomSpace = false
                                 ) {
                                     SwitchSettingItem(
-                                        title = "Verbose Logging",
-                                        subtitle = "Capture network, player, queue, and lyrics events into Logcat (tag prefix: PM-). Adds CPU and battery cost while enabled.",
+                                        title = "Universal App Logging",
+                                        subtitle = "Record all app activity (verbose, debug, info, warn, error, fatal) to Logcat and internal log file. Turn off for zero logging.",
                                         checked = uiState.verboseLoggingEnabled,
                                         onCheckedChange = { settingsViewModel.setVerboseLoggingEnabled(it) },
                                         leadingIcon = {
                                             Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.secondary)
                                         }
                                     )
+                                    if (uiState.verboseLoggingEnabled) {
+                                        SettingsItem(
+                                            title = "Export / Share App Logs",
+                                            subtitle = "Share or save the recorded log file (pixelmusic.log)",
+                                            leadingIcon = {
+                                                Icon(Icons.Outlined.Share, null, tint = MaterialTheme.colorScheme.primary)
+                                            },
+                                            onClick = {
+                                                val logPath = com.saurav.pixelmusic.utils.PixelLogger.logFilePath()
+                                                if (logPath != null) {
+                                                    val file = java.io.File(logPath)
+                                                    if (file.exists() && file.length() > 0) {
+                                                        val cacheFile = java.io.File(context.cacheDir, "pixelmusic_logs_${System.currentTimeMillis()}.txt")
+                                                        file.copyTo(cacheFile, overwrite = true)
+                                                        val uri = androidx.core.content.FileProvider.getUriForFile(
+                                                            context,
+                                                            "${context.packageName}.fileprovider",
+                                                            cacheFile
+                                                        )
+                                                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                                            type = "text/plain"
+                                                            putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                                                            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                                        }
+                                                        context.startActivity(android.content.Intent.createChooser(intent, "Share PixelMusic Logs"))
+                                                    } else {
+                                                        android.widget.Toast.makeText(context, "Log file is currently empty", android.widget.Toast.LENGTH_SHORT).show()
+                                                    }
+                                                } else {
+                                                    android.widget.Toast.makeText(context, "Log file not initialized", android.widget.Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        )
+                                        SettingsItem(
+                                            title = "Clear App Logs",
+                                            subtitle = "Wipe the current log buffer and log file",
+                                            leadingIcon = {
+                                                Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error)
+                                            },
+                                            onClick = {
+                                                com.saurav.pixelmusic.utils.PixelLogger.clear()
+                                                android.widget.Toast.makeText(context, "Logs cleared", android.widget.Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                    }
                                     SettingsItem(
                                         title = stringResource(R.string.setcat_trigger_crash_title),
                                         subtitle = stringResource(R.string.setcat_trigger_crash_subtitle),

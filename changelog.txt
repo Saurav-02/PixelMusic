@@ -10,7 +10,8 @@ Before updating, please take a full backup of your data:
 
 **Sub release 4.4.0**
 
-* 🎬 **Share as 30s Video & Format Switcher:** Added capability to generate and share 30-second video clips featuring the song's audio and card artwork for Instagram Stories, status, and messaging apps, with instant photo/video format switching and remembered user preferences.
+* 🎬 **Share as 30s Video & Robust Audio Handling:** Fixed video generation for local and online/YouTube tracks with image MIME recognition, streaming cache extraction, and real-time progress logging.
+* 📝 **Universal App Logging & Export:** Overhauled logging across the entire app so all events (verbose, debug, info, warn, error, fatal) are captured when developer logging is toggled on, and zero logs when off. Added direct log sharing and buffer clearing from Developer Settings.
 
 * 📶 **Adaptive Streaming Quality:** Added dynamic "Auto" streaming audio quality that automatically adjusts bitrate based on network connectivity (Wi-Fi vs Cellular).
 
