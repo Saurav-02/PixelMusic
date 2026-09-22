@@ -78,7 +78,7 @@ object ShareVideoGenerator {
                     youtubeId = videoId,
                     title = song.title,
                     artist = song.artist,
-                    duration = song.duration
+                    duration = song.duration.toString()
                 )
                 val streamUrl = YoutubeHelper.getSongPlayerUrl(context, ytModelSong, allowLocal = true)
                 if (streamUrl.isNotBlank()) {
@@ -171,8 +171,8 @@ object ShareVideoGenerator {
                     .setRemoveVideo(true)
                     .build()
 
-                val videoSequence = EditedMediaItemSequence(imageMediaItem)
-                val audioSequence = EditedMediaItemSequence(audioMediaItem)
+                val videoSequence = EditedMediaItemSequence.Builder(imageMediaItem).build()
+                val audioSequence = EditedMediaItemSequence.Builder(audioMediaItem).build()
                 val composition = Composition.Builder(listOf(videoSequence, audioSequence)).build()
 
                 val transformer = Transformer.Builder(context)
