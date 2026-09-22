@@ -106,14 +106,14 @@ object YoutubeRequestHelper {
         return executePost(url, body.toString(), headers)
     }
 
-    private fun executePost(url: String, jsonBody: String, headers: Map<String, String>): String {
+    private fun executePost(url: String, jsonBody: String, headers: Map<String, Any>): String {
         val requestBody = jsonBody.toRequestBody(jsonMediaType)
         val builder = okhttp3.Request.Builder()
             .url(url)
             .post(requestBody)
 
         headers.forEach { (key, value) ->
-            builder.addHeader(key, value)
+            builder.addHeader(key, value.toString())
         }
 
         val streamProxy = saurav.shru.pixelmusic.innertube.YouTube.streamProxy

@@ -177,8 +177,7 @@ fun SmartImage(
                 .build()
         } else {
             val modelStr = optimizedModel.toString()
-            val fallbackArtworkUrl = ThumbnailUrlUtils.getFallbackArtworkUrl(modelStr)
-            val reqBuilder = ImageRequest.Builder(context)
+            ImageRequest.Builder(context)
                 .data(optimizedModel)
                 .diskCacheKey(modelStr)
                 .memoryCacheKey("$modelStr|$requestTargetSize")
@@ -187,11 +186,7 @@ fun SmartImage(
                 .memoryCachePolicy(if (useMemoryCache) CachePolicy.ENABLED else CachePolicy.DISABLED)
                 .allowHardware(allowHardware)
                 .size(requestTargetSize)
-
-            if (fallbackArtworkUrl != null) {
-                reqBuilder.error(fallbackArtworkUrl)
-            }
-            reqBuilder.build()
+                .build()
         }
     }
 
