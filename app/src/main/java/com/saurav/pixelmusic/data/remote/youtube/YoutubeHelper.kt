@@ -349,7 +349,19 @@ object YoutubeHelper {
                 } else {
                     userPreferencesRepository.streamingAudioQualityWifiFlow.first()
                 }
-                if (targetQuality == StreamingAudioQuality.HIGH) 0 else targetQuality.maxBitrateKbps
+                when (targetQuality) {
+                    StreamingAudioQuality.AUTO -> {
+                        val bandwidthKbps = connectivityStateHolder.getDownstreamBandwidthKbps()
+                        when {
+                            bandwidthKbps >= 3000 -> 0
+                            bandwidthKbps in 1000 until 3000 -> 128
+                            bandwidthKbps in 1 until 1000 -> 64
+                            else -> if (isMetered) 128 else 0
+                        }
+                    }
+                    StreamingAudioQuality.HIGH -> 0
+                    else -> targetQuality.maxBitrateKbps
+                }
             }
         } catch (e: Exception) {
             0

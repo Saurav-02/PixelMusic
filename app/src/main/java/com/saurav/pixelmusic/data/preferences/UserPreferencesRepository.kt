@@ -181,6 +181,7 @@ constructor(
         val PLAYLIST_SONG_ORDER_MODES = stringPreferencesKey("playlist_song_order_modes")
 
         // Sort Option Keys
+        val AI_LYRICS_RESCUE_ENABLED = booleanPreferencesKey("ai_lyrics_rescue_enabled")
         val SONGS_SORT_OPTION = stringPreferencesKey("songs_sort_option")
         val SONGS_SORT_OPTION_MIGRATED = booleanPreferencesKey("songs_sort_option_migrated_v2")
         val ALBUMS_SORT_OPTION = stringPreferencesKey("albums_sort_option")
@@ -1073,7 +1074,7 @@ constructor(
 
     // ===== Streaming & Data Optimization =====
 
-    /** Audio quality when on WiFi. Default: HIGH (256 kbps). */
+    /** Audio quality when on WiFi. Default: AUTO. */
     val streamingAudioQualityWifiFlow: Flow<StreamingAudioQuality> =
         dataStore.data.map { preferences ->
             StreamingAudioQuality.fromName(preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_WIFI])
@@ -1084,13 +1085,24 @@ constructor(
             preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_WIFI] = quality.name
         }
     }
-    /** Audio quality when on mobile data. Default: HIGH. */
+    /** Audio quality when on mobile data. Default: AUTO. */
     val streamingAudioQualityMobileFlow: Flow<StreamingAudioQuality> =
         dataStore.data.map { preferences ->
             StreamingAudioQuality.fromName(
                 preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_MOBILE]
             )
         }
+
+    val isAiLyricsRescueEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.AI_LYRICS_RESCUE_ENABLED] ?: false
+        }
+
+    suspend fun setAiLyricsRescueEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_LYRICS_RESCUE_ENABLED] = enabled
+        }
+    }
     val downloadAudioQualityFlow: Flow<StreamingAudioQuality> =
         dataStore.data.map { preferences ->
             StreamingAudioQuality.fromName(

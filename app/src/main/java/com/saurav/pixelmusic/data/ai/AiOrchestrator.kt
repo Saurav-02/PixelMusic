@@ -145,7 +145,7 @@ class AiOrchestrator @Inject constructor(
         val resolvedTemperature = if (temperature == 0.7f) {
             when (type) {
                 // AI Optimization: Use low temperature for high-precision metadata to prevent hallucinations
-                AiSystemPromptType.METADATA -> 0.1f
+                AiSystemPromptType.METADATA, AiSystemPromptType.LYRICS_RESCUE -> 0.1f
                 AiSystemPromptType.MOOD_ANALYSIS -> 0.2f
                 // AI Optimization: Moderate temperature for tags to allow creative yet relevant descriptors
                 AiSystemPromptType.TAGGING -> 0.4f

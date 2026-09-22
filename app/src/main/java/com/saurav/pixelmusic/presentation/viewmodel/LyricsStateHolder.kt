@@ -106,7 +106,17 @@ class LyricsStateHolder @Inject constructor(
      */
     private suspend fun fetchYouTubeLyrics(song: Song): String? {
         val videoId = song.youtubeId?.takeIf { it.isNotBlank() }
-            ?: song.id.takeIf { it.length == 11 && it.matches(Regex("^[a-zA-Z0-9_-]{11}$")) }
+            ?: song.id.removePrefix("youtube_").takeIf { it.length == 11 && it.matches(Regex("^[a-zA-Z0-9_-]{11}$")) }
+            ?: song.contentUriString.removePrefix("youtube://").takeIf { it.length == 11 && it.matches(Regex("^[a-zA-Z0-9_-]{11}$")) }
+            ?: run {
+                val query = "${song.title} ${song.artist}".trim()
+                if (query.isBlank()) return@run null
+                val searchResult = saurav.shru.pixelmusic.innertube.YouTube.search(
+                    query,
+                    saurav.shru.pixelmusic.innertube.YouTube.SearchFilter.FILTER_SONG
+                ).getOrNull()
+                searchResult?.items?.filterIsInstance<saurav.shru.pixelmusic.innertube.models.SongItem>()?.firstOrNull()?.id
+            }
             ?: return null
 
         return runCatching {
@@ -116,7 +126,7 @@ class LyricsStateHolder @Inject constructor(
             nextResult?.lyricsEndpoint?.let { endpoint ->
                 saurav.shru.pixelmusic.innertube.YouTube.lyrics(endpoint).getOrNull()
             }
-        }.getOrNull()
+        }.getOrNull()?.takeIf { it.isNotBlank() }
     }
 
     fun loadLyricsForSong(song: Song, sourcePreference: LyricsSourcePreference) {

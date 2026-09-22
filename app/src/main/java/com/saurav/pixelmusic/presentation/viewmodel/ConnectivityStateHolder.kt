@@ -97,6 +97,12 @@ class ConnectivityStateHolder @Inject constructor(
     /**
      * Manually refresh local connection info (e.g. WiFi SSID).
      */
+    fun getDownstreamBandwidthKbps(): Int {
+        val activeNetwork = connectivityManager.activeNetwork ?: return 0
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return 0
+        return capabilities.linkDownstreamBandwidthKbps
+    }
+
     fun refreshLocalConnectionInfo(refreshBluetoothDevices: Boolean = false) {
         updateWifiInfo()
         if (refreshBluetoothDevices) {

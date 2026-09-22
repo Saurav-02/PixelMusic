@@ -705,6 +705,25 @@ fun SettingsCategoryScreen(
                                             Icon(painterResource(R.drawable.rounded_lyrics_24), null, tint = MaterialTheme.colorScheme.secondary)
                                         }
                                     )
+                                    SwitchSettingItem(
+                                        title = "AI Lyrics Search (β)",
+                                        subtitle = "Extract clean song titles with AI when standard search finds no lyrics",
+                                        checked = uiState.isAiLyricsRescueEnabled,
+                                        onCheckedChange = { enabled ->
+                                            if (enabled && currentAiApiKey.isBlank()) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Please configure an AI API key in Settings > AI Integration first",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            } else {
+                                                settingsViewModel.setAiLyricsRescueEnabled(enabled)
+                                            }
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Outlined.AutoAwesome, null, tint = MaterialTheme.colorScheme.secondary)
+                                        }
+                                    )
                                     SettingsItem(
                                         title = stringResource(R.string.setcat_reset_imported_lyrics_title),
                                         subtitle = stringResource(R.string.setcat_reset_imported_lyrics_subtitle),

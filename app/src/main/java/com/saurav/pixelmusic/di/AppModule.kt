@@ -259,12 +259,16 @@ object AppModule {
     fun provideLyricsRepository(
         @ApplicationContext context: Context,
         lyricsDao: LyricsDao,
-        okHttpClient: OkHttpClient
+        okHttpClient: OkHttpClient,
+        userPreferencesRepository: UserPreferencesRepository,
+        aiOrchestrator: javax.inject.Provider<com.saurav.pixelmusic.data.ai.AiOrchestrator>
     ): LyricsRepository {
         return LyricsRepositoryImpl(
             context = context,
             lyricsDao = lyricsDao,
-            okHttpClient = okHttpClient
+            okHttpClient = okHttpClient,
+            userPreferencesRepository = userPreferencesRepository,
+            aiOrchestrator = aiOrchestrator
         )
     }
 

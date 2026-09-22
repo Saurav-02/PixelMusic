@@ -11,7 +11,8 @@ enum class AiSystemPromptType {
     MOOD_ANALYSIS,
     PERSONA,
     DAILY_MIX,
-    GENERAL
+    GENERAL,
+    LYRICS_RESCUE
 }
 
 @Singleton
@@ -97,6 +98,20 @@ class AiSystemPromptEngine @Inject constructor() {
                 <strategy>
                 Assist the user with any complex queries or actions inside their music ecosystem.
                 </strategy>
+            """.trimIndent()
+
+            AiSystemPromptType.LYRICS_RESCUE -> """
+                <role>Music metadata and search optimization specialist.</role>
+                <strategy>
+                - The input contains a messy YouTube song title and artist string where lyrics search failed.
+                - Remove all video noise (e.g. Official Video, 4K, 1080p, Full Song, Lyric Video, Audio, Remastered, Status).
+                - Extract the true canonical song title and primary artist name.
+                - Provide alternative clean search queries optimized for lyrics databases (LRCLIB, NetEase, Musixmatch).
+                </strategy>
+                <output_schema>
+                Return ONLY raw JSON:
+                {"cleanTitle": "Clean Title", "cleanArtist": "Primary Artist", "searchQueries": ["Query1", "Query2"]}
+                </output_schema>
             """.trimIndent()
         }
 

@@ -46,6 +46,8 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.saurav.pixelmusic.data.preferences.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -66,8 +68,73 @@ private data class LyricsData(
 class LyricsRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val lyricsDao: com.saurav.pixelmusic.data.database.LyricsDao,
-    private val okHttpClient: OkHttpClient
+    private val okHttpClient: OkHttpClient,
+    private val userPreferencesRepository: UserPreferencesRepository? = null,
+    private val aiOrchestrator: javax.inject.Provider<com.saurav.pixelmusic.data.ai.AiOrchestrator>? = null
 ) : LyricsRepository {
+
+    private suspend fun aiLyricsRescue(song: Song): List<LyricsSearchResult> {
+        val orchestrator = aiOrchestrator?.get() ?: return emptyList()
+        val prefs = userPreferencesRepository ?: return emptyList()
+        val isEnabled = runCatching { prefs.isAiLyricsRescueEnabledFlow.first() }.getOrDefault(false)
+        if (!isEnabled) return emptyList()
+
+        return try {
+            val prompt = """
+                Extract clean track details for lyrics search:
+                Title: "${song.title}"
+                Artist: "${song.displayArtist}"
+                Album: "${song.album}"
+            """.trimIndent()
+
+            val response = orchestrator.generateContent(
+                prompt = prompt,
+                type = com.saurav.pixelmusic.data.ai.AiSystemPromptType.LYRICS_RESCUE
+            )
+            if (response.isBlank()) return emptyList()
+
+            val cleanJson = response.replace("```json", "").replace("```", "").trim()
+            val jsonObj = org.json.JSONObject(cleanJson)
+            val cleanTitle = jsonObj.optString("cleanTitle").takeIf { it.isNotBlank() } ?: song.title
+            val cleanArtist = jsonObj.optString("cleanArtist").takeIf { it.isNotBlank() }
+            val searchQueries = jsonObj.optJSONArray("searchQueries")
+
+            val aiCandidates = mutableListOf<com.saurav.pixelmusic.data.remote.lyrics_providers.util.matching.QueryCandidate>()
+            aiCandidates.add(com.saurav.pixelmusic.data.remote.lyrics_providers.util.matching.QueryCandidate(cleanTitle, cleanArtist, com.saurav.pixelmusic.data.remote.lyrics_providers.util.matching.MatchStrategy.TAGS))
+
+            if (searchQueries != null) {
+                for (i in 0 until searchQueries.length()) {
+                    val q = searchQueries.getString(i).trim()
+                    if (q.isNotBlank()) {
+                        aiCandidates.add(com.saurav.pixelmusic.data.remote.lyrics_providers.util.matching.QueryCandidate(q, null, com.saurav.pixelmusic.data.remote.lyrics_providers.util.matching.MatchStrategy.FILENAME_TITLE_ONLY))
+                    }
+                }
+            }
+
+            val localTrack = LocalTrack(
+                title = cleanTitle,
+                artist = cleanArtist,
+                durationSec = if (song.duration > 0) song.duration / 1000.0 else null,
+                album = null
+            )
+            val hits = smartLyricsMatcher.search(localTrack, aiCandidates)
+
+            coroutineScope {
+                hits.map { hit ->
+                    async {
+                        val rawLyrics = smartLyricsMatcher.fetchLyrics(hit) ?: return@async null
+                        val parsedLyrics = LyricsUtils.parseLyrics(rawLyrics).copy(areFromRemote = true)
+                        if (!parsedLyrics.isValid()) return@async null
+
+                        LyricsSearchResult(hit, parsedLyrics, rawLyrics)
+                    }
+                }.awaitAll().filterNotNull()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "AI lyrics rescue error: ${e.message}")
+            emptyList()
+        }
+    }
 
     companion object {
         private const val TAG = "LyricsRepository"
@@ -662,7 +729,7 @@ class LyricsRepositoryImpl @Inject constructor(
             
             val hits = smartLyricsMatcher.search(localTrack, candidates)
             
-            val results = coroutineScope {
+            var results = coroutineScope {
                 hits.map { hit ->
                     async {
                         val rawLyrics = smartLyricsMatcher.fetchLyrics(hit) ?: return@async null
@@ -672,6 +739,13 @@ class LyricsRepositoryImpl @Inject constructor(
                         LyricsSearchResult(hit, parsedLyrics, rawLyrics)
                     }
                 }.awaitAll().filterNotNull()
+            }
+
+            if (results.isEmpty()) {
+                val aiResults = aiLyricsRescue(song)
+                if (aiResults.isNotEmpty()) {
+                    results = aiResults
+                }
             }
 
             val query = "${song.title} ${song.displayArtist}".trim()
@@ -697,7 +771,7 @@ class LyricsRepositoryImpl @Inject constructor(
 
             val hits = smartLyricsMatcher.search(localTrack, candidates)
 
-            val results = coroutineScope {
+            var results = coroutineScope {
                 hits.map { hit ->
                     async {
                         val rawLyrics = smartLyricsMatcher.fetchLyrics(hit) ?: return@async null
@@ -707,6 +781,14 @@ class LyricsRepositoryImpl @Inject constructor(
                         LyricsSearchResult(hit, parsed, rawLyrics)
                     }
                 }.awaitAll().filterNotNull()
+            }
+
+            if (results.isEmpty()) {
+                val dummySong = Song.emptySong().copy(title = cleanTitle, artist = cleanArtist.orEmpty())
+                val aiResults = aiLyricsRescue(dummySong)
+                if (aiResults.isNotEmpty()) {
+                    results = aiResults
+                }
             }
 
             if (results.isEmpty()) {
