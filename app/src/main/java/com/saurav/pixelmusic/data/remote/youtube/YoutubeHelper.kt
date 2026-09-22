@@ -59,10 +59,10 @@ import com.saurav.pixelmusic.utils.PixelHttpLoggingInterceptor
 object YoutubeHelper {
     val client = OkHttpClient.Builder()
     .connectionPool(okhttp3.ConnectionPool(15, 5, java.util.concurrent.TimeUnit.MINUTES))
-    .connectTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
-    .readTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
-    .writeTimeout(3, java.util.concurrent.TimeUnit.SECONDS)
-    .callTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
+    .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+    .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+    .writeTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+    .callTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
     .addInterceptor(PixelHttpLoggingInterceptor("stream") { url ->
         !url.contains("ytimg.com") && !url.contains("ggpht.com")
     })

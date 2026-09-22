@@ -130,7 +130,7 @@ object YoutubeRequestHelper {
             if (!response.isSuccessful) {
                 throw IOException("HTTP ${response.code}: ${response.message}")
             }
-            return response.body?.string().orEmpty()
+            return response.body.string()
         }
     }
 }

@@ -188,4 +188,7 @@
 -dontwarn okio.**
 -keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
 
+# Suppress R8 missing service class warnings for ScriptEngineFactory
+-dontwarn javax.script.**
+
 

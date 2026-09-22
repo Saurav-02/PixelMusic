@@ -21,27 +21,75 @@ import com.saurav.pixelmusic.data.model.Song
 import com.saurav.pixelmusic.data.remote.youtube.YoutubeHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.images.StandardArtwork
 import java.io.File
 import java.io.FileOutputStream
+import java.io.RandomAccessFile
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.ByteBuffer
 import java.util.Locale
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 object SongDownloader {
 
     private const val CHANNEL_ID = "pixelmusic_song_download_channel"
-    private const val CHUNK_SIZE = 5 * 1024 * 1024L // 5MB chunks
+    private const val CHUNK_SIZE = 2 * 1024 * 1024L // 2MB chunks for faster throughput and smooth progress
+
+    private enum class NetworkProvider {
+        OKHTTP_PRIMARY,
+        HTTP_URL_CONNECTION,
+        OKHTTP_SECONDARY
+    }
+
+    private data class DownloadChunk(
+        val index: Int,
+        val startByte: Long,
+        val endByte: Long
+    )
+
+    private val downloadOkHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .callTimeout(0, TimeUnit.SECONDS) // No call timeout for file downloads
+            .retryOnConnectionFailure(true)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .connectionPool(okhttp3.ConnectionPool(10, 5, TimeUnit.MINUTES))
+            .build()
+    }
+
+    private val secondaryOkHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .callTimeout(0, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .connectionPool(okhttp3.ConnectionPool(10, 5, TimeUnit.MINUTES))
+            .build()
+    }
 
     // Global state controls for Pause/Cancel from notifications
     @Volatile var isPaused = false
     @Volatile var isCancelled = false
     private var isReceiverRegistered = false
+    @Volatile private var lastNotificationUpdateTime = 0L
 
     private const val ACTION_PAUSE = "com.saurav.pixelmusic.DOWNLOAD_PAUSE"
     private const val ACTION_RESUME = "com.saurav.pixelmusic.DOWNLOAD_RESUME"
@@ -130,115 +178,201 @@ object SongDownloader {
                         val req = okhttp3.Request.Builder()
                             .url(song.albumArtUriString)
                             .build()
-                        YoutubeHelper.client.newCall(req).execute().use { resp ->
+                        downloadOkHttpClient.newCall(req).execute().use { resp ->
                             if (resp.isSuccessful) {
-                                resp.body?.byteStream()?.use { input ->
+                                resp.body.byteStream().use { input ->
                                     FileOutputStream(tempImageFile).use { output ->
                                         input.copyTo(output)
                                     }
                                 }
                             }
                         }
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) {
+                        try {
+                            val conn = URL(song.albumArtUriString).openConnection() as HttpURLConnection
+                            conn.connectTimeout = 15_000
+                            conn.readTimeout = 15_000
+                            if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                                conn.inputStream.use { input ->
+                                    FileOutputStream(tempImageFile).use { output ->
+                                        input.copyTo(output)
+                                    }
+                                }
+                            }
+                            conn.disconnect()
+                        } catch (_: Exception) {}
+                    }
                 }
             }
 
-            // Support exact byte resumption
-            var startByte = if (tempAudioFile.exists()) tempAudioFile.length() else 0L
-            var totalBytes = parseTotalBytesFromUrl(streamUrl)
-            var totalDownloaded = startByte
-            var isFinished = false
-            var lastNotificationUpdateTime = 0L
+            val totalBytes = probeTotalBytes(streamUrl)
+            val activeStreamUrl = AtomicReference(streamUrl)
+            val totalDownloaded = AtomicLong(0L)
 
-            // Use 'true' to append to file in case we paused/resumed
-            FileOutputStream(tempAudioFile, true).use { output ->
-                while (!isFinished) {
-                    if (isCancelled) throw Exception("Cancelled by user")
+            if (totalBytes > 0L) {
+                val chunks = mutableListOf<DownloadChunk>()
+                var byteOffset = 0L
+                var chunkIdx = 0
+                while (byteOffset < totalBytes) {
+                    val end = minOf(byteOffset + CHUNK_SIZE - 1, totalBytes - 1)
+                    chunks.add(DownloadChunk(chunkIdx++, byteOffset, end))
+                    byteOffset = end + 1
+                }
 
-                    // Suspend the loop gracefully if paused
-                    while (isPaused) {
-                        if (isCancelled) throw Exception("Cancelled by user")
-                        notificationBuilder.setContentText("${playlistProgress?.let { "$it - " } ?: ""}Paused")
-                        updateLiveProgress(context, notificationManager, notificationId, notificationBuilder, totalDownloaded, totalBytes, playlistProgress)
-                        delay(1000)
+                val chunkQueue = ConcurrentLinkedQueue(chunks)
+                val raf = RandomAccessFile(tempAudioFile, "rw")
+                val rafLock = Any()
+
+                try {
+                    raf.setLength(totalBytes)
+
+                    coroutineScope {
+                        val workerPrimary = launch(Dispatchers.IO) {
+                            val buffer = ByteArray(64 * 1024)
+                            while (isActive && !isCancelled) {
+                                while (isPaused) {
+                                    if (isCancelled) throw Exception("Cancelled by user")
+                                    notificationBuilder.setContentText("${playlistProgress?.let { "$it - " } ?: ""}Paused")
+                                    updateLiveProgress(context, notificationManager, notificationId, notificationBuilder, totalDownloaded.get(), totalBytes, playlistProgress)
+                                    delay(1000)
+                                }
+                                val chunk = chunkQueue.poll() ?: break
+                                downloadChunkWithRetry(
+                                    chunk = chunk,
+                                    preferredProvider = NetworkProvider.OKHTTP_PRIMARY,
+                                    activeUrlRef = activeStreamUrl,
+                                    ytSong = ytSong,
+                                    context = context,
+                                    raf = raf,
+                                    rafLock = rafLock,
+                                    buffer = buffer,
+                                    totalDownloaded = totalDownloaded,
+                                    totalBytes = totalBytes,
+                                    notificationManager = notificationManager,
+                                    notificationId = notificationId,
+                                    notificationBuilder = notificationBuilder,
+                                    playlistProgress = playlistProgress
+                                )
+                            }
+                        }
+
+                        val workerSecondary = launch(Dispatchers.IO) {
+                            val buffer = ByteArray(64 * 1024)
+                            while (isActive && !isCancelled) {
+                                while (isPaused) {
+                                    if (isCancelled) throw Exception("Cancelled by user")
+                                    delay(1000)
+                                }
+                                val chunk = chunkQueue.poll() ?: break
+                                downloadChunkWithRetry(
+                                    chunk = chunk,
+                                    preferredProvider = NetworkProvider.HTTP_URL_CONNECTION,
+                                    activeUrlRef = activeStreamUrl,
+                                    ytSong = ytSong,
+                                    context = context,
+                                    raf = raf,
+                                    rafLock = rafLock,
+                                    buffer = buffer,
+                                    totalDownloaded = totalDownloaded,
+                                    totalBytes = totalBytes,
+                                    notificationManager = notificationManager,
+                                    notificationId = notificationId,
+                                    notificationBuilder = notificationBuilder,
+                                    playlistProgress = playlistProgress
+                                )
+                            }
+                        }
+
+                        workerPrimary.join()
+                        workerSecondary.join()
                     }
+                } finally {
+                    try { raf.close() } catch (_: Exception) {}
+                }
+            } else {
+                // Fallback: sequential chunk streaming with alternating providers
+                var startByte = 0L
+                var isFinished = false
+                var chunkIdx = 0
+                val buffer = ByteArray(64 * 1024)
 
-                    val endByte = startByte + CHUNK_SIZE - 1
-                    val chunkRequest = okhttp3.Request.Builder()
-                        .url(streamUrl)
-                        .header("Range", "bytes=$startByte-$endByte")
-                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                        .header("Origin", "https://music.youtube.com")
-                        .header("Referer", "https://music.youtube.com/")
-                        .build()
-
-                    try {
-                        val response = YoutubeHelper.client.newCall(chunkRequest).execute()
-                        val responseCode = response.code
-                        if (!response.isSuccessful && responseCode != 206) {
-                            response.close()
-                            throw Exception("Chunk download failed. HTTP Code: $responseCode")
+                FileOutputStream(tempAudioFile, true).use { output ->
+                    while (!isFinished) {
+                        if (isCancelled) throw Exception("Cancelled by user")
+                        while (isPaused) {
+                            if (isCancelled) throw Exception("Cancelled by user")
+                            notificationBuilder.setContentText("${playlistProgress?.let { "$it - " } ?: ""}Paused")
+                            updateLiveProgress(context, notificationManager, notificationId, notificationBuilder, totalDownloaded.get(), totalBytes, playlistProgress)
+                            delay(1000)
                         }
 
-                        if (totalBytes <= 0) {
-                            val contentRange = response.header("Content-Range")
-                            if (contentRange != null && contentRange.contains("/")) {
-                                totalBytes = contentRange.substringAfterLast("/").trim().toLongOrNull() ?: -1L
-                            }
-                            if (totalBytes <= 0 && responseCode == 200) {
-                                totalBytes = response.body?.contentLength() ?: -1L
-                            }
+                        val endByte = startByte + CHUNK_SIZE - 1
+                        val provider = when (chunkIdx % 3) {
+                            0 -> NetworkProvider.OKHTTP_PRIMARY
+                            1 -> NetworkProvider.HTTP_URL_CONNECTION
+                            else -> NetworkProvider.OKHTTP_SECONDARY
                         }
 
-                        val inputStream = response.body?.byteStream()
-                            ?: throw Exception("Empty response body from stream")
-                        val buffer = ByteArray(64 * 1024)
-                        var bytesRead: Int
                         var chunkReadTotal = 0L
+                        val providersToTry = when (provider) {
+                            NetworkProvider.OKHTTP_PRIMARY -> listOf(NetworkProvider.OKHTTP_PRIMARY, NetworkProvider.HTTP_URL_CONNECTION, NetworkProvider.OKHTTP_SECONDARY)
+                            NetworkProvider.HTTP_URL_CONNECTION -> listOf(NetworkProvider.HTTP_URL_CONNECTION, NetworkProvider.OKHTTP_PRIMARY, NetworkProvider.OKHTTP_SECONDARY)
+                            NetworkProvider.OKHTTP_SECONDARY -> listOf(NetworkProvider.OKHTTP_SECONDARY, NetworkProvider.HTTP_URL_CONNECTION, NetworkProvider.OKHTTP_PRIMARY)
+                        }
 
-                        inputStream.use { stream ->
-                            while (stream.read(buffer).also { bytesRead = it } != -1) {
-                                if (isCancelled || isPaused) {
-                                    break
+                        var downloadedThisChunk = false
+                        for (p in providersToTry) {
+                            try {
+                                when (p) {
+                                    NetworkProvider.OKHTTP_PRIMARY -> {
+                                        downloadRangeOkHttp(downloadOkHttpClient, activeStreamUrl.get(), startByte, endByte, buffer) { data, len ->
+                                            output.write(data, 0, len)
+                                            chunkReadTotal += len
+                                            val d = totalDownloaded.addAndGet(len.toLong())
+                                            startByte += len
+                                            maybeUpdateNotification(context, notificationManager, notificationId, notificationBuilder, d, totalBytes, playlistProgress)
+                                        }
+                                    }
+                                    NetworkProvider.HTTP_URL_CONNECTION -> {
+                                        downloadRangeHttpUrlConnection(activeStreamUrl.get(), startByte, endByte, buffer) { data, len ->
+                                            output.write(data, 0, len)
+                                            chunkReadTotal += len
+                                            val d = totalDownloaded.addAndGet(len.toLong())
+                                            startByte += len
+                                            maybeUpdateNotification(context, notificationManager, notificationId, notificationBuilder, d, totalBytes, playlistProgress)
+                                        }
+                                    }
+                                    NetworkProvider.OKHTTP_SECONDARY -> {
+                                        downloadRangeOkHttp(secondaryOkHttpClient, activeStreamUrl.get(), startByte, endByte, buffer) { data, len ->
+                                            output.write(data, 0, len)
+                                            chunkReadTotal += len
+                                            val d = totalDownloaded.addAndGet(len.toLong())
+                                            startByte += len
+                                            maybeUpdateNotification(context, notificationManager, notificationId, notificationBuilder, d, totalBytes, playlistProgress)
+                                        }
+                                    }
                                 }
+                                downloadedThisChunk = true
+                                break
+                            } catch (_: Exception) {}
+                        }
 
-                                output.write(buffer, 0, bytesRead)
-                                chunkReadTotal += bytesRead
-                                totalDownloaded += bytesRead
-                                startByte += bytesRead
-
-                                val now = System.currentTimeMillis()
-                                if (now - lastNotificationUpdateTime > 500L) {
-                                    lastNotificationUpdateTime = now
-                                    updateLiveProgress(
-                                        context,
-                                        notificationManager,
-                                        notificationId,
-                                        notificationBuilder,
-                                        totalDownloaded,
-                                        totalBytes,
-                                        playlistProgress
-                                    )
-                                }
-                            }
+                        if (!downloadedThisChunk) {
+                            throw java.io.IOException("Failed to download chunk at offset $startByte across all providers")
                         }
 
                         if (!isCancelled && !isPaused && chunkReadTotal < CHUNK_SIZE) {
                             isFinished = true
                         }
-                    } catch (e: Exception) {
-                        if (isCancelled || isPaused) {
-                            // Suppress exceptions when manually interrupted
-                        } else {
-                            throw e
-                        }
+                        chunkIdx++
                     }
+                    output.flush()
                 }
-                output.flush()
             }
 
             if (isCancelled) throw Exception("Cancelled by user")
 
+            val finalDownloadedBytes = totalDownloaded.get()
             notificationBuilder
                 .setContentText("Processing audio file...")
                 .setProgress(100, 100, true)
@@ -369,7 +503,7 @@ try {
 
             notificationBuilder
                 .setContentTitle("Downloaded: ${song.title}")
-                .setContentText("Tap to play offline (${formatMb(totalDownloaded)})")
+                .setContentText("Tap to play offline (${formatMb(finalDownloadedBytes)})")
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setProgress(0, 0, false)
                 .setOngoing(false)
@@ -475,6 +609,272 @@ try {
             if (clen.isNotEmpty()) clen.toLongOrNull() ?: -1L else -1L
         } catch (_: Exception) {
             -1L
+        }
+    }
+
+    private fun probeTotalBytes(url: String): Long {
+        var total = parseTotalBytesFromUrl(url)
+        if (total > 0L) return total
+
+        try {
+            val req = okhttp3.Request.Builder()
+                .url(url)
+                .header("Range", "bytes=0-0")
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .header("Origin", "https://music.youtube.com")
+                .header("Referer", "https://music.youtube.com/")
+                .build()
+            downloadOkHttpClient.newCall(req).execute().use { resp ->
+                val range = resp.header("Content-Range")
+                if (range != null && range.contains("/")) {
+                    total = range.substringAfterLast("/").trim().toLongOrNull() ?: -1L
+                }
+                if (total <= 0L && resp.isSuccessful) {
+                    total = resp.body.contentLength()
+                }
+            }
+        } catch (_: Exception) {}
+
+        if (total > 0L) return total
+
+        try {
+            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 15_000
+                readTimeout = 15_000
+                requestMethod = "GET"
+                setRequestProperty("Range", "bytes=0-0")
+                setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                setRequestProperty("Origin", "https://music.youtube.com")
+                setRequestProperty("Referer", "https://music.youtube.com/")
+            }
+            val range = conn.getHeaderField("Content-Range")
+            if (range != null && range.contains("/")) {
+                total = range.substringAfterLast("/").trim().toLongOrNull() ?: -1L
+            }
+            conn.disconnect()
+        } catch (_: Exception) {}
+
+        return total
+    }
+
+    private fun downloadRangeOkHttp(
+        client: OkHttpClient,
+        url: String,
+        startByte: Long,
+        endByte: Long,
+        buffer: ByteArray,
+        onBytesRead: (ByteArray, Int) -> Unit
+    ): Long {
+        val request = okhttp3.Request.Builder()
+            .url(url)
+            .header("Range", "bytes=$startByte-$endByte")
+            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            .header("Origin", "https://music.youtube.com")
+            .header("Referer", "https://music.youtube.com/")
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            val code = response.code
+            if (!response.isSuccessful && code != 206) {
+                throw java.io.IOException("OkHttp chunk download failed. HTTP Code: $code")
+            }
+            val body = response.body
+            val inputStream = body.byteStream()
+            var totalRead = 0L
+            var bytesRead: Int
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                if (isCancelled || isPaused) break
+                onBytesRead(buffer, bytesRead)
+                totalRead += bytesRead
+            }
+            return totalRead
+        }
+    }
+
+    private fun downloadRangeHttpUrlConnection(
+        url: String,
+        startByte: Long,
+        endByte: Long,
+        buffer: ByteArray,
+        onBytesRead: (ByteArray, Int) -> Unit
+    ): Long {
+        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 30_000
+            readTimeout = 60_000
+            requestMethod = "GET"
+            setRequestProperty("Range", "bytes=$startByte-$endByte")
+            setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            setRequestProperty("Origin", "https://music.youtube.com")
+            setRequestProperty("Referer", "https://music.youtube.com/")
+            instanceFollowRedirects = true
+        }
+
+        try {
+            val code = connection.responseCode
+            if (code != HttpURLConnection.HTTP_OK && code != HttpURLConnection.HTTP_PARTIAL) {
+                throw java.io.IOException("HttpURLConnection chunk failed. HTTP Code: $code")
+            }
+            val inputStream = connection.inputStream
+            var totalRead = 0L
+            var bytesRead: Int
+            inputStream.use { stream ->
+                while (stream.read(buffer).also { bytesRead = it } != -1) {
+                    if (isCancelled || isPaused) break
+                    onBytesRead(buffer, bytesRead)
+                    totalRead += bytesRead
+                }
+            }
+            return totalRead
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private suspend fun downloadChunkWithRetry(
+        chunk: DownloadChunk,
+        preferredProvider: NetworkProvider,
+        activeUrlRef: AtomicReference<String>,
+        ytSong: com.saurav.pixelmusic.data.model.youtube.Song,
+        context: Context,
+        raf: RandomAccessFile,
+        rafLock: Any,
+        buffer: ByteArray,
+        totalDownloaded: AtomicLong,
+        totalBytes: Long,
+        notificationManager: NotificationManager,
+        notificationId: Int,
+        notificationBuilder: NotificationCompat.Builder,
+        playlistProgress: String?
+    ) {
+        val maxRetries = 3
+        var attempt = 0
+        var success = false
+        var lastErr: Exception? = null
+
+        val providersToTry = when (preferredProvider) {
+            NetworkProvider.OKHTTP_PRIMARY -> listOf(
+                NetworkProvider.OKHTTP_PRIMARY,
+                NetworkProvider.HTTP_URL_CONNECTION,
+                NetworkProvider.OKHTTP_SECONDARY
+            )
+            NetworkProvider.HTTP_URL_CONNECTION -> listOf(
+                NetworkProvider.HTTP_URL_CONNECTION,
+                NetworkProvider.OKHTTP_PRIMARY,
+                NetworkProvider.OKHTTP_SECONDARY
+            )
+            NetworkProvider.OKHTTP_SECONDARY -> listOf(
+                NetworkProvider.OKHTTP_SECONDARY,
+                NetworkProvider.HTTP_URL_CONNECTION,
+                NetworkProvider.OKHTTP_PRIMARY
+            )
+        }
+
+        while (attempt < maxRetries && !success) {
+            if (isCancelled) throw Exception("Cancelled by user")
+            val provider = providersToTry[attempt % providersToTry.size]
+            val currentUrl = activeUrlRef.get()
+            var chunkBytesWritten = 0L
+
+            try {
+                when (provider) {
+                    NetworkProvider.OKHTTP_PRIMARY -> {
+                        downloadRangeOkHttp(
+                            client = downloadOkHttpClient,
+                            url = currentUrl,
+                            startByte = chunk.startByte,
+                            endByte = chunk.endByte,
+                            buffer = buffer
+                        ) { data, len ->
+                            synchronized(rafLock) {
+                                raf.seek(chunk.startByte + chunkBytesWritten)
+                                raf.write(data, 0, len)
+                            }
+                            chunkBytesWritten += len
+                            val downloadedSoFar = totalDownloaded.addAndGet(len.toLong())
+                            maybeUpdateNotification(
+                                context, notificationManager, notificationId,
+                                notificationBuilder, downloadedSoFar, totalBytes, playlistProgress
+                            )
+                        }
+                    }
+                    NetworkProvider.HTTP_URL_CONNECTION -> {
+                        downloadRangeHttpUrlConnection(
+                            url = currentUrl,
+                            startByte = chunk.startByte,
+                            endByte = chunk.endByte,
+                            buffer = buffer
+                        ) { data, len ->
+                            synchronized(rafLock) {
+                                raf.seek(chunk.startByte + chunkBytesWritten)
+                                raf.write(data, 0, len)
+                            }
+                            chunkBytesWritten += len
+                            val downloadedSoFar = totalDownloaded.addAndGet(len.toLong())
+                            maybeUpdateNotification(
+                                context, notificationManager, notificationId,
+                                notificationBuilder, downloadedSoFar, totalBytes, playlistProgress
+                            )
+                        }
+                    }
+                    NetworkProvider.OKHTTP_SECONDARY -> {
+                        downloadRangeOkHttp(
+                            client = secondaryOkHttpClient,
+                            url = currentUrl,
+                            startByte = chunk.startByte,
+                            endByte = chunk.endByte,
+                            buffer = buffer
+                        ) { data, len ->
+                            synchronized(rafLock) {
+                                raf.seek(chunk.startByte + chunkBytesWritten)
+                                raf.write(data, 0, len)
+                            }
+                            chunkBytesWritten += len
+                            val downloadedSoFar = totalDownloaded.addAndGet(len.toLong())
+                            maybeUpdateNotification(
+                                context, notificationManager, notificationId,
+                                notificationBuilder, downloadedSoFar, totalBytes, playlistProgress
+                            )
+                        }
+                    }
+                }
+                success = true
+            } catch (e: Exception) {
+                if (isCancelled) throw e
+                lastErr = e
+                if (chunkBytesWritten > 0L) {
+                    totalDownloaded.addAndGet(-chunkBytesWritten)
+                }
+                if (e.message?.contains("403") == true || e.message?.contains("410") == true) {
+                    try {
+                        val freshUrl = YoutubeHelper.getDownloadUrl(context, ytSong)
+                        if (freshUrl.isNotBlank()) {
+                            activeUrlRef.set(freshUrl)
+                        }
+                    } catch (_: Exception) {}
+                }
+                attempt++
+                delay(300L * attempt)
+            }
+        }
+
+        if (!success) {
+            throw lastErr ?: java.io.IOException("Failed to download chunk ${chunk.index} after $maxRetries attempts across providers")
+        }
+    }
+
+    private fun maybeUpdateNotification(
+        context: Context,
+        notificationManager: NotificationManager,
+        notificationId: Int,
+        builder: NotificationCompat.Builder,
+        currentBytes: Long,
+        totalBytes: Long,
+        playlistProgress: String?
+    ) {
+        val now = System.currentTimeMillis()
+        if (now - lastNotificationUpdateTime > 400L) {
+            lastNotificationUpdateTime = now
+            updateLiveProgress(context, notificationManager, notificationId, builder, currentBytes, totalBytes, playlistProgress)
         }
     }
 
