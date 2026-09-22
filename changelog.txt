@@ -6,7 +6,6 @@ Before updating, please take a full backup of your data:
 2. Go to **Accounts** -> **Account management** -> **Copy cookies** for faster login (or you can manually sign in).
 3. Then install the latest version, import your backup, and you're done! Enjoy ♥️
 
-![Explore Screen Preview](https://github.com/atappu805/PixelMusic/blob/main/assets/screenshot2.jpg)
 ---
 
 **Sub release 4.4.0**
@@ -14,6 +13,8 @@ Before updating, please take a full backup of your data:
 * 📶 **Adaptive Streaming Quality:** Added dynamic "Auto" streaming audio quality that automatically adjusts bitrate based on network connectivity (Wi-Fi vs Cellular).
 
 * 🤖 **AI Lyrics Rescue (Beta) & YTM Fixes:** Integrated AI-powered fallback lyrics generation when standard sources are missing. Fixed YouTube Music lyrics extraction and synced lyric parsing.
+
+![Explore Screen Preview](https://github.com/atappu805/PixelMusic/blob/main/assets/screenshot2.jpg)
 
 * 🔍 **Lyrics Matching Engine:** Overhauled lyrics matching with smart filename/title normalization (removes remix tags, feat markers, and brackets for higher match rates), resolved lyric dismiss loops, and improved async concurrency.
 
