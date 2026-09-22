@@ -43,8 +43,7 @@
 # Rules for JAudioTagger (fallback metadata reader)
 -keep class org.jaudiotagger.** { *; }
 
-# [NUEVO] Regla general para mantener metadatos de Kotlin, puede ayudar a R8
--keep class kotlin.Metadata { *; }
+
 
 # ExoPlayer FFmpeg extension
 -keep class androidx.media3.decoder.ffmpeg.** { *; }
@@ -154,7 +153,7 @@
 # PixelLogger gates its own output on the "verbose_logging_enabled" preference,
 # so the cost when the toggle is OFF is one boolean read — no formatting, no IO.
 
-# Missing classes for JSoup Re2j regex delegate and Mozilla Rhino JSON converter bean introspection
+# Missing classes for JSoup Re2j regex delegate
 -dontwarn com.google.re2j.**
 -dontwarn java.beans.**
 
@@ -189,6 +188,4 @@
 -dontwarn okio.**
 -keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
 
-# Keep YouTube models so Gson can serialize/deserialize the Explore cache in Release builds
--keep class saurav.shru.pixelmusic.innertube.models.** { *; }
--keep class saurav.shru.pixelmusic.innertube.pages.** { *; }
+
