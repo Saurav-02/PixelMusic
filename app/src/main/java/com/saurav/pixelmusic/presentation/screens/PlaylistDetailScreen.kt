@@ -1010,6 +1010,7 @@ fun PlaylistDetailScreen(
                 },
                 removeFromListTrigger = {
                     playlistViewModel.removeSongFromPlaylist(playlistId, currentSong.id)
+                    playerViewModel.sendToast(context.getString(R.string.presentation_batch_e_cd_remove_from_playlist))
                 }
             )
         }

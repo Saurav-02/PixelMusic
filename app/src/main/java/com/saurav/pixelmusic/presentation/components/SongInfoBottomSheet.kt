@@ -552,22 +552,30 @@ fun SongInfoBottomSheet(
                                                     ),
                                                     shape = CircleShape,
                                                     onClick = {
-                                                        (context as? Activity)?.let { activity ->
-                                                            onDeleteFromDevice(activity, song) { result ->
-                                                                if (result) {
-                                                                    removeFromListTrigger()
-                                                                    onDismiss()
+                                                        if (removeFromListTrigger != null) {
+                                                            removeFromListTrigger()
+                                                            onDismiss()
+                                                        } else {
+                                                            (context as? Activity)?.let { activity ->
+                                                                onDeleteFromDevice(activity, song) { result ->
+                                                                    if (result) {
+                                                                        onDismiss()
+                                                                    }
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 ) {
                                                     Icon(
-                                                        Icons.Default.DeleteForever,
-                                                        contentDescription = stringResource(R.string.delete_action)
+                                                        if (removeFromListTrigger != null) Icons.Default.RemoveCircleOutline else Icons.Default.DeleteForever,
+                                                        contentDescription = stringResource(if (removeFromListTrigger != null) R.string.presentation_batch_e_cd_remove_from_playlist else R.string.delete_action)
                                                     )
                                                     Spacer(Modifier.width(8.dp))
-                                                    Text(stringResource(R.string.delete_action))
+                                                    Text(
+                                                        stringResource(if (removeFromListTrigger != null) R.string.presentation_batch_e_cd_remove_from_playlist else R.string.delete_action),
+                                                        maxLines = 1,
+                                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                                    )
                                                 }
                                             }
                                         }

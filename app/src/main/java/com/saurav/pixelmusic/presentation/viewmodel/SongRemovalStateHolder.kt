@@ -68,34 +68,44 @@ class SongRemovalStateHolder @Inject constructor(
         libraryStateHolder.removeSong(song.id)
         
         val currentPlaylists = playlistPreferencesRepository.userPlaylistsFlow.first()
-        val playlistsContainingSong = currentPlaylists.filter { it.songIds.contains(song.id) }
+        val variants = setOf(
+            song.id,
+            song.id.removePrefix("youtube_"),
+            "youtube_${song.id.removePrefix("youtube_")}",
+            song.youtubeId ?: ""
+        ).filter { it.isNotBlank() }
+        val playlistsContainingSong = currentPlaylists.filter { it.songIds.any { id -> id in variants } }
 
-        // FIX: Safely extract the raw Video ID even if it lacks the "youtube_" prefix
+        // Safely extract the raw Video ID
         val videoId = song.youtubeId 
             ?: if (song.contentUriString.startsWith("youtube://")) song.contentUriString.substringAfter("youtube://")
             else if (song.id.startsWith("youtube_")) song.id.removePrefix("youtube_")
-            else if (song.id.toLongOrNull() == null) song.id // It's a raw string cloud ID
+            else if (song.id.toLongOrNull() == null) song.id
             else null
+
+        val cleanVideoId = videoId?.removePrefix("youtube_")
 
         // Remove from local database using unified logic
         val localId = song.id.toLongOrNull()
         if (localId != null) {
             musicRepository.deleteById(localId)
-        } else if (!videoId.isNullOrBlank()) {
-            val unifiedId = -(15_000_000_000_000L + videoId.hashCode().toLong().absoluteValue)
+        } else if (!cleanVideoId.isNullOrBlank()) {
+            val unifiedId = -(15_000_000_000_000L + cleanVideoId.hashCode().toLong().absoluteValue)
             musicRepository.deleteById(unifiedId)
         }
         
         playlistPreferencesRepository.removeSongFromAllPlaylists(song.id)
 
         // Sync deletions to remote YouTube playlists
-        if (!videoId.isNullOrBlank()) {
+        if (!cleanVideoId.isNullOrBlank()) {
             playlistsContainingSong.filter { it.source == "YOUTUBE" }.forEach { playlist ->
                 try {
                     withContext(Dispatchers.IO) {
-                        val setVideoIds = YouTube.playlistEntrySetVideoIds(playlist.id, videoId).getOrNull()
+                        val cleanPlaylistId = playlist.id.removePrefix("VL")
+                        val setVideoIds = YouTube.playlistEntrySetVideoIds(cleanPlaylistId, cleanVideoId).getOrNull()
+                            ?: YouTube.playlistEntrySetVideoIds(playlist.id, cleanVideoId).getOrNull()
                         setVideoIds?.forEach { setVideoId ->
-                            YouTube.removeFromPlaylist(playlist.id, videoId, setVideoId)
+                            YouTube.removeFromPlaylist(cleanPlaylistId, cleanVideoId, setVideoId)
                         }
                     }
                 } catch (e: Exception) {

@@ -620,9 +620,7 @@ try {
             val req = okhttp3.Request.Builder()
                 .url(url)
                 .header("Range", "bytes=0-0")
-                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                .header("Origin", "https://music.youtube.com")
-                .header("Referer", "https://music.youtube.com/")
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                 .build()
             downloadOkHttpClient.newCall(req).execute().use { resp ->
                 val range = resp.header("Content-Range")
@@ -643,9 +641,7 @@ try {
                 readTimeout = 15_000
                 requestMethod = "GET"
                 setRequestProperty("Range", "bytes=0-0")
-                setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                setRequestProperty("Origin", "https://music.youtube.com")
-                setRequestProperty("Referer", "https://music.youtube.com/")
+                setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
             }
             val range = conn.getHeaderField("Content-Range")
             if (range != null && range.contains("/")) {
@@ -668,9 +664,7 @@ try {
         val request = okhttp3.Request.Builder()
             .url(url)
             .header("Range", "bytes=$startByte-$endByte")
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-            .header("Origin", "https://music.youtube.com")
-            .header("Referer", "https://music.youtube.com/")
+            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
             .build()
 
         client.newCall(request).execute().use { response ->
@@ -703,9 +697,7 @@ try {
             readTimeout = 60_000
             requestMethod = "GET"
             setRequestProperty("Range", "bytes=$startByte-$endByte")
-            setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-            setRequestProperty("Origin", "https://music.youtube.com")
-            setRequestProperty("Referer", "https://music.youtube.com/")
+            setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
             instanceFollowRedirects = true
         }
 
@@ -846,6 +838,7 @@ try {
                 }
                 if (e.message?.contains("403") == true || e.message?.contains("410") == true) {
                     try {
+                        YoutubeHelper.invalidateStreamCache(ytSong.youtubeId)
                         val freshUrl = YoutubeHelper.getDownloadUrl(context, ytSong)
                         if (freshUrl.isNotBlank()) {
                             activeUrlRef.set(freshUrl)

@@ -1250,33 +1250,44 @@ class PlaylistViewModel @Inject constructor(
     fun removeSongFromPlaylist(playlistId: String, songIdToRemove: String) {
         if (isFolderPlaylistId(playlistId)) return
         viewModelScope.launch {
-            playlistPreferencesRepository.removeSongFromPlaylist(playlistId, songIdToRemove)
-            
+            val rawVideoId = songIdToRemove.removePrefix("youtube_")
             val song = musicRepository.getSongsByIdsOnce(listOf(songIdToRemove)).firstOrNull()
             
-            // FIX: Correctly extract the YouTube Video ID from the contentUriString or ID
-            val videoId = song?.extractYoutubeId(songIdToRemove)
+            // Correctly extract the YouTube Video ID
+            val videoId = song?.extractYoutubeId(songIdToRemove) ?: rawVideoId
+            val cleanVideoId = videoId.removePrefix("youtube_")
+            
+            playlistPreferencesRepository.removeSongFromPlaylist(playlistId, songIdToRemove)
             
             if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
-                val targets = mutableSetOf(songIdToRemove)
-                if (!videoId.isNullOrBlank() && videoId != songIdToRemove) {
+                val targets = mutableSetOf(songIdToRemove, rawVideoId, "youtube_$rawVideoId", cleanVideoId, "youtube_$cleanVideoId")
+                if (!videoId.isNullOrBlank()) {
                     targets.add(videoId)
                     targets.add("youtube_$videoId")
                 }
-                _uiState.update {
-                    it.copy(currentPlaylistSongs = it.currentPlaylistSongs.filterNot { s -> 
+                _uiState.update { state ->
+                    val filteredSongs = state.currentPlaylistSongs.filterNot { s -> 
                         s.id in targets || (s.youtubeId != null && s.youtubeId in targets)
-                    })
+                    }
+                    val updatedDetails = state.currentPlaylistDetails?.copy(
+                        songIds = state.currentPlaylistDetails.songIds.filterNot { it in targets }
+                    )
+                    state.copy(
+                        currentPlaylistDetails = updatedDetails,
+                        currentPlaylistSongs = filteredSongs
+                    )
                 }
             }
             val playlist = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
             if (playlist != null && playlist.source == "YOUTUBE") {
-                if (!videoId.isNullOrBlank()) {
+                if (cleanVideoId.isNotBlank()) {
                     try {
                         withContext(Dispatchers.IO) {
-                            val setVideoIds = YouTube.playlistEntrySetVideoIds(playlist.id, videoId).getOrNull()
+                            val cleanPlaylistId = playlist.id.removePrefix("VL")
+                            val setVideoIds = YouTube.playlistEntrySetVideoIds(cleanPlaylistId, cleanVideoId).getOrNull()
+                                ?: YouTube.playlistEntrySetVideoIds(playlist.id, cleanVideoId).getOrNull()
                             setVideoIds?.forEach { setVideoId ->
-                                YouTube.removeFromPlaylist(playlist.id, videoId, setVideoId)
+                                YouTube.removeFromPlaylist(cleanPlaylistId, cleanVideoId, setVideoId)
                             }
                         }
                     } catch (e: Exception) {

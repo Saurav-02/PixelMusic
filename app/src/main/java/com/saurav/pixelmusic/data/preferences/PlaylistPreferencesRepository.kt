@@ -389,15 +389,27 @@ class PlaylistPreferencesRepository @Inject constructor(
     suspend fun removeSongFromPlaylist(playlistId: String, songIdToRemove: String) {
         ensureMigratedIfNeeded()
         val variants = getSongIdVariants(songIdToRemove)
-        val ytPlaylist = AppDatabase.getInstance(context).playlistRepository().getPlaylistById(playlistId)
+        val rawId = variants.find { !it.startsWith("youtube_") && it.toLongOrNull() == null } ?: songIdToRemove.removePrefix("youtube_")
         
-        if (ytPlaylist != null) {
-            val rawId = variants.find { !it.startsWith("youtube_") && it.toLongOrNull() == null } ?: songIdToRemove.removePrefix("youtube_")
-            AppDatabase.getInstance(context).playlistRepository().deleteCrossRef(playlistId, rawId)
-            AppDatabase.getInstance(context).playlistRepository().deleteCrossRef(playlistId, songIdToRemove)
-        } else {
-            val existing = userPlaylistsFlow.first().find { it.id == playlistId } ?: return
-            updatePlaylist(existing.copy(songIds = existing.songIds.filterNot { it in variants }))
+        try {
+            val ytPlaylistRepo = AppDatabase.getInstance(context).playlistRepository()
+            ytPlaylistRepo.deleteCrossRef(playlistId, rawId)
+            ytPlaylistRepo.deleteCrossRef(playlistId, songIdToRemove)
+            ytPlaylistRepo.deleteCrossRef(playlistId, "youtube_$rawId")
+        } catch (_: Exception) {}
+
+        try {
+            val localSongs = localPlaylistDao.getPlaylistSongs(playlistId)
+            if (localSongs.isNotEmpty()) {
+                val remaining = localSongs.map { it.songId }.filterNot { it in variants || it == rawId || it == "youtube_$rawId" }
+                localPlaylistDao.replacePlaylistSongs(playlistId, remaining)
+            }
+        } catch (_: Exception) {}
+
+        val existing = userPlaylistsFlow.first().find { it.id == playlistId }
+        if (existing != null) {
+            val updatedSongIds = existing.songIds.filterNot { it in variants || it == rawId || it == "youtube_$rawId" }
+            updatePlaylist(existing.copy(songIds = updatedSongIds))
         }
     }
 
@@ -435,17 +447,10 @@ class PlaylistPreferencesRepository @Inject constructor(
     suspend fun removeSongFromAllPlaylists(songId: String) {
         ensureMigratedIfNeeded()
         val playlists = userPlaylistsFlow.first()
+        val variants = getSongIdVariants(songId)
         playlists.forEach { playlist ->
-            if (songId in playlist.songIds) {
-                if (playlist.source == "YOUTUBE") {
-                    removeSongFromPlaylist(playlist.id, songId)
-                } else {
-                    updatePlaylist(
-                        playlist.copy(
-                            songIds = playlist.songIds.filterNot { it == songId }
-                        )
-                    )
-                }
+            if (playlist.songIds.any { it in variants }) {
+                removeSongFromPlaylist(playlist.id, songId)
             }
         }
     }
