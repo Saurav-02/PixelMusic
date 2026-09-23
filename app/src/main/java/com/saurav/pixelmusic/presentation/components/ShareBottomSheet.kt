@@ -79,7 +79,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
 
-private const val GITHUB_LINK = "https://sauravbr.github.io/PixelMusic/"
+private const val GITHUB_LINK = "https://github.com/Saurav-02/PixelMusic"
 private const val INSTAGRAM_PACKAGE = "com.instagram.android"
 
 /**
@@ -1295,7 +1295,7 @@ private fun ShareableCard(
                     )
                 }
                 Text(
-                    text = "sauravbr.github.io",
+                    text = "github.com/Saurav-02/PixelMusic",
                     fontFamily = GoogleSansRounded,
                     fontWeight = FontWeight.Medium,
                     fontSize = 8.sp,

@@ -139,8 +139,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https"
-                      android:host="sauravbr.github.io"
-                      android:pathPrefix="/PixelMusic" />
+                      android:host="github.com"
+                      android:pathPrefix="/Saurav-02/PixelMusic" />
             </intent-filter>
             <!-- Handle Deep Links from YouTube & YT Music -->
             <intent-filter android:autoVerify="true">
