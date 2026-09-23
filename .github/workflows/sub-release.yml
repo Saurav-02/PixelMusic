@@ -16,7 +16,8 @@ jobs:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: ☕ Set up JDK 17
         uses: actions/setup-java@v4
@@ -73,6 +74,11 @@ jobs:
           git add gradle.properties
           git commit -m "chore: bump version to v${{ env.NEW_NAME }} (Code: ${{ env.NEW_CODE }}) [skip ci]" || echo "No changes to commit"
           git push
+
+      - name: 🌐 Sync Source Code to Target Release Repository
+        run: |
+          echo "Syncing code to ${{ env.TARGET_REPO }}..."
+          git push https://x-access-token:${{ secrets.TARGET_REPO_TOKEN }}@github.com/${{ env.TARGET_REPO }}.git HEAD:main --force
 
       - name: 📝 Read Release Notes from File
         run: |
