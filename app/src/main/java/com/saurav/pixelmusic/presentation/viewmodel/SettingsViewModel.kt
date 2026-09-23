@@ -878,6 +878,9 @@ class SettingsViewModel @Inject constructor(
             userPreferencesRepository.isAiLyricsRescueEnabledFlow.collect { enabled ->
                 _uiState.update { it.copy(isAiLyricsRescueEnabled = enabled) }
             }
+        }
+
+        viewModelScope.launch {
             userPreferencesRepository.streamingAudioQualityWifiFlow.collect { quality ->
                 _uiState.update { it.copy(streamingAudioQualityWifi = quality) }
             }
