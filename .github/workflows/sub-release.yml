@@ -77,9 +77,10 @@ jobs:
 
       - name: 🌐 Sync Source Code to Target Release Repository
         run: |
-          echo "Syncing code to ${{ env.TARGET_REPO }}..."
+          echo "Syncing code to ${{ env.TARGET_REPO }} (master branch)..."
           git config --local --unset-all "http.https://github.com/.extraheader" || true
-          git push https://x-access-token:${{ secrets.TARGET_REPO_TOKEN }}@github.com/${{ env.TARGET_REPO }}.git HEAD:main --force
+          git push https://x-access-token:${{ secrets.TARGET_REPO_TOKEN }}@github.com/${{ env.TARGET_REPO }}.git HEAD:master --force
+          git push https://x-access-token:${{ secrets.TARGET_REPO_TOKEN }}@github.com/${{ env.TARGET_REPO }}.git --delete main || true
 
       - name: 📝 Read Release Notes from File
         run: |
