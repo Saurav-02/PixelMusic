@@ -856,7 +856,9 @@ private val inFlightResolutions = java.util.concurrent.ConcurrentHashMap<String,
             playerB.pause()
         } catch (e: Exception) {
             resetPreparedWindowState()
-            Timber.tag("TransitionDebug").e(e, "Failed to prepare next player")
+            if (e !is kotlinx.coroutines.CancellationException) {
+                Timber.tag("TransitionDebug").e(e, "Failed to prepare next player")
+            }
         }
     }
 

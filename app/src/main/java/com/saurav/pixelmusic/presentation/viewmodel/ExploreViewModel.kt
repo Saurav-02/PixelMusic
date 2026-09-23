@@ -109,8 +109,8 @@ class ExploreViewModel @Inject constructor(
             if (cachedData.cacheVersion != ExploreCacheModel.CURRENT_CACHE_VERSION) return
 
             // Safely extract lists to prevent NullPointerExceptions
-            val safeSections = cachedData.sections.filterNotNull()
-            val safeAlbums = cachedData.albums.filterNotNull()
+            val safeSections = cachedData.sections?.filterNotNull().orEmpty()
+            val safeAlbums = cachedData.albums?.filterNotNull().orEmpty()
             
             _uiState.update { current ->
                 current.copy(
@@ -715,11 +715,11 @@ class ExploreViewModel @Inject constructor(
 
 @androidx.annotation.Keep
 data class ExploreCacheModel(
-    val sections: List<HomePage.Section>,
-    val albums: List<AlbumItem>,
-    val charts: ChartsPage?,
-    val continuation: String?,
-    val timestamp: Long,
+    val sections: List<HomePage.Section>? = null,
+    val albums: List<AlbumItem>? = null,
+    val charts: ChartsPage? = null,
+    val continuation: String? = null,
+    val timestamp: Long = 0L,
     val cacheVersion: Int = 0
 ) {
     companion object {

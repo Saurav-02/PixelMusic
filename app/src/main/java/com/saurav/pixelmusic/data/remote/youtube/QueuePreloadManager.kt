@@ -144,11 +144,12 @@ object QueuePreloadManager {
                     if (playerRef != null && i < player.mediaItemCount) player.getMediaItemAt(i) else null
                 } ?: continue
 
-                val videoId = mediaItem.mediaId
-                if (videoId.isBlank()) continue
+                val rawMediaId = mediaItem.mediaId
+                if (rawMediaId.isBlank()) continue
+                val cleanYoutubeId = rawMediaId.removePrefix("youtube_")
 
                 val song = Song(
-                    youtubeId = videoId,
+                    youtubeId = cleanYoutubeId,
                     title = mediaItem.mediaMetadata.title?.toString() ?: "",
                     artist = mediaItem.mediaMetadata.artist?.toString() ?: "",
                     thumbnailHref = mediaItem.mediaMetadata.artworkUri?.toString().orEmpty()
@@ -158,13 +159,13 @@ object QueuePreloadManager {
                 try {
                     // Safe call to the new NewPipe Extractor setup
                     streamUrl = YoutubeHelper.getSongPlayerUrl(ctx, song, allowLocal = false)
-                    printd("QueuePreloadManager: preloaded stream URL for $videoId")
+                    printd("QueuePreloadManager: preloaded stream URL for $cleanYoutubeId")
                 } catch (e: Exception) {
-                    printe("QueuePreloadManager: failed to preload stream for $videoId: ${e.message}")
+                    printe("QueuePreloadManager: failed to preload stream for $cleanYoutubeId: ${e.message}")
                 }
 
                 if (!streamUrl.isNullOrBlank() && streamUrl.startsWith("http")) {
-                    prefetchAudioBytes(ctx, videoId, streamUrl)
+                    prefetchAudioBytes(ctx, cleanYoutubeId, streamUrl)
                 }
 
                 val thumbnailUrl = song.thumbnailHref
@@ -180,10 +181,10 @@ object QueuePreloadManager {
                                 .diskCacheKey(optimizedUrl)
                                 .build()
                             coil.Coil.imageLoader(ctx).enqueue(request)
-                            printd("QueuePreloadManager: enqueued thumbnail preload for $videoId")
+                            printd("QueuePreloadManager: enqueued thumbnail preload for $cleanYoutubeId")
                         }
                     } catch (e: Exception) {
-                        printe("QueuePreloadManager: failed to preload thumbnail for $videoId: ${e.message}")
+                        printe("QueuePreloadManager: failed to preload thumbnail for $cleanYoutubeId: ${e.message}")
                     }
                 }
                 delay(500)

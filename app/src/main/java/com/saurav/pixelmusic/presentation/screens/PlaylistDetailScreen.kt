@@ -183,6 +183,7 @@ fun PlaylistDetailScreen(
     val toastAddedToQueue = stringResource(R.string.toast_added_to_queue)
     val toastPlayingNext = stringResource(R.string.toast_playing_next)
     
+    var songToRemoveFromPlaylist by remember { mutableStateOf<Song?>(null) }
     val currentPlaylist = uiState.currentPlaylistDetails
     val isFolderPlaylist = currentPlaylist?.id?.startsWith(FOLDER_PLAYLIST_PREFIX) == true
     val songsInPlaylist = uiState.currentPlaylistSongs
@@ -688,9 +689,7 @@ fun PlaylistDetailScreen(
                                         isDragging = isDragging,
                                         onRemoveClick = {
                                             if (!isFolderPlaylist) {
-                                                currentPlaylist.let {
-                                                    playlistViewModel.removeSongFromPlaylist(it.id, song.id)
-                                                }
+                                                songToRemoveFromPlaylist = song
                                             }
                                         },
                                         isFromPlaylist = true,
@@ -898,11 +897,18 @@ fun PlaylistDetailScreen(
         )
     }
     if (showDeleteConfirmation && currentPlaylist != null) {
+        val isCloud = currentPlaylist.source == "YOUTUBE"
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             title = { Text(deletePlaylistConfirmTitle) },
             text = {
-                Text(deletePlaylistConfirmBody)
+                Text(
+                    if (isCloud) {
+                        stringResource(R.string.delete_playlist_confirm_cloud_body, currentPlaylist.name)
+                    } else {
+                        deletePlaylistConfirmBody
+                    }
+                )
             },
             confirmButton = {
                 TextButton(
@@ -912,11 +918,45 @@ fun PlaylistDetailScreen(
                         showDeleteConfirmation = false
                     }
                 ) {
-                    Text(stringResource(R.string.delete_action), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(stringResource(R.string.delete_action), color = MaterialTheme.colorScheme.error, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text(stringResource(R.string.cancel), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+        )
+    }
+
+    if (songToRemoveFromPlaylist != null && currentPlaylist != null) {
+        val targetSong = songToRemoveFromPlaylist!!
+        val isCloud = currentPlaylist.source == "YOUTUBE"
+        AlertDialog(
+            onDismissRequest = { songToRemoveFromPlaylist = null },
+            title = { Text(stringResource(R.string.remove_song_from_playlist_confirm_title)) },
+            text = {
+                Text(
+                    if (isCloud) {
+                        stringResource(R.string.remove_song_from_playlist_confirm_cloud_body, targetSong.title, currentPlaylist.name)
+                    } else {
+                        stringResource(R.string.remove_song_from_playlist_confirm_body, targetSong.title, currentPlaylist.name)
+                    }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        playlistViewModel.removeSongFromPlaylist(currentPlaylist.id, targetSong.id)
+                        playerViewModel.sendToast(context.getString(R.string.presentation_batch_e_cd_remove_from_playlist))
+                        songToRemoveFromPlaylist = null
+                    }
+                ) {
+                    Text(stringResource(R.string.remove_action), color = MaterialTheme.colorScheme.error, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { songToRemoveFromPlaylist = null }) {
                     Text(stringResource(R.string.cancel), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
@@ -1009,8 +1049,7 @@ fun PlaylistDetailScreen(
                     playerViewModel.generateAiMetadata(currentSong, fields)
                 },
                 removeFromListTrigger = {
-                    playlistViewModel.removeSongFromPlaylist(playlistId, currentSong.id)
-                    playerViewModel.sendToast(context.getString(R.string.presentation_batch_e_cd_remove_from_playlist))
+                    songToRemoveFromPlaylist = currentSong
                 }
             )
         }

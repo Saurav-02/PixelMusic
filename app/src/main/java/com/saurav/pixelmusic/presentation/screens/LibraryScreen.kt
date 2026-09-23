@@ -339,6 +339,8 @@ fun LibraryScreen(
     var playlistSheetSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
     var showSinglePlaylistOptionsSheet by remember { mutableStateOf(false) }
     var selectedPlaylistForOptions by remember { mutableStateOf<com.saurav.pixelmusic.data.model.Playlist?>(null) }
+    var playlistToDelete by remember { mutableStateOf<com.saurav.pixelmusic.data.model.Playlist?>(null) }
+    var showBatchDeletePlaylistsConfirm by remember { mutableStateOf(false) }
     val selectedSongForInfo by playerViewModel.selectedSongForInfo.collectAsStateWithLifecycle()
     val tabTitles by playerViewModel.libraryTabsFlow.collectAsStateWithLifecycle()
     val currentTabId by playerViewModel.currentLibraryTabId.collectAsStateWithLifecycle()
@@ -1763,7 +1765,7 @@ onViewToggleChange = { isChecked ->
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                             .clickable {
                                 showSinglePlaylistOptionsSheet = false
-                                playlistViewModel.deletePlaylist(playlist.id)
+                                playlistToDelete = playlist
                             }
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -1863,6 +1865,66 @@ onViewToggleChange = { isChecked ->
         )
     }
 
+    if (playlistToDelete != null) {
+        val targetPlaylist = playlistToDelete!!
+        val isCloud = targetPlaylist.source == "YOUTUBE"
+        AlertDialog(
+            onDismissRequest = { playlistToDelete = null },
+            title = { Text(stringResource(R.string.presentation_batch_b_delete_playlist_confirm_title)) },
+            text = {
+                Text(
+                    if (isCloud) {
+                        stringResource(R.string.delete_playlist_confirm_cloud_body, targetPlaylist.name)
+                    } else {
+                        stringResource(R.string.presentation_batch_b_delete_playlist_confirm_body)
+                    }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        playlistViewModel.deletePlaylist(targetPlaylist.id)
+                        playlistToDelete = null
+                    }
+                ) {
+                    Text(stringResource(R.string.delete_action), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { playlistToDelete = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (showBatchDeletePlaylistsConfirm) {
+        val count = selectedPlaylistIds.size
+        AlertDialog(
+            onDismissRequest = { showBatchDeletePlaylistsConfirm = false },
+            title = { Text(stringResource(R.string.delete_batch_playlists_confirm_title)) },
+            text = {
+                Text(stringResource(R.string.delete_batch_playlists_confirm_body, count))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        playlistViewModel.deletePlaylistsInBatch(selectedPlaylistIds.toList())
+                        showBatchDeletePlaylistsConfirm = false
+                        playlistMultiSelectionState.clearSelection()
+                    }
+                ) {
+                    Text(stringResource(R.string.delete_action), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBatchDeletePlaylistsConfirm = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
     if (showPlaylistMultiSelectionSheet && selectedPlaylists.isNotEmpty()) {
         val activity = context as? android.app.Activity
 
@@ -1872,9 +1934,8 @@ onViewToggleChange = { isChecked ->
                 showPlaylistMultiSelectionSheet = false
             },
             onDeleteAll = {
-                playlistViewModel.deletePlaylistsInBatch(selectedPlaylistIds.toList())
                 showPlaylistMultiSelectionSheet = false
-                playlistMultiSelectionState.clearSelection()
+                showBatchDeletePlaylistsConfirm = true
             },
             onExportAll = {
                 playlistViewModel.exportPlaylistsAsM3u(selectedPlaylistIds.toList())

@@ -2085,7 +2085,9 @@ class MusicService : MediaLibraryService() {
         runCatching {
             userPreferencesRepository.setPlaybackQueueSnapshot(snapshot)
         }.onFailure { e ->
-            Timber.tag(TAG).w(e, "Failed to persist playback snapshot")
+            if (e !is kotlinx.coroutines.CancellationException) {
+                Timber.tag(TAG).w(e, "Failed to persist playback snapshot")
+            }
         }
     }
 

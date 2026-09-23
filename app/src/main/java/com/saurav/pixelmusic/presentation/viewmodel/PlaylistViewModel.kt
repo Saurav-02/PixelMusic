@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import java.io.OutputStreamWriter
@@ -736,14 +737,13 @@ class PlaylistViewModel @Inject constructor(
 
     fun deletePlaylist(playlistId: String) {
         if (isFolderPlaylistId(playlistId)) return
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO + NonCancellable) {
             val playlist = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
             playlistPreferencesRepository.deletePlaylist(playlistId)
             if (playlist != null && playlist.source == "YOUTUBE") {
                 try {
-                    withContext(Dispatchers.IO) {
-                        YouTube.deletePlaylist(playlist.id)
-                    }
+                    val cleanId = playlist.id.removePrefix("VL")
+                    YouTube.deletePlaylist(cleanId)
                 } catch (e: Exception) {
                     Log.e("PlaylistViewModel", "Failed to delete remote YouTube playlist", e)
                 }
@@ -1249,7 +1249,7 @@ class PlaylistViewModel @Inject constructor(
 
     fun removeSongFromPlaylist(playlistId: String, songIdToRemove: String) {
         if (isFolderPlaylistId(playlistId)) return
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO + NonCancellable) {
             val rawVideoId = songIdToRemove.removePrefix("youtube_")
             val song = musicRepository.getSongsByIdsOnce(listOf(songIdToRemove)).firstOrNull()
             
@@ -1259,36 +1259,36 @@ class PlaylistViewModel @Inject constructor(
             
             playlistPreferencesRepository.removeSongFromPlaylist(playlistId, songIdToRemove)
             
-            if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
-                val targets = mutableSetOf(songIdToRemove, rawVideoId, "youtube_$rawVideoId", cleanVideoId, "youtube_$cleanVideoId")
-                if (!videoId.isNullOrBlank()) {
-                    targets.add(videoId)
-                    targets.add("youtube_$videoId")
-                }
-                _uiState.update { state ->
-                    val filteredSongs = state.currentPlaylistSongs.filterNot { s -> 
-                        s.id in targets || (s.youtubeId != null && s.youtubeId in targets)
+            withContext(Dispatchers.Main) {
+                if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
+                    val targets = mutableSetOf(songIdToRemove, rawVideoId, "youtube_$rawVideoId", cleanVideoId, "youtube_$cleanVideoId")
+                    if (!videoId.isNullOrBlank()) {
+                        targets.add(videoId)
+                        targets.add("youtube_$videoId")
                     }
-                    val updatedDetails = state.currentPlaylistDetails?.copy(
-                        songIds = state.currentPlaylistDetails.songIds.filterNot { it in targets }
-                    )
-                    state.copy(
-                        currentPlaylistDetails = updatedDetails,
-                        currentPlaylistSongs = filteredSongs
-                    )
+                    _uiState.update { state ->
+                        val filteredSongs = state.currentPlaylistSongs.filterNot { s -> 
+                            s.id in targets || (s.youtubeId != null && s.youtubeId in targets)
+                        }
+                        val updatedDetails = state.currentPlaylistDetails?.copy(
+                            songIds = state.currentPlaylistDetails.songIds.filterNot { it in targets }
+                        )
+                        state.copy(
+                            currentPlaylistDetails = updatedDetails,
+                            currentPlaylistSongs = filteredSongs
+                        )
+                    }
                 }
             }
             val playlist = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
             if (playlist != null && playlist.source == "YOUTUBE") {
                 if (cleanVideoId.isNotBlank()) {
                     try {
-                        withContext(Dispatchers.IO) {
-                            val cleanPlaylistId = playlist.id.removePrefix("VL")
-                            val setVideoIds = YouTube.playlistEntrySetVideoIds(cleanPlaylistId, cleanVideoId).getOrNull()
-                                ?: YouTube.playlistEntrySetVideoIds(playlist.id, cleanVideoId).getOrNull()
-                            setVideoIds?.forEach { setVideoId ->
-                                YouTube.removeFromPlaylist(cleanPlaylistId, cleanVideoId, setVideoId)
-                            }
+                        val cleanPlaylistId = playlist.id.removePrefix("VL")
+                        val setVideoIds = YouTube.playlistEntrySetVideoIds(cleanPlaylistId, cleanVideoId).getOrNull()
+                            ?: YouTube.playlistEntrySetVideoIds(playlist.id, cleanVideoId).getOrNull()
+                        setVideoIds?.forEach { setVideoId ->
+                            YouTube.removeFromPlaylist(cleanPlaylistId, cleanVideoId, setVideoId)
                         }
                     } catch (e: Exception) {
                         Log.e("PlaylistViewModel", "Failed to sync song removal to YouTube playlist", e)
@@ -1587,7 +1587,7 @@ class PlaylistViewModel @Inject constructor(
     }
 
     fun deletePlaylistsInBatch(playlistIds: List<String>) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO + NonCancellable) {
             val playlists = playlistPreferencesRepository.userPlaylistsFlow.first()
             playlistIds.forEach { playlistId ->
                 if (!isFolderPlaylistId(playlistId)) {
@@ -1595,9 +1595,8 @@ class PlaylistViewModel @Inject constructor(
                     playlistPreferencesRepository.deletePlaylist(playlistId)
                     if (playlist != null && playlist.source == "YOUTUBE") {
                         try {
-                            withContext(Dispatchers.IO) {
-                                YouTube.deletePlaylist(playlist.id)
-                            }
+                            val cleanId = playlist.id.removePrefix("VL")
+                            YouTube.deletePlaylist(cleanId)
                         } catch (e: Exception) {
                             Log.e("PlaylistViewModel", "Failed to delete remote YouTube playlist $playlistId", e)
                         }
