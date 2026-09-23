@@ -215,7 +215,7 @@ object SongDownloader {
 
             val rawArtworkUrl = song.albumArtUriString
             val artworkUrl = if (!rawArtworkUrl.isNullOrBlank()) {
-                com.saurav.pixelmusic.utils.ThumbnailUrlUtils.upgradeThumbnailUrlToHighQuality(rawArtworkUrl)
+                com.saurav.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality(rawArtworkUrl)
                     ?: rawArtworkUrl
             } else null
 
@@ -529,8 +529,8 @@ try {
             if (!song.genre.isNullOrBlank()) {
                 propertyMap["GENRE"] = arrayOf(song.genre)
             }
-            if (!song.composer.isNullOrBlank()) {
-                propertyMap["COMPOSER"] = arrayOf(song.composer)
+            if (!song.albumArtist.isNullOrBlank()) {
+                propertyMap["ALBUMARTIST"] = arrayOf(song.albumArtist)
             }
             if (!resolvedLyrics.isNullOrBlank()) {
                 propertyMap["LYRICS"] = arrayOf(resolvedLyrics)
@@ -594,9 +594,6 @@ try {
                 }
                 if (!song.genre.isNullOrBlank()) {
                     put(MediaStore.Audio.Media.GENRE, song.genre)
-                }
-                if (!song.composer.isNullOrBlank()) {
-                    put(MediaStore.Audio.Media.COMPOSER, song.composer)
                 }
                 put(MediaStore.Audio.Media.IS_MUSIC, 1)
                 put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MUSIC}/PixelMusic")
