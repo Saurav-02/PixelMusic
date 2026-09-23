@@ -1050,7 +1050,8 @@ fun PlaylistDetailScreen(
                 },
                 removeFromListTrigger = {
                     songToRemoveFromPlaylist = currentSong
-                }
+                },
+                isFromPlaylist = true
             )
         }
     }

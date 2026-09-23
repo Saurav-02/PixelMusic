@@ -342,6 +342,7 @@ constructor(
         val FORCE_HIGH_QUALITY_ON_MOBILE = booleanPreferencesKey("force_high_quality_on_mobile")
         val ALBUM_ART_QUALITY_MOBILE = stringPreferencesKey("album_art_quality_mobile")
         val DOWNLOAD_AUDIO_QUALITY = stringPreferencesKey("download_audio_quality")
+        val EMBED_FULL_METADATA_ON_DOWNLOAD = booleanPreferencesKey("embed_full_metadata_on_download")
         val CACHE_LIKED_SONGS_OFFLINE = booleanPreferencesKey("cache_liked_songs_offline")
         val STORAGE_LIMIT_MB = intPreferencesKey("storage_limit_mb") // 0 = unlimited
         val FOLDER_ARTWORK_PREFERENCE = stringPreferencesKey("folder_artwork_preference")
@@ -1150,6 +1151,17 @@ constructor(
     suspend fun setDownloadAudioQuality(quality: StreamingAudioQuality) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.DOWNLOAD_AUDIO_QUALITY] = quality.name
+        }
+    }
+
+    val isEmbedFullMetadataOnDownloadFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.EMBED_FULL_METADATA_ON_DOWNLOAD] ?: true
+        }
+
+    suspend fun setEmbedFullMetadataOnDownload(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.EMBED_FULL_METADATA_ON_DOWNLOAD] = enabled
         }
     }
 

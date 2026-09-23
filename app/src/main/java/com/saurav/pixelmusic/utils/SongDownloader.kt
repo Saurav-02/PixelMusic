@@ -41,8 +41,21 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import com.saurav.pixelmusic.data.preferences.UserPreferencesRepository
+import com.saurav.pixelmusic.data.repository.LyricsRepository
+import kotlinx.coroutines.flow.first
 
 object SongDownloader {
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface DownloaderEntryPoint {
+        fun userPreferencesRepository(): UserPreferencesRepository
+        fun lyricsRepository(): LyricsRepository
+    }
 
     private const val CHANNEL_ID = "pixelmusic_song_download_channel"
     private const val CHUNK_SIZE = 2 * 1024 * 1024L // 2MB chunks for faster throughput and smooth progress
@@ -172,34 +185,97 @@ object SongDownloader {
             tempRemuxedFile = File(context.cacheDir, "clean_$fileName")
             tempImageFile = File(context.cacheDir, "temp_cover_${System.currentTimeMillis()}.jpg")
 
-            val imageDownloadJob = async(Dispatchers.IO) {
-                if (!song.albumArtUriString.isNullOrBlank()) {
-                    try {
-                        val req = okhttp3.Request.Builder()
-                            .url(song.albumArtUriString)
-                            .build()
-                        downloadOkHttpClient.newCall(req).execute().use { resp ->
-                            if (resp.isSuccessful) {
-                                resp.body.byteStream().use { input ->
-                                    FileOutputStream(tempImageFile).use { output ->
-                                        input.copyTo(output)
-                                    }
-                                }
+            val entryPoint = try {
+                dagger.hilt.android.EntryPointAccessors.fromApplication(
+                    context.applicationContext,
+                    DownloaderEntryPoint::class.java
+                )
+            } catch (_: Exception) { null }
+            val isEmbedFullMetadata = entryPoint?.userPreferencesRepository()?.isEmbedFullMetadataOnDownloadFlow?.first() ?: true
+
+            var resolvedLyrics = lyricsText
+            if (resolvedLyrics.isNullOrBlank() && isEmbedFullMetadata) {
+                try {
+                    val lyricsRepo = entryPoint?.lyricsRepository()
+                    val lyricsObj = lyricsRepo?.getLyrics(song)
+                    if (lyricsObj != null) {
+                        resolvedLyrics = if (!lyricsObj.synced.isNullOrEmpty()) {
+                            lyricsObj.synced.joinToString("\n") { line ->
+                                val minutes = line.time / 60000
+                                val seconds = (line.time % 60000) / 1000
+                                val hundredths = (line.time % 1000) / 10
+                                String.format(Locale.US, "[%02d:%02d.%02d]%s", minutes, seconds, hundredths, line.line)
                             }
+                        } else {
+                            lyricsObj.plain?.joinToString("\n")
                         }
-                    } catch (_: Exception) {
+                    }
+                } catch (_: Exception) {}
+            }
+
+            val rawArtworkUrl = song.albumArtUriString
+            val artworkUrl = if (!rawArtworkUrl.isNullOrBlank()) {
+                com.saurav.pixelmusic.utils.ThumbnailUrlUtils.upgradeThumbnailUrlToHighQuality(rawArtworkUrl)
+                    ?: rawArtworkUrl
+            } else null
+
+            val imageDownloadJob = async(Dispatchers.IO) {
+                if (!artworkUrl.isNullOrBlank()) {
+                    val providers = listOf("OKHTTP", "HTTP_URL_CONNECTION", "SECONDARY_OKHTTP")
+                    for (prov in providers) {
                         try {
-                            val conn = URL(song.albumArtUriString).openConnection() as HttpURLConnection
-                            conn.connectTimeout = 15_000
-                            conn.readTimeout = 15_000
-                            if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-                                conn.inputStream.use { input ->
-                                    FileOutputStream(tempImageFile).use { output ->
-                                        input.copyTo(output)
+                            when (prov) {
+                                "OKHTTP" -> {
+                                    val req = okhttp3.Request.Builder()
+                                        .url(artworkUrl)
+                                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                                        .build()
+                                    downloadOkHttpClient.newCall(req).execute().use { resp ->
+                                        if (resp.isSuccessful) {
+                                            resp.body.byteStream().use { input ->
+                                                FileOutputStream(tempImageFile).use { output ->
+                                                    input.copyTo(output)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                "HTTP_URL_CONNECTION" -> {
+                                    val conn = URL(artworkUrl).openConnection() as HttpURLConnection
+                                    conn.connectTimeout = 15_000
+                                    conn.readTimeout = 15_000
+                                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                                    try {
+                                        if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                                            conn.inputStream.use { input ->
+                                                FileOutputStream(tempImageFile).use { output ->
+                                                    input.copyTo(output)
+                                                }
+                                            }
+                                        }
+                                    } finally {
+                                        conn.disconnect()
+                                    }
+                                }
+                                "SECONDARY_OKHTTP" -> {
+                                    val req = okhttp3.Request.Builder()
+                                        .url(artworkUrl)
+                                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                                        .build()
+                                    secondaryOkHttpClient.newCall(req).execute().use { resp ->
+                                        if (resp.isSuccessful) {
+                                            resp.body.byteStream().use { input ->
+                                                FileOutputStream(tempImageFile).use { output ->
+                                                    input.copyTo(output)
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
-                            conn.disconnect()
+                            if (tempImageFile.exists() && tempImageFile.length() > 0) {
+                                break
+                            }
                         } catch (_: Exception) {}
                     }
                 }
@@ -439,8 +515,31 @@ try {
         if (!song.album.isNullOrBlank()) {
             propertyMap["ALBUM"] = arrayOf(song.album)
         }
-        if (!lyricsText.isNullOrBlank()) {
-            propertyMap["LYRICS"] = arrayOf(lyricsText)
+        if (isEmbedFullMetadata) {
+            if (song.displayArtist.isNotBlank()) {
+                propertyMap["ALBUMARTIST"] = arrayOf(song.displayArtist)
+            }
+            if (song.year > 0) {
+                propertyMap["DATE"] = arrayOf(song.year.toString())
+                propertyMap["YEAR"] = arrayOf(song.year.toString())
+            }
+            if (song.trackNumber > 0) {
+                propertyMap["TRACKNUMBER"] = arrayOf(song.trackNumber.toString())
+            }
+            if (!song.genre.isNullOrBlank()) {
+                propertyMap["GENRE"] = arrayOf(song.genre)
+            }
+            if (!song.composer.isNullOrBlank()) {
+                propertyMap["COMPOSER"] = arrayOf(song.composer)
+            }
+            if (!resolvedLyrics.isNullOrBlank()) {
+                propertyMap["LYRICS"] = arrayOf(resolvedLyrics)
+            }
+            propertyMap["COMMENT"] = arrayOf("Downloaded via PixelMusic")
+        } else {
+            if (!lyricsText.isNullOrBlank()) {
+                propertyMap["LYRICS"] = arrayOf(lyricsText)
+            }
         }
 
         com.kyant.taglib.TagLib.savePropertyMap(fd.dup().detachFd(), propertyMap)
@@ -457,8 +556,26 @@ try {
     }
 } catch (e: Exception) {
     e.printStackTrace()
-    // If TagLib fails, the download won't crash. 
-    // MediaStore will still receive the metadata below this block.
+    // Secondary tagger fallback: JAudioTagger
+    try {
+        val audioFile = org.jaudiotagger.audio.AudioFileIO.read(tempRemuxedFile)
+        val tag = audioFile.tagOrCreateAndSetDefault
+        tag.setField(org.jaudiotagger.tag.FieldKey.TITLE, song.title)
+        tag.setField(org.jaudiotagger.tag.FieldKey.ARTIST, song.displayArtist)
+        if (!song.album.isNullOrBlank()) {
+            tag.setField(org.jaudiotagger.tag.FieldKey.ALBUM, song.album)
+        }
+        if (isEmbedFullMetadata) {
+            if (song.year > 0) tag.setField(org.jaudiotagger.tag.FieldKey.YEAR, song.year.toString())
+            if (!song.genre.isNullOrBlank()) tag.setField(org.jaudiotagger.tag.FieldKey.GENRE, song.genre)
+            if (!resolvedLyrics.isNullOrBlank()) tag.setField(org.jaudiotagger.tag.FieldKey.LYRICS, resolvedLyrics)
+        }
+        if (tempImageFile.exists() && tempImageFile.length() > 0) {
+            val artwork = org.jaudiotagger.tag.images.StandardArtwork.createArtworkFromFile(tempImageFile)
+            tag.setField(artwork)
+        }
+        audioFile.commit()
+    } catch (_: Exception) {}
 }
             
             val contentValues = ContentValues().apply {
@@ -468,6 +585,18 @@ try {
                 put(MediaStore.Audio.Media.ARTIST, song.displayArtist)
                 if (!song.album.isNullOrBlank()) {
                     put(MediaStore.Audio.Media.ALBUM, song.album)
+                }
+                if (song.year > 0) {
+                    put(MediaStore.Audio.Media.YEAR, song.year)
+                }
+                if (song.trackNumber > 0) {
+                    put(MediaStore.Audio.Media.TRACK, song.trackNumber)
+                }
+                if (!song.genre.isNullOrBlank()) {
+                    put(MediaStore.Audio.Media.GENRE, song.genre)
+                }
+                if (!song.composer.isNullOrBlank()) {
+                    put(MediaStore.Audio.Media.COMPOSER, song.composer)
                 }
                 put(MediaStore.Audio.Media.IS_MUSIC, 1)
                 put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MUSIC}/PixelMusic")

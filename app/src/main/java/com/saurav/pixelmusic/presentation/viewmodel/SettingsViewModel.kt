@@ -135,6 +135,7 @@ data class SettingsUiState(
     val streamingAudioQualityWifi: StreamingAudioQuality = StreamingAudioQuality.AUTO,
     val streamingAudioQualityMobile: StreamingAudioQuality = StreamingAudioQuality.AUTO,
     val downloadAudioQuality: StreamingAudioQuality = StreamingAudioQuality.HIGH,
+    val embedFullMetadataOnDownload: Boolean = true,
     val forceHighQualityOnMobile: Boolean = false,
     val albumArtQualityMobile: AlbumArtQuality = AlbumArtQuality.LOW,
     val cacheLikedSongsOffline: Boolean = false,
@@ -895,6 +896,12 @@ class SettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            userPreferencesRepository.isEmbedFullMetadataOnDownloadFlow.collect { enabled ->
+                _uiState.update { it.copy(embedFullMetadataOnDownload = enabled) }
+            }
+        }
+
+        viewModelScope.launch {
             userPreferencesRepository.forceHighQualityOnMobileFlow.collect { enabled ->
                 _uiState.update { it.copy(forceHighQualityOnMobile = enabled) }
             }
@@ -1572,6 +1579,12 @@ class SettingsViewModel @Inject constructor(
     fun setDownloadAudioQuality(quality: StreamingAudioQuality) {
         viewModelScope.launch {
             userPreferencesRepository.setDownloadAudioQuality(quality)
+        }
+    }
+
+    fun setEmbedFullMetadataOnDownload(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setEmbedFullMetadataOnDownload(enabled)
         }
     }
 

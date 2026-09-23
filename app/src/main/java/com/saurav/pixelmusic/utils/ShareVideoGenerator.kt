@@ -359,7 +359,9 @@ object ShareVideoGenerator {
                     .setRemoveVideo(true)
                     .build()
 
+                @Suppress("DEPRECATION")
                 val videoSequence = EditedMediaItemSequence.Builder(listOf(imageMediaItem)).build()
+                @Suppress("DEPRECATION")
                 val audioSequence = EditedMediaItemSequence.Builder(listOf(audioMediaItem)).build()
                 val composition = Composition.Builder(listOf(videoSequence, audioSequence)).build()
 

@@ -785,6 +785,15 @@ fun SettingsCategoryScreen(
                                             Icon(Icons.Rounded.Download, null, tint = MaterialTheme.colorScheme.secondary)
                                         }
                                     )
+                                    SwitchSettingItem(
+                                        title = "Embed Rich Metadata & Lyrics",
+                                        subtitle = "Embed full song tags, high-resolution artwork, and synchronized lyrics directly into downloaded files (increases file size)",
+                                        checked = uiState.embedFullMetadataOnDownload,
+                                        onCheckedChange = { settingsViewModel.setEmbedFullMetadataOnDownload(it) },
+                                        leadingIcon = {
+                                            Icon(painterResource(R.drawable.rounded_lyrics_24), null, tint = MaterialTheme.colorScheme.secondary)
+                                        }
+                                    )
                                     SliderSettingsItem(
                                         label = stringResource(R.string.setcat_music_storage_limit_desc),
                                         value = storageLimitDraft,

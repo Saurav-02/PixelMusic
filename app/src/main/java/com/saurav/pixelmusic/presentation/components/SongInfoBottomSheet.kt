@@ -127,6 +127,7 @@ fun SongInfoBottomSheet(
     ) -> Unit,
     generateAiMetadata: suspend (List<String>) -> Result<SongMetadata>,
     removeFromListTrigger: () -> Unit,
+    isFromPlaylist: Boolean = false,
     isGeneratingMetadata: Boolean = false,
     aiMetadataSuccess: Boolean = false,
     aiError: String? = null,
@@ -552,7 +553,7 @@ fun SongInfoBottomSheet(
                                                     ),
                                                     shape = CircleShape,
                                                     onClick = {
-                                                        if (removeFromListTrigger != null) {
+                                                        if (isFromPlaylist) {
                                                             removeFromListTrigger()
                                                             onDismiss()
                                                         } else {
@@ -568,11 +569,11 @@ fun SongInfoBottomSheet(
                                                 ) {
                                                     Icon(
                                                         Icons.Default.DeleteForever,
-                                                        contentDescription = stringResource(if (removeFromListTrigger != null) R.string.presentation_batch_e_cd_remove_from_playlist else R.string.delete_action)
+                                                        contentDescription = stringResource(if (isFromPlaylist) R.string.presentation_batch_e_cd_remove_from_playlist else R.string.delete_action)
                                                     )
                                                     Spacer(Modifier.width(8.dp))
                                                     Text(
-                                                        stringResource(if (removeFromListTrigger != null) R.string.presentation_batch_e_cd_remove_from_playlist else R.string.delete_action),
+                                                        stringResource(if (isFromPlaylist) R.string.presentation_batch_e_cd_remove_from_playlist else R.string.delete_action),
                                                         maxLines = 1,
                                                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                                     )
