@@ -1,7 +1,7 @@
 # 🎵 PixelMusic
 
 <p align="center">
-  <img src="app/src/main/res/drawable/pixelmusic_base_monochrome.xml" width="96" height="96" alt="PixelMusic Logo" />
+  <img src="app/src/main/res/drawable/ic_launcher_custom_fg.png" width="500" height="500" alt="PixelMusic Logo" />
 </p>
 
 <p align="center">
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/atappu805/PixelMusic/releases"><img src="https://img.shields.io/github/v/release/atappu805/PixelMusic?color=blue&label=Latest%20Release&style=flat-square" alt="Release"></a>
+  <a href="https://github.com/Saurav-02/PixelMusic/releases"><img src="https://img.shields.io/github/v/release/Saurav-02/PixelMusic?color=blue&label=Latest%20Release&style=flat-square" alt="Release"></a>
   <a href="https://developer.android.com/about/versions/11"><img src="https://img.shields.io/badge/Android-11.0%2B%20(API%2030%2B)-green?style=flat-square" alt="Android Version"></a>
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-100%25-purple?style=flat-square" alt="Kotlin"></a>
   <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/UI-Jetpack%20Compose%20%7C%20Material%203-blueviolet?style=flat-square" alt="Jetpack Compose"></a>
@@ -121,7 +121,7 @@
 - Android 11.0 (API Level 30) or higher.
 
 ### Installation
-1. Head over to the **[Releases](https://github.com/atappu805/PixelMusic/releases)** page.
+1. Head over to the **[Releases](https://github.com/Saurav-02/PixelMusic/releases)** page.
 2. Download the latest `PixelMusic-vX.X.X.apk`.
 3. Install the APK on your Android device (ensure "Install from Unknown Sources" is enabled).
 
@@ -137,7 +137,7 @@
 | **App Name** | **PixelMusic** |
 | **Tagline** | *Open source music player built with its community.* |
 | **Philosophy** | Open source • Community-first • Material 3 Expressive |
-| **Main Developer** | **Saurav Biswas** ([@Saurav124x](https://t.me/Saurav124x) • [@holy_saurav](https://www.instagram.com/holy_saurav) • [GitHub](https://github.com/atappu805)) |
+| **Main Developer** | **Saurav Biswas** ([@Saurav124x](https://t.me/Saurav124x) • [@holy_saurav](https://www.instagram.com/holy_saurav) • [GitHub](https://github.com/Saurav-02)) |
 | **UI Collaborator** | **@Xyg901** ([Telegram](https://t.me/Xyg901)) |
 | **Credits & Attribution** | Built upon and inspired by the open-source **PixelPlayer** project created by Theo Vilardo. |
 
@@ -146,7 +146,7 @@
   - Main Developer: [@Saurav124x](https://t.me/Saurav124x)
   - UI Makeover: [@Xyg901](https://t.me/Xyg901)
 - **Instagram:** [@holy_saurav](https://www.instagram.com/holy_saurav)
-- **Bug Reports & Feedback:** Please open an issue on the [GitHub Issues](https://github.com/atappu805/PixelMusic/issues) page.
+- **Bug Reports & Feedback:** Please open an issue on the [GitHub Issues](https://github.com/Saurav-02/PixelMusic/issues) page.
 
 ---
 
