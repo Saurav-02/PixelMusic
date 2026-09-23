@@ -10,6 +10,14 @@ Before updating, please take a full backup of your data:
 
 **Sub release 4.4.0**
 
+* 🎵 **Embedded Rich Metadata & Synchronized Lyrics:** Downloaded tracks now embed complete ID3/MP4 metadata (Title, Artist, Album, Album Artist, Year, Track Number, Genre, Comment), high-resolution album artwork, and timestamped synchronized lyrics (`.lrc`) via TagLib & JAudioTagger. Synchronized directly with Android MediaStore. Includes a new toggle in Settings -> Library -> Download Management.
+
+* ⚡ **Parallel Chunk Downloader & 403 Fixes:** Multi-provider parallel chunk downloading with byte-level range resumption to eliminate timeouts and prevent HTTP 403 Forbidden errors on audio streams.
+
+* 🛡️ **Playlist Safeguards & Direct Song Removal:** Added confirmation dialogs before deleting custom playlists or removing songs from playlists to prevent accidental loss. Songs can now be removed directly from the Song Info bottom sheet with real-time YouTube sync.
+
+* 🚀 **Engine & Network Modernization:** Migrated network request architecture from Fuel to OkHttp, pruned legacy cipher/QuickJS dependencies, optimized queue preloading, and resolved Compose compiler warnings and deprecations.
+
 * 🎬 **Share as 30s Video & Robust Audio Handling:** Fixed video generation for local and online/YouTube tracks with image MIME recognition, streaming cache extraction, and real-time progress logging.
 * 📝 **Universal App Logging & Export:** Overhauled logging across the entire app so all events (verbose, debug, info, warn, error, fatal) are captured when developer logging is toggled on, and zero logs when off. Added direct log sharing and buffer clearing from Developer Settings.
 
