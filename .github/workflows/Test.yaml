@@ -67,31 +67,6 @@ jobs:
         # We use env.NEXT_NUM instead of github.run_number
         run: ./gradlew :app:assembleRelease -PAPP_VERSION_NAME="test-build-${{ env.NEXT_NUM }}"
 
-      - name: Clean Up Old Releases and Tags
-        # Use the built-in GitHub CLI (gh) for a much cleaner deletion process
-        env:
-          GH_TOKEN: ${{ secrets.TEST_REPO_PAT }}
-        run: |
-          echo "Build succeeded! Wiping old releases and tags to keep the repo clean..."
-          
-          # 1. Find all releases and forcefully delete them AND their associated tags
-          RELEASES=$(gh release list --repo Test-px/PixelMusic --limit 500 --json tagName --jq '.[].tagName')
-          for tag in $RELEASES; do
-            if [ -n "$tag" ]; then
-              echo "Deleting release and tag: $tag"
-              gh release delete "$tag" --repo Test-px/PixelMusic --cleanup-tag -y || true
-            fi
-          done
-          
-          # 2. Sweep for any leftover dangling tags that didn't have an associated release
-          DANGLING_TAGS=$(gh api repos/Test-px/PixelMusic/git/matching-refs/tags/test-build- --jq '.[].ref' 2>/dev/null || echo "")
-          for ref in $DANGLING_TAGS; do
-            if [ -n "$ref" ]; then
-              echo "Deleting dangling ref: $ref"
-              gh api -X DELETE repos/Test-px/PixelMusic/git/$ref || true
-            fi
-          done
-
       - name: Upload to Testing Repository
         uses: softprops/action-gh-release@v2
         with:
@@ -101,6 +76,18 @@ jobs:
           name: Test Build ${{ env.NEXT_NUM }}
           body_path: changelog.txt
           files: app/build/outputs/apk/release/*arm64-v8a*.apk
+
+      - name: 🧹 Clean Up Older Releases (Keep Last 3)
+        env:
+          GH_TOKEN: ${{ secrets.TEST_REPO_PAT }}
+        run: |
+          echo "Keeping the last 3 releases and cleaning up older ones..."
+          gh release list --repo Test-px/PixelMusic --limit 100 --json tagName -q ".[].tagName" | tail -n +4 | while read -r tag; do
+            if [ -n "$tag" ] && [ "$tag" != "test-build-${{ env.NEXT_NUM }}" ]; then
+              echo "Deleting old release: $tag"
+              gh release delete "$tag" --repo Test-px/PixelMusic --cleanup-tag -y || true
+            fi
+          done
 
       - name: Sync Fork Automatically
         run: |

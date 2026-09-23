@@ -13,6 +13,8 @@ This version brings a substantial number of changes across the entire app, featu
 
 **Sub release 4.4.0**
 
+* 📶 **Wi-Fi Streaming Quality Fix:** Fixed an issue where changing the Wi-Fi streaming audio quality setting was not updating properly.
+
 * 🎵 **Embedded Rich Metadata & Synchronized Lyrics:** Downloaded tracks now embed complete ID3/MP4 metadata (Title, Artist, Album, Album Artist, Year, Track Number, Genre, Comment), high-resolution album artwork, and timestamped synchronized lyrics (`.lrc`) via TagLib & JAudioTagger. Synchronized directly with Android MediaStore. Includes a new toggle in Settings -> Library -> Download Management.
 
 * ⚡ **Parallel Chunk Downloader & 403 Fixes:** Multi-provider parallel chunk downloading with byte-level range resumption to eliminate timeouts and prevent HTTP 403 Forbidden errors on audio streams.

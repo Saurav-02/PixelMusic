@@ -117,22 +117,22 @@ jobs:
           body: ${{ env.RELEASE_BODY }}
           files: app/build/outputs/apk/release/*.apk
 
-      - name: 🧹 Clean Up Older Releases from SOURCE Repo (Keep Current)
+      - name: 🧹 Clean Up Older Releases from SOURCE Repo (Keep Last 3)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release list --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
+          gh release list --limit 100 --json tagName -q ".[].tagName" | tail -n +4 | while read -r tag; do
             if [ -n "$tag" ] && [ "$tag" != "${{ env.TAG_NAME }}" ]; then
               echo "Wiping old release and tag from source: $tag"
               gh release delete "$tag" --cleanup-tag -y || true
             fi
           done
 
-      - name: 🧹 Clean Up Older Releases from TARGET Repo (Keep Current)
+      - name: 🧹 Clean Up Older Releases from TARGET Repo (Keep Last 3)
         env:
           GH_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
         run: |
-          gh release list -R ${{ env.TARGET_REPO }} --limit 100 --json tagName -q ".[].tagName" | while read -r tag; do
+          gh release list -R ${{ env.TARGET_REPO }} --limit 100 --json tagName -q ".[].tagName" | tail -n +4 | while read -r tag; do
             if [ -n "$tag" ] && [ "$tag" != "${{ env.TAG_NAME }}" ]; then
               echo "Wiping old release and tag from target: $tag"
               gh release delete "$tag" -R ${{ env.TARGET_REPO }} --cleanup-tag -y || true
