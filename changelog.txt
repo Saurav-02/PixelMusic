@@ -13,6 +13,8 @@ This version brings a substantial number of changes across the entire app, featu
 
 **Sub release 4.4.0**
 
+* ⚡ **CursorWindow & Memory Leak Fix (OOM Prevention):** Resolved a critical OutOfMemoryError and playback stuttering issue reported on high-end flagship devices (e.g., Meizu 21, Snapdragon 8 Gen 3 / 8 Gen 2 / Dimensity 9300+ devices with high heap allocation limits) caused by unbounded lyrics loading across full library database queries. Optimized Room DAO projections to exclude heavy metadata from list queries and actively trimmed image memory caches under memory pressure.
+
 * 📶 **Wi-Fi Streaming Quality Fix:** Fixed an issue where changing the Wi-Fi streaming audio quality setting was not updating properly.
 
 * 🎵 **Embedded Rich Metadata & Synchronized Lyrics:** Downloaded tracks now embed complete ID3/MP4 metadata (Title, Artist, Album, Album Artist, Year, Track Number, Genre, Comment), high-resolution album artwork, and timestamped synchronized lyrics (`.lrc`) via TagLib & JAudioTagger. Synchronized directly with Android MediaStore. Includes a new toggle in Settings -> Library -> Download Management.

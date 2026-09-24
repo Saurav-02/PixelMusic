@@ -81,6 +81,15 @@ private const val SONG_LIST_PROJECTION = """
     telegram_file_id, artists_json, source_type, album_browse_id
 """
 
+// Projection for list queries with table alias: excludes lyrics to prevent CursorWindow overflow
+private const val SONG_LIST_TABLE_PROJECTION = """
+    songs.id, songs.title, songs.artist_name, songs.artist_id, songs.album_artist, songs.album_name, songs.album_id,
+    songs.content_uri_string, songs.album_art_uri_string, songs.duration, songs.genre, songs.file_path,
+    songs.parent_directory_path, songs.is_favorite, NULL AS lyrics, songs.track_number, songs.disc_number,
+    songs.year, songs.date_added, songs.mime_type, songs.bitrate, songs.sample_rate, songs.telegram_chat_id,
+    songs.telegram_file_id, songs.artists_json, songs.source_type, songs.album_browse_id
+"""
+
 data class DeviceCapabilitySongRow(
     val filePath: String,
     val contentUriString: String,
@@ -113,7 +122,7 @@ interface MusicDao {
     @Query("UPDATE songs SET genre = :genre WHERE id = :songId")
     suspend fun updateSongGenre(songId: Long, genre: String)
 
-    @Query("SELECT * FROM songs WHERE source_type = :type")
+    @Query("SELECT " + SONG_LIST_PROJECTION + " FROM songs WHERE source_type = :type")
     suspend fun getSongsBySourceType(type: Int): List<SongEntity>
 
 
@@ -361,14 +370,15 @@ interface MusicDao {
         applyDirectoryFilter: Boolean
     ): Flow<List<SongEntity>>
 
-    @Query("SELECT * FROM songs WHERE album_id = :albumId ORDER BY disc_number ASC, track_number ASC")
+    @Query("SELECT " + SONG_LIST_PROJECTION + " FROM songs WHERE album_id = :albumId ORDER BY disc_number ASC, track_number ASC")
     fun getSongsByAlbumId(albumId: Long): Flow<List<SongEntity>>
 
-    @Query("SELECT * FROM songs WHERE artist_id = :artistId ORDER BY title ASC")
+    @Query("SELECT " + SONG_LIST_PROJECTION + " FROM songs WHERE artist_id = :artistId ORDER BY title ASC")
     fun getSongsByArtistId(artistId: Long): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT songs.* FROM songs
+        SELECT """ + SONG_LIST_TABLE_PROJECTION + """
+        FROM songs
         INNER JOIN songs_fts ON songs_fts.rowid = songs.id
         WHERE (:applyDirectoryFilter = 0 OR songs.id < 0 OR songs.parent_directory_path IN (:allowedParentDirs))
         AND (
@@ -394,7 +404,8 @@ interface MusicDao {
     ): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
         AND (
             source_type = 0
@@ -468,7 +479,8 @@ interface MusicDao {
      * Uses SQLite RANDOM() for true randomness.
      */
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
         ORDER BY RANDOM()
         LIMIT :limit
@@ -492,7 +504,8 @@ interface MusicDao {
     ): SongEntity?
 
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
     """)
     fun getAllSongs(
@@ -641,7 +654,8 @@ interface MusicDao {
      * Room auto-generates the PagingSource implementation.
      */
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
         AND (
             source_type = 0
@@ -758,7 +772,8 @@ interface MusicDao {
      * Joins songs with favorites table and supports multi-sort.
      */
     @Query("""
-        SELECT songs.* FROM songs
+        SELECT """ + SONG_LIST_TABLE_PROJECTION + """
+        FROM songs
         INNER JOIN favorites ON songs.id = favorites.songId AND favorites.isFavorite = 1
         WHERE (:applyDirectoryFilter = 0 OR songs.id < 0 OR songs.parent_directory_path IN (:allowedParentDirs))
         AND (
@@ -799,7 +814,8 @@ interface MusicDao {
      * Returns all favorite songs as a list (for playback queue when shuffling).
      */
     @Query("""
-        SELECT songs.* FROM songs
+        SELECT """ + SONG_LIST_TABLE_PROJECTION + """
+        FROM songs
         INNER JOIN favorites ON songs.id = favorites.songId AND favorites.isFavorite = 1
         WHERE (:applyDirectoryFilter = 0 OR songs.id < 0 OR songs.parent_directory_path IN (:allowedParentDirs))
         AND (
@@ -901,7 +917,8 @@ interface MusicDao {
      * Returns a PagingSource for search results, enabling efficient pagination for large result sets.
      */
     @Query("""
-        SELECT songs.* FROM songs
+        SELECT """ + SONG_LIST_TABLE_PROJECTION + """
+        FROM songs
         INNER JOIN songs_fts ON songs_fts.rowid = songs.id
         WHERE (:applyDirectoryFilter = 0 OR songs.id < 0 OR songs.parent_directory_path IN (:allowedParentDirs))
         AND (
@@ -940,7 +957,8 @@ interface MusicDao {
      * Search songs with a result limit for non-paginated contexts (FTS).
      */
     @Query("""
-        SELECT songs.* FROM songs
+        SELECT """ + SONG_LIST_TABLE_PROJECTION + """
+        FROM songs
         INNER JOIN songs_fts ON songs_fts.rowid = songs.id
         WHERE (:applyDirectoryFilter = 0 OR songs.id < 0 OR songs.parent_directory_path IN (:allowedParentDirs))
         AND (
@@ -971,7 +989,8 @@ interface MusicDao {
      * LIKE-based search focusing only on titles.
      */
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
         AND (
             source_type = 0
@@ -1001,7 +1020,8 @@ interface MusicDao {
      * LIKE-based fallback search for songs that FTS tokenization may miss.
      */
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
         AND (
             source_type = 0
@@ -1068,7 +1088,8 @@ interface MusicDao {
      * Returns a PagingSource for songs in a specific genre.
      */
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR parent_directory_path IN (:allowedParentDirs))
         AND genre LIKE :genreName
         ORDER BY title ASC
@@ -1741,7 +1762,8 @@ interface MusicDao {
     // --- Genre Queries ---
     // Example: Get all songs for a specific genre
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
         AND genre LIKE :genreName
         ORDER BY title ASC
@@ -1753,7 +1775,8 @@ interface MusicDao {
     ): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
         AND (genre IS NULL OR genre = '')
         ORDER BY title ASC
@@ -1965,7 +1988,8 @@ interface MusicDao {
      * Get all songs for a specific artist using the junction table.
      */
     @Query("""
-        SELECT songs.* FROM songs
+        SELECT """ + SONG_LIST_TABLE_PROJECTION + """
+        FROM songs
         INNER JOIN song_artist_cross_ref ON songs.id = song_artist_cross_ref.song_id
         WHERE song_artist_cross_ref.artist_id = :artistId
         ORDER BY songs.title ASC
@@ -1976,7 +2000,8 @@ interface MusicDao {
      * Get all songs for a specific artist (one-shot).
      */
     @Query("""
-        SELECT songs.* FROM songs
+        SELECT """ + SONG_LIST_TABLE_PROJECTION + """
+        FROM songs
         INNER JOIN song_artist_cross_ref ON songs.id = song_artist_cross_ref.song_id
         WHERE song_artist_cross_ref.artist_id = :artistId
         ORDER BY songs.title ASC
@@ -2136,7 +2161,8 @@ interface MusicDao {
 
 
     @Query("""
-        SELECT songs.* FROM songs
+        SELECT """ + SONG_LIST_TABLE_PROJECTION + """
+        FROM songs
         INNER JOIN related_song_map ON songs.id = related_song_map.related_song_id
         WHERE related_song_map.song_id = :songId
         ORDER BY RANDOM()
@@ -2149,7 +2175,8 @@ interface MusicDao {
      * restricted to source types with meaningful engagement data.
      */
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE 
             -- Exclude all played songs and favorite songs to avoid overlap with Daily Mix
             is_favorite = 0
@@ -2229,7 +2256,8 @@ interface MusicDao {
     fun quickPicks(limit: Int = 20): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT * FROM songs
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs
         WHERE id != :songId AND (
             -- Same artist
             artist_id = :artistId
@@ -2266,14 +2294,15 @@ interface MusicDao {
     ): List<SongEntity>
 
 
-    @Query("SELECT * FROM songs WHERE genre = :genre AND id != :excludeId ORDER BY RANDOM() LIMIT :limit")
+    @Query("SELECT " + SONG_LIST_PROJECTION + " FROM songs WHERE genre = :genre AND id != :excludeId ORDER BY RANDOM() LIMIT :limit")
     suspend fun getSongsByGenre(genre: String, excludeId: Long = 0, limit: Int = 10): List<SongEntity>
 
-    @Query("SELECT * FROM songs WHERE artist_name LIKE '%' || :artistName || '%' ORDER BY RANDOM() LIMIT :limit")
+    @Query("SELECT " + SONG_LIST_PROJECTION + " FROM songs WHERE artist_name LIKE '%' || :artistName || '%' ORDER BY RANDOM() LIMIT :limit")
     suspend fun getSongsByArtistName(artistName: String, limit: Int = 5): List<SongEntity>
 
     @Query("""
-        SELECT * FROM songs 
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs 
         WHERE CASE WHEN source_type = 7 THEN 'youtube_' || SUBSTR(content_uri_string, 11) ELSE CAST(id AS TEXT) END IN (
             SELECT song_id 
             FROM song_engagements 
@@ -2284,7 +2313,8 @@ interface MusicDao {
     fun forgottenFavorites(thirtyDaysAgo: Long): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT * FROM songs 
+        SELECT """ + SONG_LIST_PROJECTION + """
+        FROM songs 
         WHERE CASE WHEN source_type = 7 THEN 'youtube_' || SUBSTR(content_uri_string, 11) ELSE CAST(id AS TEXT) END = (
             SELECT song_id 
             FROM song_engagements 

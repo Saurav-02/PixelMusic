@@ -248,7 +248,7 @@ object AppModule {
             }
             .memoryCache {
                 MemoryCache.Builder(context)
-                    .maxSizePercent(0.20) // Use 20% of app memory for image cache
+                    .maxSizePercent(0.12) // Use 12% of app memory for image cache to avoid heap starvation on large libraries
                     .build()
             }
             .diskCache {

@@ -304,6 +304,7 @@ NewPipe.init(object : Downloader() {
         ) {
             artistImageRepository.get().clearCache()
             MediaMetadataRetrieverPool.clear()
+            imageLoader.get().memoryCache?.clear()
         }
 
         libraryStateHolder.get().trimMemory(level)
