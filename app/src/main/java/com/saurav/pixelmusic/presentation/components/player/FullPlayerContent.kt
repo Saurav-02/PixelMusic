@@ -1282,7 +1282,7 @@ fun FullPlayerContent(
             playCount = playCount,
             isEndOfTrackTimerActive = isEndOfTrackTimerActive,
             onSetPredefinedTimer = { minutes -> playerViewModel.setSleepTimer(minutes) },
-            onSetEndOfTrackTimer = { enable -> playerViewModel.setEndOfTrackTimer(enable, song.id) },
+            onSetEndOfTrackTimer = { enable -> playerViewModel.setEndOfTrackTimer(enable) },
             onOpenCustomTimePicker = {},
             onCancelTimer = { playerViewModel.cancelSleepTimer() },
             onCancelCountedPlay = { playerViewModel.cancelCountedPlay() },
