@@ -147,9 +147,9 @@
     <string name="presentation_batch_f_exp_visual_quality">Qualità visiva</string>
     <string name="presentation_batch_f_exp_album_art_resolution">Risoluzione copertina album</string>
     <string name="presentation_batch_f_exp_screen_title">Sperimentale</string>
-    <string name="presentation_batch_f_album_art_quality_low_line">Bassa (256px) - Migliori prestazioni</string>
+    <string name="presentation_batch_f_album_art_quality_low_line">Bassa (360p)</string>
     <string name="presentation_batch_f_album_art_quality_medium_line">Media (512px) - Bilanciata</string>
-    <string name="presentation_batch_f_album_art_quality_high_line">Alta (800px) - Migliore qualità</string>
+    <string name="presentation_batch_f_album_art_quality_high_line">Alta (720p)</string>
     <string name="presentation_batch_f_album_art_quality_original_line">Originale - Qualità massima</string>
 
     <!-- Settings category screen (composables) -->

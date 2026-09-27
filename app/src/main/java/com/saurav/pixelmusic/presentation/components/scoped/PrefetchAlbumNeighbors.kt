@@ -24,7 +24,7 @@ fun PrefetchAlbumNeighborsImg(
 ) {
     if (current == null) return
     val context = LocalContext.current
-    val loader = remember { coil.ImageLoader(context) }
+    val loader = coil.Coil.imageLoader(context)
     val index = remember(current, queue) { queue.indexOfFirst { it.id == current.id } }
     LaunchedEffect(index, queue) {
         if (index == -1) return@LaunchedEffect
@@ -32,11 +32,14 @@ fun PrefetchAlbumNeighborsImg(
         for (i in bounds) {
             if (i == index) continue
             queue[i].albumArtUriString?.let { data ->
-                val diskPolicy = if (LocalArtworkUri.isLocalArtworkUri(data)) CachePolicy.DISABLED else CachePolicy.ENABLED
+                val effectiveQuality = com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+                val optimizedUri = com.saurav.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(data, effectiveQuality) ?: data
+                val diskPolicy = if (LocalArtworkUri.isLocalArtworkUri(optimizedUri)) CachePolicy.DISABLED else CachePolicy.ENABLED
                 val targetSize = safeAlbumArtTargetSize(Size.ORIGINAL)
-                val memoryCacheKey = albumArtMemoryCacheKey(data, targetSize)
+                val memoryCacheKey = albumArtMemoryCacheKey(optimizedUri, targetSize)
                 val req = coil.request.ImageRequest.Builder(context)
-                    .data(data)
+                    .data(optimizedUri)
+                    .diskCacheKey(optimizedUri)
                     .apply {
                         if (memoryCacheKey != null) {
                             memoryCacheKey(memoryCacheKey)

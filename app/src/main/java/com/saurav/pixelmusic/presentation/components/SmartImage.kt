@@ -341,10 +341,10 @@ private fun Placeholder(
 object SmartImageCache {
     var isMeteredNetwork by androidx.compose.runtime.mutableStateOf(false)
     @Volatile
-    var albumArtQualityWifi: AlbumArtQuality = AlbumArtQuality.ORIGINAL
+    var albumArtQualityWifi: AlbumArtQuality = AlbumArtQuality.HIGH
         private set
     @Volatile
-    var albumArtQualityMobile: AlbumArtQuality = AlbumArtQuality.ORIGINAL
+    var albumArtQualityMobile: AlbumArtQuality = AlbumArtQuality.LOW
         private set
     var performanceModeEnabled by androidx.compose.runtime.mutableStateOf(false)
 

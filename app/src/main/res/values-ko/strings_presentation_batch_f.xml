@@ -147,9 +147,9 @@
     <string name="presentation_batch_f_exp_visual_quality">시각적 품질</string>
     <string name="presentation_batch_f_exp_album_art_resolution">앨범 아트 해상도</string>
     <string name="presentation_batch_f_exp_screen_title">실험적 기능</string>
-    <string name="presentation_batch_f_album_art_quality_low_line">낮음 (256px) - 성능 향상</string>
+    <string name="presentation_batch_f_album_art_quality_low_line">낮음 (360p)</string>
     <string name="presentation_batch_f_album_art_quality_medium_line">중간 (512px) - 균형</string>
-    <string name="presentation_batch_f_album_art_quality_high_line">높음 (800px) - 고품질</string>
+    <string name="presentation_batch_f_album_art_quality_high_line">높음 (720p)</string>
     <string name="presentation_batch_f_album_art_quality_original_line">원본 - 최대 품질</string>
 
     <!-- Settings category screen (composables) -->

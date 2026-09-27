@@ -109,7 +109,7 @@ data class SettingsUiState(
     val showPlayerFileInfo: Boolean = true,
     val isUiMotionBlurEnabled: Boolean = true,
     // Developer Options
-    val albumArtQuality: AlbumArtQuality = AlbumArtQuality.MEDIUM,
+    val albumArtQuality: AlbumArtQuality = AlbumArtQuality.HIGH,
     val albumArtCacheLimitMb: Int = 200,
     val tapBackgroundClosesPlayer: Boolean = false,
     val hapticsEnabled: Boolean = true,
@@ -1776,7 +1776,7 @@ class SettingsViewModel @Inject constructor(
     // ===== Developer Options =====
 
     val albumArtQuality: StateFlow<AlbumArtQuality> = userPreferencesRepository.albumArtQualityFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AlbumArtQuality.MEDIUM)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AlbumArtQuality.HIGH)
 
     val useSmoothCorners: StateFlow<Boolean> = userPreferencesRepository.useSmoothCornersFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)

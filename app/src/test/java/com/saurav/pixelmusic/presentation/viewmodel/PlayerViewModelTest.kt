@@ -158,8 +158,8 @@ class PlayerViewModelTest {
         coEvery { mockUserPreferencesRepository.persistentShuffleEnabledFlow } returns flowOf(false) // Added missing mock
         coEvery { mockUserPreferencesRepository.isShuffleOnFlow } returns flowOf(false) // Added missing mock
         every { mockUserPreferencesRepository.repeatModeFlow } returns _repeatModeFlow
-        coEvery { mockUserPreferencesRepository.albumArtQualityFlow } returns flowOf(com.saurav.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL)
-        coEvery { mockUserPreferencesRepository.albumArtQualityMobileFlow } returns flowOf(com.saurav.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL)
+        coEvery { mockUserPreferencesRepository.albumArtQualityFlow } returns flowOf(com.saurav.pixelmusic.data.preferences.AlbumArtQuality.HIGH)
+        coEvery { mockUserPreferencesRepository.albumArtQualityMobileFlow } returns flowOf(com.saurav.pixelmusic.data.preferences.AlbumArtQuality.LOW)
         coEvery { mockUserPreferencesRepository.performanceModeEnabledFlow } returns flowOf(false)
         coEvery { mockThemePreferencesRepository.playerThemePreferenceFlow } returns flowOf("Global")
         coEvery { mockAiPreferencesRepository.aiProvider } returns flowOf("GEMINI")

@@ -4,7 +4,7 @@ import com.saurav.pixelmusic.data.preferences.AlbumArtQuality
 
 object ThumbnailUrlUtils {
 
-    const val DEFAULT_ORIGINAL_SIZE = 1200
+    const val DEFAULT_ORIGINAL_SIZE = 720
 
     /**
      * Resolves the effective quality based on network status and user preferences.
@@ -42,7 +42,7 @@ object ThumbnailUrlUtils {
 
         // 1. Google User Content / ggpht (Album covers & artist images)
         if (transformed.contains("googleusercontent.com") || transformed.contains("ggpht.com")) {
-            val targetPx = if (quality.maxSize > 0) quality.maxSize else DEFAULT_ORIGINAL_SIZE
+            val targetPx = quality.maxSize
             val sizeParamRegex = Regex("=[ws]\\d+.*")
             val slashSizeRegex = Regex("/[ws]\\d+.*")
             return when {
@@ -56,12 +56,10 @@ object ThumbnailUrlUtils {
         // 2. YouTube Video Thumbnails (i.ytimg.com)
         if (transformed.contains("i.ytimg.com")) {
             val ytRes = when (quality) {
-                AlbumArtQuality.LOW -> "mqdefault"
-                AlbumArtQuality.MEDIUM -> "sddefault"
-                AlbumArtQuality.HIGH -> "hqdefault"
-                AlbumArtQuality.ORIGINAL -> "maxresdefault"
+                AlbumArtQuality.LOW -> "hqdefault" // 480x360 (360p)
+                AlbumArtQuality.HIGH -> "maxresdefault" // 1280x720 (720p)
             }
-            val filenameRegex = Regex("(maxresdefault|sddefault|hqdefault|mqdefault|default)\\.(jpg|webp)")
+            val filenameRegex = Regex("(maxresdefault|sddefault|hqdefault|mqdefault|default|hq720)\\.(jpg|webp)")
             if (filenameRegex.containsMatchIn(transformed)) {
                 return transformed.replace(filenameRegex, "$ytRes.$2")
             }

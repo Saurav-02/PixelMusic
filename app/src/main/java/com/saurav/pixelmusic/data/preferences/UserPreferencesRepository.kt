@@ -67,10 +67,20 @@ internal fun sanitizeNavBarCornerRadius(radius: Int): Int =
  * @property label Human-readable label for UI
  */
 enum class AlbumArtQuality(val maxSize: Int, val label: String) {
-    LOW(256, "Low (256px) - Better performance"),
-    MEDIUM(512, "Medium (512px) - Balanced"),
-    HIGH(800, "High (800px) - Best quality"),
-    ORIGINAL(0, "Original - Maximum quality")
+    LOW(360, "Low (360p)"),
+    HIGH(720, "High (720p)");
+
+    companion object {
+        fun fromString(value: String?): AlbumArtQuality {
+            return when (value?.uppercase()) {
+                "LOW" -> LOW
+                "HIGH" -> HIGH
+                "MEDIUM" -> LOW
+                "ORIGINAL" -> HIGH
+                else -> HIGH
+            }
+        }
+    }
 }
 
 enum class AppBackgroundStyle {
@@ -1194,15 +1204,15 @@ constructor(
         }
     }
 
-    /** Album art quality on mobile data. Default: LOW (256px). */
+    /** Album art quality on mobile data. Default: LOW (360p). */
     val albumArtQualityMobileFlow: Flow<AlbumArtQuality> =
         dataStore.data.map { preferences ->
             try {
-                AlbumArtQuality.valueOf(
-                    preferences[PreferencesKeys.ALBUM_ART_QUALITY_MOBILE] ?: "ORIGINAL"
+                AlbumArtQuality.fromString(
+                    preferences[PreferencesKeys.ALBUM_ART_QUALITY_MOBILE] ?: "LOW"
                 )
             } catch (e: Exception) {
-                AlbumArtQuality.ORIGINAL
+                AlbumArtQuality.LOW
             }
         }
 
@@ -2019,10 +2029,10 @@ constructor(
         dataStore.data.map { preferences ->
             preferences[PreferencesKeys.ALBUM_ART_QUALITY]
                 ?.let {
-                    try { AlbumArtQuality.valueOf(it) }
-                    catch (e: Exception) { AlbumArtQuality.ORIGINAL }
+                    try { AlbumArtQuality.fromString(it) }
+                    catch (e: Exception) { AlbumArtQuality.HIGH }
                 }
-                ?: AlbumArtQuality.ORIGINAL
+                ?: AlbumArtQuality.HIGH
         }
 
     suspend fun setAlbumArtQuality(quality: AlbumArtQuality) {

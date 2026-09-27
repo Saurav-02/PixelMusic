@@ -2872,9 +2872,14 @@ class MusicService : MediaLibraryService() {
                 }
             }
             scheme == "http" || scheme == "https" -> {
+                val effectiveQuality = com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+                val optimizedUrl = com.saurav.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(uriString, effectiveQuality) ?: uriString
+
                 val cachedBytes = runCatching {
                     val loader = coil.Coil.imageLoader(applicationContext)
-                    loader.diskCache?.openSnapshot(uriString)?.use { snapshot ->
+                    loader.diskCache?.openSnapshot(optimizedUrl)?.use { snapshot ->
+                        snapshot.data.toFile().readBytes()
+                    } ?: loader.diskCache?.openSnapshot(uriString)?.use { snapshot ->
                         snapshot.data.toFile().readBytes()
                     }
                 }.getOrNull()
@@ -2886,37 +2891,17 @@ class MusicService : MediaLibraryService() {
                     )
                 }
 
-                var connection: HttpURLConnection? = null
-                try {
-                    connection = (URL(uriString).openConnection() as? HttpURLConnection)
-                        ?: return null
-                    connection.connectTimeout = 3_000
-                    connection.readTimeout = 4_000
-                    connection.instanceFollowRedirects = true
-                    connection.doInput = true
-                    connection.inputStream.use { input ->
-                        readBytesCapped(input, ArtworkTransportSanitizer.WIDGET_CONFIG.sourceBytesLimit)
-                            ?.let { bytes ->
-                                ArtworkTransportSanitizer.sanitizeEncodedBytes(
-                                    data = bytes,
-                                    config = ArtworkTransportSanitizer.WIDGET_CONFIG,
-                                )
-                            }
-                    }
-                } catch (error: Exception) {
-                    Timber.tag(TAG).w("Widget artwork download skipped: %s", error.message)
-                    null
-                } finally {
-                    runCatching { connection?.disconnect() }
-                }
+                loadArtworkBytesViaCoil(Uri.parse(optimizedUrl))
             }
             else -> loadArtworkBytesViaCoil(uri)
         }
     }
 
     private suspend fun loadArtworkBytesViaCoil(uri: Uri): ByteArray? {
+        val uriStr = uri.toString()
         val request = ImageRequest.Builder(applicationContext)
             .data(uri)
+            .diskCacheKey(uriStr)
             .size(
                 ArtworkTransportSanitizer.WIDGET_CONFIG.maxDimensionPx,
                 ArtworkTransportSanitizer.WIDGET_CONFIG.maxDimensionPx,
@@ -2924,6 +2909,7 @@ class MusicService : MediaLibraryService() {
             .precision(Precision.INEXACT)
             .allowHardware(false)
             .memoryCachePolicy(CachePolicy.ENABLED)
+            .diskCachePolicy(CachePolicy.ENABLED)
             .networkCachePolicy(CachePolicy.ENABLED)
             .build()
 

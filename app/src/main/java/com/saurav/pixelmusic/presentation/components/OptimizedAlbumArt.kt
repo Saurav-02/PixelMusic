@@ -46,7 +46,7 @@ fun OptimizedAlbumArt(
     title: String,
     modifier: Modifier = Modifier,
     targetSize: Size = SafeOriginalAlbumArtSize,
-    albumArtQuality: com.saurav.pixelmusic.data.preferences.AlbumArtQuality = com.saurav.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL,
+    albumArtQuality: com.saurav.pixelmusic.data.preferences.AlbumArtQuality = com.saurav.pixelmusic.data.preferences.AlbumArtQuality.HIGH,
     placeholderModel: Any? = null
 ) {
     val context = LocalContext.current

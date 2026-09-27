@@ -147,9 +147,9 @@
     <string name="presentation_batch_f_exp_visual_quality">Bildqualität</string>
     <string name="presentation_batch_f_exp_album_art_resolution">Cover-Auflösung</string>
     <string name="presentation_batch_f_exp_screen_title">Experimentell</string>
-    <string name="presentation_batch_f_album_art_quality_low_line">Niedrig (256px) – Bessere Performance</string>
+    <string name="presentation_batch_f_album_art_quality_low_line">Niedrig (360p)</string>
     <string name="presentation_batch_f_album_art_quality_medium_line">Mittel (512px) – Ausgewogen</string>
-    <string name="presentation_batch_f_album_art_quality_high_line">Hoch (800px) – Beste Qualität</string>
+    <string name="presentation_batch_f_album_art_quality_high_line">Hoch (720p)</string>
     <string name="presentation_batch_f_album_art_quality_original_line">Original – Maximale Qualität</string>
 
     <!-- Settings category screen -->

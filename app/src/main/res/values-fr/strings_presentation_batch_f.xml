@@ -145,9 +145,9 @@
     <string name="presentation_batch_f_exp_visual_quality">Qualité visuelle</string>
     <string name="presentation_batch_f_exp_album_art_resolution">Résolution des pochettes d\'album</string>
     <string name="presentation_batch_f_exp_screen_title">Expérimental</string>
-    <string name="presentation_batch_f_album_art_quality_low_line">Basse (256px) - Meilleure performance</string>
+    <string name="presentation_batch_f_album_art_quality_low_line">Basse (360p)</string>
     <string name="presentation_batch_f_album_art_quality_medium_line">Moyenne (512px) - Équilibrée</string>
-    <string name="presentation_batch_f_album_art_quality_high_line">Haute (800px) - Meilleure qualité</string>
+    <string name="presentation_batch_f_album_art_quality_high_line">Haute (720p)</string>
     <string name="presentation_batch_f_album_art_quality_original_line">Originale - Qualité maximale</string>
 
     <!-- Settings category screen (composables) -->

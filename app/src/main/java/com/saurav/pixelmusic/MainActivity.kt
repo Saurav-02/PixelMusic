@@ -1016,7 +1016,7 @@ class MainActivity : ComponentActivity() {
                                     com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.LIVE_BLUR -> {
                                         if (currentArt != null) {
                                             Box(modifier = Modifier.fillMaxSize()) {
-                                                AsyncImage(
+                                                com.saurav.pixelmusic.presentation.components.SmartImage(
                                                     model = currentArt,
                                                     contentDescription = null,
                                                     contentScale = ContentScale.Crop,

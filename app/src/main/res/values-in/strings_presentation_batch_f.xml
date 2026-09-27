@@ -146,9 +146,9 @@
     <string name="presentation_batch_f_exp_visual_quality">Kualitas Visual</string>
     <string name="presentation_batch_f_exp_album_art_resolution">Resolusi Sampul Album</string>
     <string name="presentation_batch_f_exp_screen_title">Eksperimental</string>
-    <string name="presentation_batch_f_album_art_quality_low_line">Rendah (256px) - Performa lebih baik</string>
+    <string name="presentation_batch_f_album_art_quality_low_line">Rendah (360p)</string>
     <string name="presentation_batch_f_album_art_quality_medium_line">Sedang (512px) - Seimbang</string>
-    <string name="presentation_batch_f_album_art_quality_high_line">Tinggi (800px) - Kualitas terbaik</string>
+    <string name="presentation_batch_f_album_art_quality_high_line">Tinggi (720p)</string>
     <string name="presentation_batch_f_album_art_quality_original_line">Asli - Kualitas maksimum</string>
 
     <!-- Settings category screen (composables) -->

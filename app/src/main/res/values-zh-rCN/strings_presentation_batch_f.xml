@@ -147,9 +147,9 @@
     <string name="presentation_batch_f_exp_visual_quality">视觉质量</string>
     <string name="presentation_batch_f_exp_album_art_resolution">专辑封面分辨率</string>
     <string name="presentation_batch_f_exp_screen_title">实验功能</string>
-    <string name="presentation_batch_f_album_art_quality_low_line">低（256px）- 更佳性能</string>
+    <string name="presentation_batch_f_album_art_quality_low_line">低（360p）</string>
     <string name="presentation_batch_f_album_art_quality_medium_line">中（512px）- 均衡</string>
-    <string name="presentation_batch_f_album_art_quality_high_line">高（800px）- 最佳质量</string>
+    <string name="presentation_batch_f_album_art_quality_high_line">高（720p）</string>
     <string name="presentation_batch_f_album_art_quality_original_line">原始 - 最高质量</string>
 
     <!-- Settings category screen (composables) -->

@@ -48,7 +48,7 @@ fun AlbumCarouselSection(
     modifier: Modifier = Modifier,
     carouselStyle: String = CarouselStyle.NO_PEEK,
     itemSpacing: Dp = 8.dp,
-    albumArtQuality: AlbumArtQuality = AlbumArtQuality.ORIGINAL
+    albumArtQuality: AlbumArtQuality = AlbumArtQuality.HIGH
 ) {
     if (queue.isEmpty()) return
 

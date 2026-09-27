@@ -111,10 +111,8 @@ object YoutubeHelper {
         if (url.isBlank()) return url
         val targetQuality = if (quality > 0) {
             when {
-                quality <= 256 -> com.saurav.pixelmusic.data.preferences.AlbumArtQuality.LOW
-                quality <= 512 -> com.saurav.pixelmusic.data.preferences.AlbumArtQuality.MEDIUM
-                quality <= 800 -> com.saurav.pixelmusic.data.preferences.AlbumArtQuality.HIGH
-                else -> com.saurav.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL
+                quality <= 360 -> com.saurav.pixelmusic.data.preferences.AlbumArtQuality.LOW
+                else -> com.saurav.pixelmusic.data.preferences.AlbumArtQuality.HIGH
             }
         } else {
             com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()

@@ -741,9 +741,7 @@ fun SettingsCategoryScreen(
                                         description = stringResource(R.string.setcat_album_art_quality_wifi_desc),
                                         options = mapOf(
                                             AlbumArtQuality.LOW.name to stringResource(R.string.presentation_batch_f_album_art_quality_low_line),
-                                            AlbumArtQuality.MEDIUM.name to stringResource(R.string.presentation_batch_f_album_art_quality_medium_line),
-                                            AlbumArtQuality.HIGH.name to stringResource(R.string.presentation_batch_f_album_art_quality_high_line),
-                                            AlbumArtQuality.ORIGINAL.name to stringResource(R.string.presentation_batch_f_album_art_quality_original_line)
+                                            AlbumArtQuality.HIGH.name to stringResource(R.string.presentation_batch_f_album_art_quality_high_line)
                                         ),
                                         selectedKey = uiState.albumArtQuality.name,
                                         onSelectionChanged = { key ->
@@ -758,9 +756,7 @@ fun SettingsCategoryScreen(
                                         description = stringResource(R.string.setcat_album_art_quality_mobile_desc),
                                         options = mapOf(
                                             AlbumArtQuality.LOW.name to stringResource(R.string.presentation_batch_f_album_art_quality_low_line),
-                                            AlbumArtQuality.MEDIUM.name to stringResource(R.string.presentation_batch_f_album_art_quality_medium_line),
-                                            AlbumArtQuality.HIGH.name to stringResource(R.string.presentation_batch_f_album_art_quality_high_line),
-                                            AlbumArtQuality.ORIGINAL.name to stringResource(R.string.presentation_batch_f_album_art_quality_original_line)
+                                            AlbumArtQuality.HIGH.name to stringResource(R.string.presentation_batch_f_album_art_quality_high_line)
                                         ),
                                         selectedKey = uiState.albumArtQualityMobile.name,
                                         onSelectionChanged = { key ->

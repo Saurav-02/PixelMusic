@@ -1863,9 +1863,11 @@ suspend fun extractDominantColor(
 ): Color = withContext(Dispatchers.IO) {
     if (uriString.isNullOrBlank()) return@withContext fallback
     try {
+        val effectiveQuality = com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+        val optimizedUri = com.saurav.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(uriString, effectiveQuality) ?: uriString
         val request = coil.request.ImageRequest.Builder(context)
-            .data(uriString)
-            .diskCacheKey(uriString)
+            .data(optimizedUri)
+            .diskCacheKey(optimizedUri)
             .allowHardware(false) // Palette needs a software bitmap
             .size(160, 160)       // small = fast, plenty for color extraction
             .build()

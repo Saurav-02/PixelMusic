@@ -731,7 +731,7 @@ class PlayerViewModel @Inject constructor(
             qualityMobile = mobile,
             performanceMode = perfMode
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AlbumArtQuality.ORIGINAL)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AlbumArtQuality.HIGH)
 
     val aodScreenEnabled: StateFlow<Boolean> = userPreferencesRepository.aodScreenEnabledFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -1440,7 +1440,7 @@ class PlayerViewModel @Inject constructor(
     data class FullPlayerSlice(
         val currentSongArtists: List<Artist> = emptyList(),
         val lyricsSyncOffset: Int = 0,
-        val albumArtQuality: AlbumArtQuality = AlbumArtQuality.MEDIUM,
+        val albumArtQuality: AlbumArtQuality = AlbumArtQuality.HIGH,
         val audioMetadata: PlaybackAudioMetadata = PlaybackAudioMetadata(),
         val showPlayerFileInfo: Boolean = true,
         val immersiveLyricsEnabled: Boolean = false,

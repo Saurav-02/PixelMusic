@@ -818,9 +818,7 @@ private fun albumArtQualityLine(quality: AlbumArtQuality): String =
     stringResource(
         when (quality) {
             AlbumArtQuality.LOW -> R.string.presentation_batch_f_album_art_quality_low_line
-            AlbumArtQuality.MEDIUM -> R.string.presentation_batch_f_album_art_quality_medium_line
             AlbumArtQuality.HIGH -> R.string.presentation_batch_f_album_art_quality_high_line
-            AlbumArtQuality.ORIGINAL -> R.string.presentation_batch_f_album_art_quality_original_line
         }
     )
 

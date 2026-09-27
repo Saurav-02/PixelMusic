@@ -7,54 +7,37 @@ import org.junit.Test
 class ThumbnailUrlUtilsTest {
 
     @Test
-    fun optimizeArtworkUrl_googleUserContent_originalQuality() {
-        val input = "https://lh3.googleusercontent.com/xyz=w120-h120-l90-rj"
-        val output = ThumbnailUrlUtils.optimizeArtworkUrl(input, AlbumArtQuality.ORIGINAL)
-        assertThat(output).isEqualTo("https://lh3.googleusercontent.com/xyz=w1200-h1200-l90-rj")
-    }
-
-    @Test
     fun optimizeArtworkUrl_googleUserContent_highQuality() {
         val input = "https://lh3.googleusercontent.com/xyz=w400-h400"
         val output = ThumbnailUrlUtils.optimizeArtworkUrl(input, AlbumArtQuality.HIGH)
-        assertThat(output).isEqualTo("https://lh3.googleusercontent.com/xyz=w800-h800-l90-rj")
-    }
-
-    @Test
-    fun optimizeArtworkUrl_googleUserContent_mediumQuality() {
-        val input = "https://lh3.googleusercontent.com/xyz=s500"
-        val output = ThumbnailUrlUtils.optimizeArtworkUrl(input, AlbumArtQuality.MEDIUM)
-        assertThat(output).isEqualTo("https://lh3.googleusercontent.com/xyz=w512-h512-l90-rj")
+        assertThat(output).isEqualTo("https://lh3.googleusercontent.com/xyz=w720-h720-l90-rj")
     }
 
     @Test
     fun optimizeArtworkUrl_googleUserContent_lowQuality() {
         val input = "https://lh3.googleusercontent.com/xyz"
         val output = ThumbnailUrlUtils.optimizeArtworkUrl(input, AlbumArtQuality.LOW)
-        assertThat(output).isEqualTo("https://lh3.googleusercontent.com/xyz=w256-h256-l90-rj")
+        assertThat(output).isEqualTo("https://lh3.googleusercontent.com/xyz=w360-h360-l90-rj")
     }
 
     @Test
     fun optimizeArtworkUrl_youtubeThumbnail_standardReplacements() {
         val inputHq = "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
-        assertThat(ThumbnailUrlUtils.optimizeArtworkUrl(inputHq, AlbumArtQuality.ORIGINAL))
+        assertThat(ThumbnailUrlUtils.optimizeArtworkUrl(inputHq, AlbumArtQuality.HIGH))
             .isEqualTo("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg")
 
         val inputMax = "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
         assertThat(ThumbnailUrlUtils.optimizeArtworkUrl(inputMax, AlbumArtQuality.LOW))
-            .isEqualTo("https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg")
-
-        assertThat(ThumbnailUrlUtils.optimizeArtworkUrl(inputMax, AlbumArtQuality.MEDIUM))
-            .isEqualTo("https://i.ytimg.com/vi/dQw4w9WgXcQ/sddefault.jpg")
+            .isEqualTo("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg")
 
         assertThat(ThumbnailUrlUtils.optimizeArtworkUrl(inputMax, AlbumArtQuality.HIGH))
-            .isEqualTo("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg")
+            .isEqualTo("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg")
     }
 
     @Test
     fun optimizeArtworkUrl_localArtwork_untouched() {
         val localArt = "pixelmusic_local_art://song/42"
-        assertThat(ThumbnailUrlUtils.optimizeArtworkUrl(localArt, AlbumArtQuality.ORIGINAL))
+        assertThat(ThumbnailUrlUtils.optimizeArtworkUrl(localArt, AlbumArtQuality.HIGH))
             .isEqualTo(localArt)
 
         val contentArt = "content://media/external/audio/albumart/1"
@@ -68,8 +51,8 @@ class ThumbnailUrlUtilsTest {
         assertThat(
             ThumbnailUrlUtils.getEffectiveQuality(
                 isMetered = false,
-                qualityWifi = AlbumArtQuality.ORIGINAL,
-                qualityMobile = AlbumArtQuality.MEDIUM,
+                qualityWifi = AlbumArtQuality.HIGH,
+                qualityMobile = AlbumArtQuality.LOW,
                 performanceMode = true
             )
         ).isEqualTo(AlbumArtQuality.LOW)
@@ -78,20 +61,20 @@ class ThumbnailUrlUtilsTest {
         assertThat(
             ThumbnailUrlUtils.getEffectiveQuality(
                 isMetered = true,
-                qualityWifi = AlbumArtQuality.ORIGINAL,
-                qualityMobile = AlbumArtQuality.MEDIUM,
+                qualityWifi = AlbumArtQuality.HIGH,
+                qualityMobile = AlbumArtQuality.LOW,
                 performanceMode = false
             )
-        ).isEqualTo(AlbumArtQuality.MEDIUM)
+        ).isEqualTo(AlbumArtQuality.LOW)
 
         // Unmetered network uses wifi quality
         assertThat(
             ThumbnailUrlUtils.getEffectiveQuality(
                 isMetered = false,
-                qualityWifi = AlbumArtQuality.ORIGINAL,
-                qualityMobile = AlbumArtQuality.MEDIUM,
+                qualityWifi = AlbumArtQuality.HIGH,
+                qualityMobile = AlbumArtQuality.LOW,
                 performanceMode = false
             )
-        ).isEqualTo(AlbumArtQuality.ORIGINAL)
+        ).isEqualTo(AlbumArtQuality.HIGH)
     }
 }

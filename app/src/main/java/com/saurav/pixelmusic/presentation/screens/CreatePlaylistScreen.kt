@@ -335,7 +335,7 @@ private fun CreatePlaylistContent(
 
     LaunchedEffect(selectedImageUri) {
          if (selectedImageUri != null) {
-             val loader = ImageLoader(context)
+             val loader = context.imageLoader
              val request = ImageRequest.Builder(context)
                  .data(selectedImageUri)
                  .allowHardware(false)
@@ -775,7 +775,7 @@ fun EditPlaylistContent(
     // Image Loader
     LaunchedEffect(selectedImageUri) {
          if (selectedImageUri != null) {
-             val loader = ImageLoader(context)
+             val loader = context.imageLoader
              val request = ImageRequest.Builder(context)
                  .data(selectedImageUri)
                  .allowHardware(false)

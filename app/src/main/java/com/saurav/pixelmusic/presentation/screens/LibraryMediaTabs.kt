@@ -166,8 +166,11 @@ fun LibraryAlbumsTab(
                             (startIndexToPrefetch until endIndexToPrefetch).forEach { indexToPrefetch ->
                                 val album = albums.peek(indexToPrefetch)
                                 album?.albumArtUriString?.let { uri ->
+                                    val effectiveQuality = com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+                                    val optimizedUri = com.saurav.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(uri, effectiveQuality) ?: uri
                                     val request = ImageRequest.Builder(context)
-                                        .data(uri)
+                                        .data(optimizedUri)
+                                        .diskCacheKey(optimizedUri)
                                         .size(Size(256, 256))
                                         .build()
                                     imageLoader.enqueue(request)
@@ -195,8 +198,11 @@ fun LibraryAlbumsTab(
                             (startIndexToPrefetch until endIndexToPrefetch).forEach { indexToPrefetch ->
                                 val album = albums.peek(indexToPrefetch)
                                 album?.albumArtUriString?.let { uri ->
+                                    val effectiveQuality = com.saurav.pixelmusic.presentation.components.SmartImageCache.getEffectiveQuality()
+                                    val optimizedUri = com.saurav.pixelmusic.utils.ThumbnailUrlUtils.optimizeArtworkUrl(uri, effectiveQuality) ?: uri
                                     val request = ImageRequest.Builder(context)
-                                        .data(uri)
+                                        .data(optimizedUri)
+                                        .diskCacheKey(optimizedUri)
                                         .size(Size(256, 256))
                                         .build()
                                     imageLoader.enqueue(request)
