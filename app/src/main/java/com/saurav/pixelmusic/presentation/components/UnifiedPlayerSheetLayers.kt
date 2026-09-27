@@ -19,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
@@ -114,9 +116,8 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
             CompositionLocalProvider(
                 LocalMaterialTheme provides albumColorScheme
             ) {
-                val fullPlayerScale by remember(bottomSheetOpenFraction) {
-                    // Keep the depth effect, but avoid aggressive full-screen rescaling on every frame.
-                    derivedStateOf { lerp(1f, 0.972f, bottomSheetOpenFraction) }
+                val fullPlayerBlurRadius by remember(bottomSheetOpenFraction) {
+                    derivedStateOf { (20f * bottomSheetOpenFraction.coerceIn(0f, 1f)).dp }
                 }
 
                 val fullPlayerZIndex by remember {
@@ -146,13 +147,21 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
                     modifier = Modifier
                         .fillMaxWidth()
                         .requiredHeight(containerHeight)
+                        .then(
+                            if (fullPlayerBlurRadius > 0.dp) {
+                                Modifier.blur(
+                                    radius = fullPlayerBlurRadius,
+                                    edgeTreatment = BlurredEdgeTreatment.Unbounded
+                                )
+                            } else {
+                                Modifier
+                            }
+                        )
                         .graphicsLayer {
                             // Read from FullPlayerVisualState lazy getters in the draw phase;
                             // these read Animatable.value internally → re-draw only, no recomposition.
                             alpha = fullPlayerVisualState.contentAlpha
                             translationY = fullPlayerVisualState.translationY
-                            scaleX = fullPlayerScale
-                            scaleY = fullPlayerScale
                         }
                         .zIndex(fullPlayerZIndex)
                         .offset { fullPlayerOffset }
