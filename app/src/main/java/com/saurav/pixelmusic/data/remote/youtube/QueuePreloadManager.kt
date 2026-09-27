@@ -107,8 +107,19 @@ object QueuePreloadManager {
                 
                 val (duration, position, currentIndex) = playerState
                 
-                // Trigger preloading when 50% completed AND we haven't processed this index yet
-                if (duration > 0 && position >= duration / 2 && currentIndex != lastPreloadedIndex) {
+                val connectivityStateHolder = runCatching {
+                    appContext?.let { ctx ->
+                        dagger.hilt.android.EntryPointAccessors.fromApplication<com.saurav.pixelmusic.data.remote.youtube.YoutubeHelperEntryPoint>(
+                            ctx.applicationContext,
+                            com.saurav.pixelmusic.data.remote.youtube.YoutubeHelperEntryPoint::class.java
+                        ).connectivityStateHolder()
+                    }
+                }.getOrNull()
+                val isMetered = connectivityStateHolder?.isMeteredNetwork?.value == true
+
+                // Defer preloading on metered connections until 80% to avoid wasting data if the track is skipped early
+                val threshold = if (isMetered) 0.80f else 0.50f
+                if (duration > 0 && position >= (duration * threshold).toLong() && currentIndex != lastPreloadedIndex) {
                     lastPreloadedIndex = currentIndex
                     triggerPreload()
                     break // Stop watching until the next track transition restarts it
@@ -135,11 +146,6 @@ object QueuePreloadManager {
 
             val (currentIndex, totalCount) = playerState
             
-            // Strictly respect user's configured queue preload size preference
-            val preloadLimit = settings.preloadQueueSize.coerceIn(1, 10)
-            val maxTargetIndex = minOf(totalCount - 1, currentIndex + preloadLimit)
-            if (currentIndex + 1 >= totalCount) return@launch
-
             val connectivityStateHolder = runCatching {
                 dagger.hilt.android.EntryPointAccessors.fromApplication<com.saurav.pixelmusic.data.remote.youtube.YoutubeHelperEntryPoint>(
                     ctx.applicationContext,
@@ -148,6 +154,12 @@ object QueuePreloadManager {
             }.getOrNull()
 
             val isMetered = connectivityStateHolder?.isMeteredNetwork?.value == true
+
+            // On metered connections, preload only the immediate next track (N+1) to conserve data.
+            // On unmetered networks, cap to at most 2 tracks ahead to prevent cache thrashing.
+            val preloadLimit = if (isMetered) 1 else settings.preloadQueueSize.coerceIn(1, 2)
+            val maxTargetIndex = minOf(totalCount - 1, currentIndex + preloadLimit)
+            if (currentIndex + 1 >= totalCount) return@launch
 
             for (targetIndex in (currentIndex + 1)..maxTargetIndex) {
                 if (!isActive) break

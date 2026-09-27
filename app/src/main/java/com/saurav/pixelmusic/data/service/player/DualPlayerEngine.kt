@@ -701,14 +701,21 @@ class DualPlayerEngine @Inject constructor(
         val extractorsFactory = DefaultExtractorsFactory()
             .setMp4ExtractorFlags(Mp4Extractor.FLAG_WORKAROUND_IGNORE_EDIT_LISTS)
 
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
+        val isMetered = connectivityManager?.isActiveNetworkMetered == true
+
+        val minBufferMs = if (isMetered) 12_000 else 30_000
+        val maxBufferMs = if (isMetered) 20_000 else 60_000
+        val backBufferMs = if (isMetered) 10_000 else 30_000
+
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                30_000,
-                60_000,
+                minBufferMs,
+                maxBufferMs,
                 500,
                 2_000
             )
-            .setBackBuffer(30_000, true)
+            .setBackBuffer(backBufferMs, true)
             .build()
 
         return ExoPlayer.Builder(context, renderersFactory)

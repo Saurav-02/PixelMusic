@@ -334,13 +334,16 @@ object YoutubeHelper {
                     StreamingAudioQuality.AUTO -> {
                         val bandwidthKbps = connectivityStateHolder.getDownstreamBandwidthKbps()
                         when {
+                            isMetered && !forceHigh -> {
+                                if (bandwidthKbps in 1 until 1000) 64 else 128
+                            }
                             bandwidthKbps >= 3000 -> 0
                             bandwidthKbps in 1000 until 3000 -> 128
                             bandwidthKbps in 1 until 1000 -> 64
                             else -> if (isMetered) 128 else 0
                         }
                     }
-                    StreamingAudioQuality.HIGH -> 0
+                    StreamingAudioQuality.HIGH -> if (isMetered && !forceHigh) 128 else 0
                     else -> targetQuality.maxBitrateKbps
                 }
             }

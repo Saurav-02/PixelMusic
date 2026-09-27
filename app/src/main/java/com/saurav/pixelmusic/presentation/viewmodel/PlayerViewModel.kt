@@ -1203,14 +1203,17 @@ class PlayerViewModel @Inject constructor(
             combine(
                 playerUiState.map { it.currentPlaybackQueue }.distinctUntilChanged(),
                 stablePlayerState.map { it.currentMediaItemIndex }.distinctUntilChanged(),
-                lyricsSourcePreference
-            ) { queue, index, sourcePref ->
-                Triple(queue, index, sourcePref)
+                lyricsSourcePreference,
+                connectivityStateHolder.isMeteredNetwork
+            ) { queue, index, sourcePref, isMetered ->
+                Pair(Triple(queue, index, sourcePref), isMetered)
             }
-            .collect { (queue, index, sourcePref) ->
+            .collect { (params, isMetered) ->
+                // Skip background lyrics pre-caching on metered networks to save data; current song lyrics are fetched on demand
+                if (isMetered) return@collect
+                val (queue, index, sourcePref) = params
                 if (index in queue.indices) {
-                    // Match Queue Preload logic: Fetch lyrics only for next 2 tracks
-                    val preloadSize = 2 
+                    val preloadSize = 1 
                     val nextSongs = mutableListOf<Song>()
                     val qSize = queue.size
                     if (qSize > 1) {
