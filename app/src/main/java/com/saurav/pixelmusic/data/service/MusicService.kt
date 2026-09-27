@@ -899,7 +899,7 @@ class MusicService : MediaLibraryService() {
         }
         setMediaNotificationProvider(localOnlyProvider)
         serviceScope.launch {
-            restorePlaybackQueueSnapshotIfNeeded()
+            userPreferencesRepository.setPlaybackQueueSnapshot(null)
             mediaSession?.let { refreshMediaSessionUi(it) }
             requestWidgetFullUpdate(force = true)
         }
@@ -1921,7 +1921,8 @@ class MusicService : MediaLibraryService() {
         if (!allowBackground || !isIntentionalPlayback) {
             // Player is genuinely paused, empty, or user disabled background play: shut it down.
             stopPlaybackAndUnload(
-                reason = if (!allowBackground) "task_removed_background_disabled" else "task_removed_not_playing"
+                reason = if (!allowBackground) "task_removed_background_disabled" else "task_removed_not_playing",
+                preservePlaybackSnapshot = false
             )
         } else {
             // Safety measure: Immediately save the queue and position to disk
@@ -2167,10 +2168,8 @@ class MusicService : MediaLibraryService() {
     }
 
     private suspend fun restorePlaybackQueueSnapshotIfNeeded() {
-        val alreadyHasQueue = withContext(Dispatchers.Main.immediate) {
-            engine.masterPlayer.mediaItemCount > 0
-        }
-        if (alreadyHasQueue) return
+        // Cold start queue restoration disabled: sessions start fresh
+        return
 
         val snapshot = runCatching {
             userPreferencesRepository.getPlaybackQueueSnapshotOnce()
@@ -3095,7 +3094,7 @@ class MusicService : MediaLibraryService() {
 
     private fun stopPlaybackAndUnload(
         reason: String,
-        preservePlaybackSnapshot: Boolean = true,
+        preservePlaybackSnapshot: Boolean = false,
     ) {
         Timber.tag(TAG).d(
             "Stopping playback and unloading service. reason=%s",
