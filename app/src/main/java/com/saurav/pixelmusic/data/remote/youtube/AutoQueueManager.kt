@@ -62,6 +62,8 @@ object AutoQueueManager {
     private var playerRef: Player? = null
     private var musicDaoRef: MusicDao? = null
     private var engagementDaoRef: com.saurav.pixelmusic.data.database.EngagementDao? = null
+    private var userPreferencesRepo: com.saurav.pixelmusic.data.preferences.UserPreferencesRepository? = null
+    private var minSongDurationMs: Int = 0
     // BUG 5 FIX: Called after items are added to the player so DualPlayerEngine can
     // refresh its internal queue snapshot immediately (not waiting for TIMELINE_CHANGED
     // during an active crossfade).
@@ -121,6 +123,7 @@ object AutoQueueManager {
         coroutineScope: CoroutineScope,
         musicDao: MusicDao,
         engagementDao: com.saurav.pixelmusic.data.database.EngagementDao,
+        userPreferencesRepository: com.saurav.pixelmusic.data.preferences.UserPreferencesRepository? = null,
         onQueueItemsAdded: (() -> Unit)? = null
     ) {
         scope = coroutineScope
@@ -130,6 +133,14 @@ object AutoQueueManager {
         musicDaoRef = musicDao
         engagementDaoRef = engagementDao
         onQueueItemsAddedCallback = onQueueItemsAdded
+        userPreferencesRepo = userPreferencesRepository
+        userPreferencesRepository?.let { repo ->
+            coroutineScope.launch(Dispatchers.IO) {
+                repo.minSongDurationFlow.collect { duration ->
+                    minSongDurationMs = duration
+                }
+            }
+        }
         player.addListener(playerListener)
         printd("AutoQueueManager attached")
     }
@@ -606,10 +617,16 @@ object AutoQueueManager {
     }
 
     suspend fun buildMixQueue(seedSong: Song, onlineRelated: List<Song>): List<Song> {
-        if (onlineRelated.isNotEmpty()) {
-            return (listOf(seedSong) + onlineRelated).distinctBy { it.youtubeId ?: it.id }
+        val minDuration = minSongDurationMs
+        val filteredOnline = if (minDuration > 0) {
+            onlineRelated.filter { it.duration <= 0L || it.duration >= minDuration }
+        } else {
+            onlineRelated
         }
-        val dao = musicDaoRef ?: return (listOf(seedSong) + onlineRelated).distinctBy { it.id }
+        if (filteredOnline.isNotEmpty()) {
+            return (listOf(seedSong) + filteredOnline).distinctBy { it.youtubeId ?: it.id }
+        }
+        val dao = musicDaoRef ?: return (listOf(seedSong) + filteredOnline).distinctBy { it.id }
         val engagementDao = engagementDaoRef
         
         val highlyRotatedIds = mutableSetOf<String>()
@@ -1121,6 +1138,7 @@ object AutoQueueManager {
             // Helper to check artist limits and session mood to ensure acoustic consistency & diversity
             val activeMood = getActiveSessionMood()
             fun canAddSong(song: Song): Boolean {
+                if (minSongDurationMs > 0 && song.duration > 0 && song.duration < minSongDurationMs) return false
                 val songIdStr = song.id
                 val isInQueue = currentQueueIds.any { isSameSong(it, songIdStr) }
                 val isAvoid = avoidIds.any { isSameSong(it, songIdStr) }
@@ -1335,8 +1353,10 @@ object AutoQueueManager {
                 val addedVideoIdsLocal = synchronized(addedVideoIds) {
                     addedVideoIds.toSet()
                 }
+                val minDurationSec = minSongDurationMs / 1000
                 val filteredItems = nextResult.items
                     .filter { it.id !in addedVideoIdsLocal }
+                    .filter { minDurationSec <= 0 || it.duration == null || it.duration >= minDurationSec }
 
                 if (filteredItems.isEmpty()) {
                     // All items in this continuation batch are already added.
@@ -1364,7 +1384,9 @@ object AutoQueueManager {
                     if (filteredItems.isEmpty() && nextResult.relatedEndpoint != null) {
                         try {
                             val relatedPage = YouTube.related(nextResult.relatedEndpoint).getOrNull()
-                            val relatedSongs = relatedPage?.songs?.filter { it.id !in addedVideoIdsLocal }.orEmpty()
+                            val relatedSongs = relatedPage?.songs?.filter {
+                                it.id !in addedVideoIdsLocal && (minDurationSec <= 0 || it.duration == null || it.duration >= minDurationSec)
+                            }.orEmpty()
                             if (relatedSongs.isNotEmpty()) {
                                 for (item in relatedSongs) {
                                     addToAddedVideoIds(item.id)

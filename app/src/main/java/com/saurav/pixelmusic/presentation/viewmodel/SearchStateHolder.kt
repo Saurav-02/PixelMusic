@@ -194,6 +194,8 @@ class SearchStateHolder @Inject constructor(
                     val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
                     val hideExplicit = userPreferencesRepository.hideExplicitFlow.first()
                     val hideVideo = userPreferencesRepository.hideVideoFlow.first()
+                    val minSongDurationMs = userPreferencesRepository.minSongDurationFlow.first()
+                    val minSongDurationSec = minSongDurationMs / 1000
                     val shouldFilterVideos = pureYtMusicOnly || hideVideo
                     val newItems = mutableListOf<SearchResultItem>()
                     result.items.forEach { item ->
@@ -203,7 +205,8 @@ class SearchStateHolder @Inject constructor(
                                 val isMusicVideo = musicVideoType == "MUSIC_VIDEO_TYPE_OMV" || musicVideoType == "MUSIC_VIDEO_TYPE_UGC"
                                 val passesVideoFilter = !shouldFilterVideos || !isMusicVideo
                                 val passesExplicitFilter = !hideExplicit || !item.explicit
-                                if (passesVideoFilter && passesExplicitFilter) {
+                                val passesDurationFilter = minSongDurationSec <= 0 || item.duration == null || item.duration >= minSongDurationSec
+                                if (passesVideoFilter && passesExplicitFilter && passesDurationFilter) {
                                     newItems.add(SearchResultItem.SongItem(item.toNativeSong()))
                                 }
                             }
@@ -244,6 +247,8 @@ class SearchStateHolder @Inject constructor(
         val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
         val hideExplicit = userPreferencesRepository.hideExplicitFlow.first()
         val hideVideo = userPreferencesRepository.hideVideoFlow.first()
+        val minSongDurationMs = userPreferencesRepository.minSongDurationFlow.first()
+        val minSongDurationSec = minSongDurationMs / 1000
         val shouldFilterVideos = pureYtMusicOnly || hideVideo
         val items = mutableListOf<SearchResultItem>()
         
@@ -267,7 +272,8 @@ class SearchStateHolder @Inject constructor(
                 val mixedItems = mutableListOf<SearchResultItem>()
 
                 val rawSongs = songsResult?.items?.filterIsInstance<SongItem>()?.filterVideo(shouldFilterVideos).orEmpty()
-                val songsList = if (hideExplicit) rawSongs.filter { !it.explicit } else rawSongs
+                val explicitFiltered = if (hideExplicit) rawSongs.filter { !it.explicit } else rawSongs
+                val songsList = explicitFiltered.filter { minSongDurationSec <= 0 || it.duration == null || it.duration >= minSongDurationSec }
                 val artistsList = artistsResult?.items?.filterIsInstance<ArtistItem>().orEmpty()
                 val albumsList = albumsResult?.items?.filterIsInstance<AlbumItem>().orEmpty()
 
@@ -315,7 +321,8 @@ class SearchStateHolder @Inject constructor(
                 val result = YouTube.search(query, YouTube.SearchFilter.FILTER_SONG).getOrNull()
                 lastContinuationToken = result?.continuation
                 val rawSongs = result?.items?.filterIsInstance<SongItem>()?.filterVideo(shouldFilterVideos).orEmpty()
-                val filteredSongs = if (hideExplicit) rawSongs.filter { !it.explicit } else rawSongs
+                val explicitFiltered = if (hideExplicit) rawSongs.filter { !it.explicit } else rawSongs
+                val filteredSongs = explicitFiltered.filter { minSongDurationSec <= 0 || it.duration == null || it.duration >= minSongDurationSec }
                 filteredSongs.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
             }
             SearchFilterType.ARTISTS -> {
@@ -348,7 +355,8 @@ class SearchStateHolder @Inject constructor(
                     val result = YouTube.search(query, YouTube.SearchFilter.FILTER_VIDEO).getOrNull()
                     lastContinuationToken = result?.continuation
                     val rawVideos = result?.items?.filterIsInstance<SongItem>().orEmpty()
-                    val filteredVideos = if (hideExplicit) rawVideos.filter { !it.explicit } else rawVideos
+                    val explicitFiltered = if (hideExplicit) rawVideos.filter { !it.explicit } else rawVideos
+                    val filteredVideos = explicitFiltered.filter { minSongDurationSec <= 0 || it.duration == null || it.duration >= minSongDurationSec }
                     filteredVideos.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
                 }
             }

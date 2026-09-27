@@ -413,7 +413,7 @@ class MusicService : MediaLibraryService() {
         engine.addTransitionFinishedListener(transitionFinishedListener)
 
         // Attach YouTube radio-mode auto-queue and stream-URL preloader
-        AutoQueueManager.attach(engine.masterPlayer, this, youtubeDatastoreRepository, serviceScope, musicDao, engagementDao, engine::forceRefreshQueueSnapshot)
+        AutoQueueManager.attach(engine.masterPlayer, this, youtubeDatastoreRepository, serviceScope, musicDao, engagementDao, userPreferencesRepository, engine::forceRefreshQueueSnapshot)
         QueuePreloadManager.attach(engine.masterPlayer, this, youtubeDatastoreRepository, serviceScope, exoCache, engine)
 
         controller.initialize()

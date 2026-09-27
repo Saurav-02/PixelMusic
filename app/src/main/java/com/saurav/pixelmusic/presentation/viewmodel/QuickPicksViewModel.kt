@@ -23,6 +23,7 @@ import saurav.shru.pixelmusic.innertube.YouTube
 import com.saurav.pixelmusic.data.preferences.UserPreferencesRepository
 import com.saurav.pixelmusic.data.preferences.QuickPicks
 import com.saurav.pixelmusic.data.repository.MusicRepository
+import saurav.shru.pixelmusic.innertube.models.filterDuration
 import saurav.shru.pixelmusic.innertube.models.filterExplicit
 import saurav.shru.pixelmusic.innertube.models.filterVideo
 import saurav.shru.pixelmusic.innertube.models.SongItem
@@ -245,6 +246,8 @@ class QuickPicksViewModel @Inject constructor(
         val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
         val hideExplicit = userPreferencesRepository.hideExplicitFlow.first()
         val hideVideo = userPreferencesRepository.hideVideoFlow.first()
+        val minSongDurationMs = userPreferencesRepository.getMinSongDuration()
+        val minDurationSec = minSongDurationMs / 1000
         val shouldFilterVideos = pureYtMusicOnly || hideVideo
 
         // 1. Gather historical seeds from user's local/online history and favorites
@@ -322,7 +325,7 @@ class QuickPicksViewModel @Inject constructor(
                     val radioResult = YouTube.next(
                         WatchEndpoint(videoId = videoId)
                     ).getOrNull()
-                    radioResult?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos) ?: emptyList()
+                    radioResult?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos)?.filterDuration(minDurationSec) ?: emptyList()
                 } catch (e: Exception) {
                     Timber.tag("QuickPicks").w(e, "Song mix radio fetch failed for videoId: $videoId")
                     emptyList()
@@ -339,7 +342,7 @@ class QuickPicksViewModel @Inject constructor(
                     val relatedEndpoint = nextResult?.relatedEndpoint
                     if (relatedEndpoint != null) {
                         val relatedPage = YouTube.related(relatedEndpoint).getOrNull()
-                        relatedPage?.songs?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos) ?: emptyList()
+                        relatedPage?.songs?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos)?.filterDuration(minDurationSec) ?: emptyList()
                     } else emptyList()
                 } else emptyList()
             } catch (e: Exception) {
@@ -355,7 +358,7 @@ class QuickPicksViewModel @Inject constructor(
                     val artistPage = YouTube.artist(artistId).getOrNull()
                     val radioEndpoint = artistPage?.artist?.radioEndpoint
                     if (radioEndpoint != null) {
-                        YouTube.next(radioEndpoint).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos) ?: emptyList()
+                        YouTube.next(radioEndpoint).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos)?.filterDuration(minDurationSec) ?: emptyList()
                     } else {
                         // Fallback to top song's mix radio
                         val songsSection = artistPage?.sections?.find {
@@ -366,7 +369,7 @@ class QuickPicksViewModel @Inject constructor(
                         if (firstSong != null) {
                             YouTube.next(
                                 WatchEndpoint(playlistId = "RDAMVM${firstSong.id}", videoId = firstSong.id)
-                            ).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos) ?: emptyList()
+                            ).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos)?.filterDuration(minDurationSec) ?: emptyList()
                         } else emptyList()
                     }
                 } catch (e: Exception) {
@@ -388,7 +391,7 @@ class QuickPicksViewModel @Inject constructor(
                             val artistPage = YouTube.artist(artistId).getOrNull()
                             val radioEndpoint = artistPage?.artist?.radioEndpoint
                             if (radioEndpoint != null) {
-                                YouTube.next(radioEndpoint).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos) ?: emptyList()
+                                YouTube.next(radioEndpoint).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos)?.filterDuration(minDurationSec) ?: emptyList()
                             } else {
                                 val songsSection = artistPage?.sections?.find {
                                     it.title.contains("songs", ignoreCase = true) ||
@@ -398,7 +401,7 @@ class QuickPicksViewModel @Inject constructor(
                                 if (firstSong != null) {
                                     YouTube.next(
                                         WatchEndpoint(playlistId = "RDAMVM${firstSong.id}", videoId = firstSong.id)
-                                    ).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos) ?: emptyList()
+                                    ).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos)?.filterDuration(minDurationSec) ?: emptyList()
                                 } else emptyList()
                             }
                         } else emptyList()
@@ -422,6 +425,7 @@ class QuickPicksViewModel @Inject constructor(
                     .flatMap { section -> section.items.filterIsInstance<SongItem>() }
                     .filterExplicit(hideExplicit)
                     .filterVideo(shouldFilterVideos)
+                    .filterDuration(minDurationSec)
             } catch (e: Exception) {
                 Timber.tag("QuickPicks").w(e, "Personalized home section fetch failed")
                 emptyList()
@@ -431,7 +435,7 @@ class QuickPicksViewModel @Inject constructor(
         // Bucket D: User's online YT Music History
         val ytHistoryDeferred = async(Dispatchers.IO) {
             try {
-                YouTube.musicHistory().getOrNull()?.sections?.flatMap { it.songs }?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos) ?: emptyList()
+                YouTube.musicHistory().getOrNull()?.sections?.flatMap { it.songs }?.filterExplicit(hideExplicit)?.filterVideo(shouldFilterVideos)?.filterDuration(minDurationSec) ?: emptyList()
             } catch (e: Exception) {
                 emptyList()
             }
@@ -539,6 +543,8 @@ class QuickPicksViewModel @Inject constructor(
         val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
         val hideExplicit = userPreferencesRepository.hideExplicitFlow.first()
         val hideVideo = userPreferencesRepository.hideVideoFlow.first()
+        val minSongDurationMs = userPreferencesRepository.getMinSongDuration()
+        val minDurationSec = minSongDurationMs / 1000
         val shouldFilterVideos = pureYtMusicOnly || hideVideo
         val songs = withContext(Dispatchers.IO) {
             try {
@@ -558,6 +564,7 @@ class QuickPicksViewModel @Inject constructor(
                     .flatMap { it.items.filterIsInstance<SongItem>() }
                     .filterExplicit(hideExplicit)
                     .filterVideo(shouldFilterVideos)
+                    .filterDuration(minDurationSec)
                     .distinctBy { it.id }
                     .take(25)
                     .map { it.toNativeSong() }

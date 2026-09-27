@@ -138,3 +138,15 @@ fun <T : YTItem> List<T>.filterVideo(enabled: Boolean = true) =
     } else {
         this
     }
+
+fun <T : YTItem> List<T>.filterDuration(minDurationSec: Int) =
+    if (minDurationSec > 0) {
+        filter {
+            when (it) {
+                is SongItem -> it.duration == null || it.duration >= minDurationSec
+                else -> true
+            }
+        }
+    } else {
+        this
+    }

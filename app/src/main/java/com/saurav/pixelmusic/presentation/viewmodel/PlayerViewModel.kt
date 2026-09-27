@@ -2697,7 +2697,13 @@ class PlayerViewModel @Inject constructor(
                 saurav.shru.pixelmusic.innertube.YouTube.next(endpoint)
             }
             result.onSuccess { nextResult ->
-                var songs = nextResult.items.map { it.toNativeSong() }
+                val minDurationSec = userPreferencesRepository.getMinSongDuration() / 1000
+                val filteredItems = if (minDurationSec > 0) {
+                    nextResult.items.filter { it.duration == null || it.duration >= minDurationSec }
+                } else {
+                    nextResult.items
+                }
+                var songs = filteredItems.map { it.toNativeSong() }
                 if (songs.isNotEmpty()) {
                     if (artistName != null && artistName.isNotBlank()) {
                         val nameLower = artistName.lowercase().trim()
@@ -2784,8 +2790,14 @@ class PlayerViewModel @Inject constructor(
                         YouTube.artistItems(songsMoreEndpoint)
                     }
                     fetchResult.onSuccess { page ->
+                        val minDurationSec = userPreferencesRepository.getMinSongDuration() / 1000
                         val fetchedSongs = page.items.mapNotNull { item ->
-                            (item as? saurav.shru.pixelmusic.innertube.models.SongItem)?.toNativeSong()
+                            val songItem = item as? saurav.shru.pixelmusic.innertube.models.SongItem ?: return@mapNotNull null
+                            if (minDurationSec > 0 && songItem.duration != null && songItem.duration < minDurationSec) {
+                                null
+                            } else {
+                                songItem.toNativeSong()
+                            }
                         }
                         if (fetchedSongs.isNotEmpty()) {
                             allArtistSongs.addAll(fetchedSongs)
@@ -2817,7 +2829,13 @@ class PlayerViewModel @Inject constructor(
                         YouTube.next(radioEndpoint)
                     }
                     nextResult.onSuccess { nextData ->
-                        val radioSongs = nextData.items.map { it.toNativeSong() }
+                        val minDurationSec = userPreferencesRepository.getMinSongDuration() / 1000
+                        val filteredItems = if (minDurationSec > 0) {
+                            nextData.items.filter { it.duration == null || it.duration >= minDurationSec }
+                        } else {
+                            nextData.items
+                        }
+                        val radioSongs = filteredItems.map { it.toNativeSong() }
                         val nameLower = artistName.lowercase().trim()
                         relatedSongs = radioSongs.filter {
                             !it.artist.lowercase().contains(nameLower) &&
@@ -3013,7 +3031,13 @@ class PlayerViewModel @Inject constructor(
                 saurav.shru.pixelmusic.innertube.YouTube.next(endpoint)
             }
             result.onSuccess { nextResult ->
-                val relatedSongs = nextResult.items.map { it.toNativeSong() }
+                val minDurationSec = userPreferencesRepository.getMinSongDuration() / 1000
+                val filteredItems = if (minDurationSec > 0) {
+                    nextResult.items.filter { it.duration == null || it.duration >= minDurationSec }
+                } else {
+                    nextResult.items
+                }
+                val relatedSongs = filteredItems.map { it.toNativeSong() }
                 if (relatedSongs.isNotEmpty()) {
                     val filteredRelated = relatedSongs.filter { it.youtubeId != videoId && it.id != first.id }
                     val fullQueue = (listOf(first) + filteredRelated).take(50)
@@ -3105,7 +3129,13 @@ class PlayerViewModel @Inject constructor(
                 saurav.shru.pixelmusic.innertube.YouTube.next(endpoint)
             }
             result.onSuccess { nextResult ->
-                val relatedSongs = nextResult.items.map { it.toNativeSong() }
+                val minDurationSec = userPreferencesRepository.getMinSongDuration() / 1000
+                val filteredItems = if (minDurationSec > 0) {
+                    nextResult.items.filter { it.duration == null || it.duration >= minDurationSec }
+                } else {
+                    nextResult.items
+                }
+                val relatedSongs = filteredItems.map { it.toNativeSong() }
                 if (relatedSongs.isNotEmpty()) {
                     val fullQueue = withContext(Dispatchers.IO) {
                         com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.buildMixQueue(song, relatedSongs)
