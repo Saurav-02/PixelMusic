@@ -123,7 +123,12 @@ import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Cloud
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material3.HorizontalDivider
+import com.saurav.pixelmusic.presentation.components.TimerOptionsBottomSheet
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.shadow
 import androidx.compose.material3.ListItem
@@ -276,7 +281,9 @@ fun FullPlayerContent(
     var showPlaylistBottomSheet by remember { mutableStateOf(false) }
     var showLyricsSheet by remember { mutableStateOf(false) }
     var showShareSheet by remember { mutableStateOf(false) }
+    var showSleepTimerSheet by rememberSaveable { mutableStateOf(false) }
     var showArtistPicker by rememberSaveable { mutableStateOf(false) }
+    val activeTimerValueDisplay by playerViewModel.activeTimerValueDisplay.collectAsStateWithLifecycle()
     
     val lyricsSearchUiState by playerViewModel.lyricsSearchUiState.collectAsStateWithLifecycle()
     val playerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
@@ -1263,6 +1270,26 @@ fun FullPlayerContent(
         )
     }
 
+    if (showSleepTimerSheet) {
+        val activeTimerDurationMinutes by playerViewModel.activeTimerDurationMinutes.collectAsStateWithLifecycle()
+        val isEndOfTrackTimerActive by playerViewModel.isEndOfTrackTimerActive.collectAsStateWithLifecycle()
+        val playCount by playerViewModel.playCount.collectAsStateWithLifecycle()
+
+        TimerOptionsBottomSheet(
+            onDismiss = { showSleepTimerSheet = false },
+            activeTimerValueDisplay = activeTimerValueDisplay,
+            activeTimerDurationMinutes = activeTimerDurationMinutes,
+            playCount = playCount,
+            isEndOfTrackTimerActive = isEndOfTrackTimerActive,
+            onSetPredefinedTimer = { minutes -> playerViewModel.setSleepTimer(minutes) },
+            onSetEndOfTrackTimer = { enable -> playerViewModel.setEndOfTrackTimer(enable, song.id) },
+            onOpenCustomTimePicker = {},
+            onCancelTimer = { playerViewModel.cancelSleepTimer() },
+            onCancelCountedPlay = { playerViewModel.cancelCountedPlay() },
+            onPlayCounter = { count -> playerViewModel.playCounted(count) }
+        )
+    }
+
     // Player Options Menu Bottom Sheet
     if (showSongInfoBottomSheet) {
         val songInfoViewModel: SongInfoBottomSheetViewModel = hiltViewModel()
@@ -1351,33 +1378,33 @@ fun FullPlayerContent(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp),
+                                color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.25f)
+                            )
 
                             // FLAGSHIP OPTION: Start Mix from this
-                            ListItem(
+                            Surface(
                                 modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 6.dp)
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .clickable {
-                                        showSongInfoBottomSheet = false
-                                        playerViewModel.startMixFromSong(song)
-                                    },
-                                colors = ListItemDefaults.colors(
-                                    containerColor = LocalMaterialTheme.current.primaryContainer.copy(alpha = 0.85f)
-                                ),
-                                headlineContent = {
-                                    Text(
-                                        text = "Start Mix from this",
-                                        fontFamily = GoogleSansRounded,
-                                        fontWeight = FontWeight.Bold,
-                                        color = LocalMaterialTheme.current.onPrimaryContainer,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                },
-                                leadingContent = {
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                                shape = RoundedCornerShape(20.dp),
+                                color = LocalMaterialTheme.current.primaryContainer.copy(alpha = 0.85f),
+                                onClick = {
+                                    showSongInfoBottomSheet = false
+                                    playerViewModel.startMixFromSong(song)
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(40.dp)
+                                            .size(42.dp)
                                             .background(LocalMaterialTheme.current.primary, CircleShape),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -1388,157 +1415,198 @@ fun FullPlayerContent(
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
-                                }
-                            )
-
-                            // Option 1: Add to Playlist
-                            ListItem(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .clickable {
-                                        showSongInfoBottomSheet = false
-                                        showPlaylistBottomSheet = true
-                                    },
-                                colors = ListItemDefaults.colors(
-                                    containerColor = LocalMaterialTheme.current.surfaceContainerHigh.copy(alpha = 0.6f)
-                                ),
-                                headlineContent = {
-                                    Text(
-                                        text = "Add to playlist",
-                                        fontFamily = GoogleSansRounded,
-                                        fontWeight = FontWeight.Medium,
-                                        color = LocalMaterialTheme.current.onSurface
-                                    )
-                                },
-                                leadingContent = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .background(LocalMaterialTheme.current.surfaceVariant, CircleShape),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
-                                            contentDescription = null,
-                                            tint = LocalMaterialTheme.current.onSurfaceVariant,
-                                            modifier = Modifier.size(20.dp)
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Start Mix from this",
+                                            fontFamily = GoogleSansRounded,
+                                            fontWeight = FontWeight.Bold,
+                                            color = LocalMaterialTheme.current.onPrimaryContainer,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Text(
+                                            text = "Continuous smart radio based on this track",
+                                            fontFamily = GoogleSansRounded,
+                                            fontWeight = FontWeight.Normal,
+                                            color = LocalMaterialTheme.current.onPrimaryContainer.copy(alpha = 0.7f),
+                                            style = MaterialTheme.typography.bodySmall
                                         )
                                     }
-                                }
-                            )
-
-                            // Option 3: Share Card
-                            ListItem(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .clickable {
-                                        showSongInfoBottomSheet = false
-                                        showShareSheet = true
-                                    },
-                                colors = ListItemDefaults.colors(
-                                    containerColor = LocalMaterialTheme.current.surfaceContainerHigh.copy(alpha = 0.6f)
-                                ),
-                                headlineContent = {
-                                    Text(
-                                        text = "Share to Stories",
-                                        fontFamily = GoogleSansRounded,
-                                        fontWeight = FontWeight.Medium,
-                                        color = LocalMaterialTheme.current.onSurface
+                                    Icon(
+                                        imageVector = Icons.Rounded.ChevronRight,
+                                        contentDescription = null,
+                                        tint = LocalMaterialTheme.current.onPrimaryContainer.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(20.dp)
                                     )
-                                },
-                                leadingContent = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .background(LocalMaterialTheme.current.surfaceVariant, CircleShape),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Share,
-                                            contentDescription = null,
-                                            tint = LocalMaterialTheme.current.onSurfaceVariant,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
                                 }
-                            )
-                            // Option 4: Download Song
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Grouped Actions Card
                             var isDownloaded by remember(song.id) { mutableStateOf(false) }
                             LaunchedEffect(song.id) {
                                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                                     val musicDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_MUSIC)
-                                    // 1. Look in the PixelMusic subfolder
                                     val pixelMusicDir = java.io.File(musicDir, "PixelMusic")
-                                    
-                                    // 2. Use the exact same regex used in SongDownloader to match the file names perfectly
                                     val cleanTitle = song.title.replace(Regex("[\\\\/:*?\"<>|]"), "_")
                                     val cleanArtist = song.displayArtist.replace(Regex("[\\\\/:*?\"<>|]"), "_")
-                                    
                                     val targetFile = java.io.File(pixelMusicDir, "$cleanTitle - $cleanArtist.m4a")
                                     isDownloaded = targetFile.exists()
                                 }
                             }
 
-                            ListItem(
+                            Surface(
                                 modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .clickable(enabled = !isDownloaded) {
-                                        showSongInfoBottomSheet = false
-                                        fileImportScope.launch {
-                                            var currentLyricsObj = lyricsProvider()
-                                            if (currentLyricsObj == null) {
-                                                currentLyricsObj = playerViewModel.stablePlayerState.value.lyrics
-                                            }
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                shape = RoundedCornerShape(22.dp),
+                                color = LocalMaterialTheme.current.surfaceContainerLowest.copy(alpha = 0.7f)
+                            ) {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    // Row 1: Add to Playlist
+                                    SongActionRow(
+                                        icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                                        title = "Add to playlist",
+                                        onClick = {
+                                            showSongInfoBottomSheet = false
+                                            showPlaylistBottomSheet = true
+                                        }
+                                    )
 
-                                            val lyricsText = if (!currentLyricsObj?.synced.isNullOrEmpty()) {
-                                                currentLyricsObj.synced.joinToString("\n") { it.line }
-                                            } else {
-                                                currentLyricsObj?.plain?.toString()
-                                            }
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(start = 68.dp, end = 16.dp),
+                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.18f)
+                                    )
 
-                                            if (lyricsText.isNullOrBlank()) {
-                                                withContext(kotlinx.coroutines.Dispatchers.Main) {
-                                                    android.widget.Toast.makeText(context, "Note: Downloading without lyrics (None found)", android.widget.Toast.LENGTH_SHORT).show()
+                                    // Row 2: Download
+                                    SongActionRow(
+                                        icon = if (isDownloaded) Icons.Rounded.CheckCircle else Icons.Rounded.Download,
+                                        title = if (isDownloaded) "Downloaded" else "Download",
+                                        subtitle = if (isDownloaded) "Saved to device storage" else null,
+                                        iconTint = if (isDownloaded) LocalMaterialTheme.current.primary else LocalMaterialTheme.current.onSurfaceVariant,
+                                        iconBgColor = if (isDownloaded) LocalMaterialTheme.current.primary.copy(alpha = 0.12f) else LocalMaterialTheme.current.surfaceVariant,
+                                        onClick = {
+                                            if (!isDownloaded) {
+                                                showSongInfoBottomSheet = false
+                                                fileImportScope.launch {
+                                                    var currentLyricsObj = lyricsProvider()
+                                                    if (currentLyricsObj == null) {
+                                                        currentLyricsObj = playerViewModel.stablePlayerState.value.lyrics
+                                                    }
+
+                                                    val lyricsText = if (!currentLyricsObj?.synced.isNullOrEmpty()) {
+                                                        currentLyricsObj.synced.joinToString("\n") { it.line }
+                                                    } else {
+                                                        currentLyricsObj?.plain?.toString()
+                                                    }
+
+                                                    if (lyricsText.isNullOrBlank()) {
+                                                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                                            android.widget.Toast.makeText(context, "Note: Downloading without lyrics (None found)", android.widget.Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    }
+
+                                                    com.saurav.pixelmusic.utils.SongDownloader.downloadAndTagSong(
+                                                        context = context,
+                                                        song = song,
+                                                        lyricsText = lyricsText
+                                                    )
                                                 }
                                             }
-
-                                            com.saurav.pixelmusic.utils.SongDownloader.downloadAndTagSong(
-                                                context = context, 
-                                                song = song, 
-                                                lyricsText = lyricsText
-                                            )
                                         }
-                                    },
-                                colors = ListItemDefaults.colors(
-                                    containerColor = LocalMaterialTheme.current.surfaceContainerHigh.copy(alpha = 0.6f)
-                                ),
-                                headlineContent = {
-                                    Text(
-                                        text = if (isDownloaded) "Already downloaded" else "Download",
-                                        fontFamily = GoogleSansRounded,
-                                        fontWeight = FontWeight.Medium,
-                                        color = if (isDownloaded) LocalMaterialTheme.current.onSurface.copy(alpha = 0.5f) else LocalMaterialTheme.current.onSurface
                                     )
-                                },
-                                leadingContent = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .background(LocalMaterialTheme.current.surfaceVariant, CircleShape),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isDownloaded) Icons.Rounded.CheckCircle else Icons.Rounded.Download,
-                                            contentDescription = "Download Song",
-                                            tint = if (isDownloaded) LocalMaterialTheme.current.primary else LocalMaterialTheme.current.onSurfaceVariant,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
+
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(start = 68.dp, end = 16.dp),
+                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.18f)
+                                    )
+
+                                    // Row 3: Share to Stories
+                                    SongActionRow(
+                                        icon = Icons.Rounded.Share,
+                                        title = "Share to Stories",
+                                        onClick = {
+                                            showSongInfoBottomSheet = false
+                                            showShareSheet = true
+                                        }
+                                    )
+
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(start = 68.dp, end = 16.dp),
+                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.18f)
+                                    )
+
+                                    // Row 4: Sleep Timer
+                                    val isSleepTimerActive = activeTimerValueDisplay != null
+                                    SongActionRow(
+                                        icon = Icons.Rounded.Timer,
+                                        title = "Sleep timer",
+                                        trailingContent = {
+                                            if (isSleepTimerActive) {
+                                                Surface(
+                                                    shape = CircleShape,
+                                                    color = LocalMaterialTheme.current.primaryContainer,
+                                                    contentColor = LocalMaterialTheme.current.onPrimaryContainer
+                                                ) {
+                                                    Text(
+                                                        text = activeTimerValueDisplay.orEmpty(),
+                                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                }
+                                            } else {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.ChevronRight,
+                                                    contentDescription = null,
+                                                    tint = LocalMaterialTheme.current.onSurfaceVariant.copy(alpha = 0.5f),
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            showSongInfoBottomSheet = false
+                                            showSleepTimerSheet = true
+                                        }
+                                    )
+
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(start = 68.dp, end = 16.dp),
+                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.18f)
+                                    )
+
+                                    // Row 5: Equalizer Shortcut
+                                    SongActionRow(
+                                        icon = Icons.Rounded.GraphicEq,
+                                        title = "Equalizer",
+                                        subtitle = "Audio effects & tuning",
+                                        trailingContent = {
+                                            Icon(
+                                                imageVector = Icons.Rounded.ChevronRight,
+                                                contentDescription = null,
+                                                tint = LocalMaterialTheme.current.onSurfaceVariant.copy(alpha = 0.5f),
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        },
+                                        onClick = {
+                                            showSongInfoBottomSheet = false
+                                            val audioSessionId = playerViewModel.activeAudioSessionId.value
+                                            val intent = android.content.Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                                                putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                                                putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC)
+                                                if (audioSessionId != 0) {
+                                                    putExtra(android.media.audiofx.AudioEffect.EXTRA_AUDIO_SESSION, audioSessionId)
+                                                }
+                                            }
+                                            try {
+                                                context.startActivity(intent)
+                                            } catch (e: Exception) {
+                                                android.widget.Toast.makeText(context, "System equalizer not available", android.widget.Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         }
                     }
                 }
@@ -3272,6 +3340,61 @@ private fun BottomToggleRow(
                 iconId = if (isFavorite) R.drawable.round_favorite_24 else R.drawable.rounded_favorite_24,
                 contentDesc = "Favorito"
             )
+        }
+    }
+}
+
+@Composable
+private fun SongActionRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String? = null,
+    iconTint: Color = LocalMaterialTheme.current.onSurfaceVariant,
+    iconBgColor: Color = LocalMaterialTheme.current.surfaceVariant,
+    trailingContent: (@Composable () -> Unit)? = null,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 13.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(iconBgColor, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontFamily = GoogleSansRounded,
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodyLarge,
+                color = LocalMaterialTheme.current.onSurface
+            )
+            if (!subtitle.isNullOrBlank()) {
+                Text(
+                    text = subtitle,
+                    fontFamily = GoogleSansRounded,
+                    fontWeight = FontWeight.Normal,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = LocalMaterialTheme.current.onSurfaceVariant
+                )
+            }
+        }
+        if (trailingContent != null) {
+            trailingContent()
         }
     }
 }

@@ -260,7 +260,7 @@ fun QueueBottomSheet(
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
-    var showTimerOptions by rememberSaveable { mutableStateOf(false) }
+
     var showClearQueueDialog by remember { mutableStateOf(false) }
     var isFabExpanded by rememberSaveable { mutableStateOf(false) }
 
@@ -917,16 +917,11 @@ fun QueueBottomSheet(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val isTimerActiveDerived = remember {
-                        derivedStateOf { activeTimerValueDisplay.value != null }
-                    }
                     QueueControlsToolbar(
                         isShuffleOn = isShuffleOn,
                         repeatMode = repeatMode,
-                        isTimerActive = isTimerActiveDerived,
                         onToggleShuffle = onToggleShuffle,
-                        onToggleRepeat = onToggleRepeat,
-                        onTimerClick = { showTimerOptions = true }
+                        onToggleRepeat = onToggleRepeat
                     )
 
                     Spacer(modifier = Modifier.width(4.dp))
@@ -1126,21 +1121,7 @@ fun QueueBottomSheet(
             }
         }
 
-        if (showTimerOptions) {
-            TimerOptionsBottomSheet(
-                onPlayCounter = onPlayCounter,
-                activeTimerValueDisplay = activeTimerValueDisplay.value,
-                activeTimerDurationMinutes = activeTimerDurationMinutes.value,
-                playCount = playCount.value,
-                isEndOfTrackTimerActive = isEndOfTrackTimerActive.value,
-                onDismiss = { showTimerOptions = false },
-                onSetPredefinedTimer = onSetPredefinedTimer,
-                onSetEndOfTrackTimer = onSetEndOfTrackTimer,
-                onOpenCustomTimePicker = onOpenCustomTimePicker,
-                onCancelCountedPlay = onCancelCountedPlay,
-                onCancelTimer = onCancelTimer
-            )
-        }
+
 
         if (showClearQueueDialog) {
             AlertDialog(
@@ -1413,10 +1394,8 @@ private fun QueueSourceBadge(
 private fun QueueControlsToolbar(
     isShuffleOn: Boolean,
     repeatMode: Int,
-    isTimerActive: androidx.compose.runtime.State<Boolean>,
     onToggleShuffle: () -> Unit,
     onToggleRepeat: () -> Unit,
-    onTimerClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val activeColors = IconButtonDefaults.filledIconButtonColors(
@@ -1471,17 +1450,6 @@ private fun QueueControlsToolbar(
                 Icon(
                     imageVector = repeatIcon,
                     contentDescription = stringResource(R.string.presentation_batch_e_cd_toggle_repeat),
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            FilledTonalIconButton(
-                onClick = onTimerClick,
-                colors = if (isTimerActive.value) activeColors else inactiveColors,
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Timer,
-                    contentDescription = stringResource(R.string.presentation_batch_e_cd_sleep_timer),
                 )
             }
         }

@@ -20,7 +20,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -73,7 +75,7 @@ class SleepTimerStateHolder @Inject constructor(
 
     private fun sleepTimerPendingIntent(): PendingIntent {
         val intent = Intent(context, SleepTimerReceiver::class.java).apply {
-            action = SLEEP_TIMER_ACTION
+            action = com.saurav.pixelmusic.data.service.MusicService.ACTION_SLEEP_TIMER_EXPIRED
             setPackage(context.packageName)
         }
         return PendingIntent.getBroadcast(
@@ -159,6 +161,42 @@ class SleepTimerStateHolder @Inject constructor(
             )
         }
 
+        val args = Bundle().apply {
+            putInt(MusicNotificationProvider.EXTRA_SLEEP_TIMER_MINUTES, durationMinutes)
+        }
+        mediaControllerProvider?.invoke()?.sendCustomCommand(
+            SessionCommand(MusicNotificationProvider.CUSTOM_COMMAND_SET_SLEEP_TIMER_DURATION, Bundle.EMPTY),
+            args
+        )
+
+        sleepTimerJob?.cancel()
+        sleepTimerJob = scope.launch {
+            while (isActive) {
+                val remainingMs = endTime - System.currentTimeMillis()
+                if (remainingMs <= 0L) {
+                    _sleepTimerEndTimeMillis.value = null
+                    _activeTimerDurationMinutes.value = null
+                    _activeTimerValueDisplay.value = null
+                    mediaControllerProvider?.invoke()?.pause()
+                    toastEmitter?.invoke(context.getString(R.string.sleep_timer_ui_cancel_timer))
+                    break
+                }
+                val remainingMinutes = (remainingMs + 59_999L) / 60_000L
+                _activeTimerDurationMinutes.value = remainingMinutes.toInt()
+                val totalSec = remainingMs / 1000L
+                val min = totalSec / 60L
+                val sec = totalSec % 60L
+                _activeTimerValueDisplay.value = if (min >= 60) {
+                    val hr = min / 60
+                    val remMin = min % 60
+                    String.format(java.util.Locale.getDefault(), "%d:%02d:%02d", hr, remMin, sec)
+                } else {
+                    String.format(java.util.Locale.getDefault(), "%d:%02d", min, sec)
+                }
+                delay(1000L)
+            }
+        }
+
         scope.launch {
             toastEmitter?.invoke(
                 context.getString(R.string.sleep_timer_set_for_minutes_toast, durationMinutes)
@@ -204,6 +242,14 @@ class SleepTimerStateHolder @Inject constructor(
                 return
             }
 
+            val args = Bundle().apply {
+                putBoolean(MusicNotificationProvider.EXTRA_END_OF_TRACK_ENABLED, true)
+            }
+            mediaControllerProvider?.invoke()?.sendCustomCommand(
+                SessionCommand(MusicNotificationProvider.CUSTOM_COMMAND_SET_SLEEP_TIMER_END_OF_TRACK, Bundle.EMPTY),
+                args
+            )
+
             _activeTimerDurationMinutes.value = null
             _activeTimerValueDisplay.value = context.getString(R.string.sleep_timer_display_eot)
             _isEndOfTrackTimerActive.value = true
@@ -248,6 +294,13 @@ class SleepTimerStateHolder @Inject constructor(
             }
         } else {
             eotSongMonitorJob?.cancel()
+            val args = Bundle().apply {
+                putBoolean(MusicNotificationProvider.EXTRA_END_OF_TRACK_ENABLED, false)
+            }
+            mediaControllerProvider?.invoke()?.sendCustomCommand(
+                SessionCommand(MusicNotificationProvider.CUSTOM_COMMAND_SET_SLEEP_TIMER_END_OF_TRACK, Bundle.EMPTY),
+                args
+            )
             if (_isEndOfTrackTimerActive.value && EotStateHolder.eotTargetSongId.value != null) {
                 cancelSleepTimer()
             }
@@ -260,6 +313,11 @@ class SleepTimerStateHolder @Inject constructor(
     fun cancelSleepTimer(overrideToastMessage: String? = null, suppressDefaultToast: Boolean = false) {
         val scope = this.scope ?: return
         val wasAnythingActive = _activeTimerValueDisplay.value != null
+
+        mediaControllerProvider?.invoke()?.sendCustomCommand(
+            SessionCommand(MusicNotificationProvider.CUSTOM_COMMAND_CANCEL_SLEEP_TIMER, Bundle.EMPTY),
+            Bundle.EMPTY
+        )
 
         // Cancel Alarm
         val pendingIntent = sleepTimerPendingIntent()
@@ -303,6 +361,6 @@ class SleepTimerStateHolder @Inject constructor(
     }
 
     private companion object {
-        const val SLEEP_TIMER_ACTION = "com.saurav.pixelmusic.action.SLEEP_TIMER_EXPIRED"
+        const val SLEEP_TIMER_ACTION = com.saurav.pixelmusic.data.service.MusicService.ACTION_SLEEP_TIMER_EXPIRED
     }
 }

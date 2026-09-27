@@ -12,7 +12,11 @@ class SleepTimerReceiver : BroadcastReceiver() {
             action = MusicService.ACTION_SLEEP_TIMER_EXPIRED
         }
         try {
-            context.startService(serviceIntent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                androidx.core.content.ContextCompat.startForegroundService(context, serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
         } catch (e: Exception) {
             Timber.tag("SleepTimerReceiver").e(e, "Failed to start service for sleep timer")
         }
