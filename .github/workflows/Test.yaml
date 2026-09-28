@@ -63,6 +63,11 @@ jobs:
           # Save the new number to GitHub Environments so the next steps can use it
           echo "NEXT_NUM=$NEXT_NUM" >> $GITHUB_ENV
 
+      - name: Compile Kotlin
+        # Compile gate (monitoring cutoff): if this step passes, the code
+        # compiles and the heavier build step below needs no watch.
+        run: ./gradlew :app:compileReleaseKotlin
+
       - name: Build Release APK
         # We use env.NEXT_NUM instead of github.run_number
         run: ./gradlew :app:assembleRelease -PAPP_VERSION_NAME="test-build-${{ env.NEXT_NUM }}"
