@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.lerp
 import com.saurav.pixelmusic.presentation.viewmodel.ColorSchemePair
 
 val LocalPixelMusicDarkTheme = staticCompositionLocalOf { false }
+val LocalIsBlackAndWhiteTheme = staticCompositionLocalOf { false }
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
@@ -353,6 +354,93 @@ val BlueLightColorScheme = lightColorScheme(
     onError = Color.White
 )
 
+// --- Black & White / Theme ++ Palette (Creamy White & Carbon Black) ---
+private val BwDarkBackground = Color(0xFF0C0C0C)
+private val BwDarkSurface = Color(0xFF141414)
+private val BwDarkPrimary = Color(0xFFF7F5EE) // Creamy White
+private val BwDarkOnPrimary = Color(0xFF121212) // Carbon Black
+private val BwDarkPrimaryContainer = Color(0xFF282828)
+private val BwDarkOnPrimaryContainer = Color(0xFFF7F5EE)
+private val BwDarkSecondary = Color(0xFFD6D3CA) // Soft Creamy Pearl
+private val BwDarkOnSecondary = Color(0xFF121212)
+private val BwDarkSecondaryContainer = Color(0xFF222222)
+private val BwDarkOnSecondaryContainer = Color(0xFFE5E2D9)
+private val BwDarkTertiary = Color(0xFFB0ACA2) // Warm Ash
+private val BwDarkOnTertiary = Color(0xFF121212)
+private val BwDarkOnBackground = Color(0xFFF7F5EE)
+private val BwDarkOnSurface = Color(0xFFF7F5EE)
+private val BwDarkSurfaceVariant = Color(0xFF222222)
+private val BwDarkOnSurfaceVariant = Color(0xFFB5B2A9)
+private val BwDarkOutline = Color(0xFF6B6861)
+private val BwDarkOutlineVariant = Color(0xFF383632)
+
+private val BwLightBackground = Color(0xFFFAF7F0) // Creamy White
+private val BwLightSurface = Color(0xFFF4F0E7) // Soft Creamy Ivory
+private val BwLightPrimary = Color(0xFF141414) // Carbon Black
+private val BwLightOnPrimary = Color(0xFFFAF7F0) // Creamy White
+private val BwLightPrimaryContainer = Color(0xFFE2DDD2) // Alabaster Container
+private val BwLightOnPrimaryContainer = Color(0xFF141414)
+private val BwLightSecondary = Color(0xFF333333) // Deep Charcoal
+private val BwLightOnSecondary = Color(0xFFFFFFFF)
+private val BwLightSecondaryContainer = Color(0xFFEAE5DB)
+private val BwLightOnSecondaryContainer = Color(0xFF1C1C1C)
+private val BwLightTertiary = Color(0xFF5A5852)
+private val BwLightOnTertiary = Color(0xFFFFFFFF)
+private val BwLightOnBackground = Color(0xFF141414) // Carbon Black text
+private val BwLightOnSurface = Color(0xFF141414)
+private val BwLightSurfaceVariant = Color(0xFFE5E0D5)
+private val BwLightOnSurfaceVariant = Color(0xFF524F49)
+private val BwLightOutline = Color(0xFF8C8880)
+private val BwLightOutlineVariant = Color(0xFFC7C2B6)
+
+val BwDarkColorScheme = darkColorScheme(
+    primary = BwDarkPrimary,
+    onPrimary = BwDarkOnPrimary,
+    primaryContainer = BwDarkPrimaryContainer,
+    onPrimaryContainer = BwDarkOnPrimaryContainer,
+    secondary = BwDarkSecondary,
+    onSecondary = BwDarkOnSecondary,
+    secondaryContainer = BwDarkSecondaryContainer,
+    onSecondaryContainer = BwDarkOnSecondaryContainer,
+    tertiary = BwDarkTertiary,
+    onTertiary = BwDarkOnTertiary,
+    background = BwDarkBackground,
+    onBackground = BwDarkOnBackground,
+    surface = BwDarkSurface,
+    onSurface = BwDarkOnSurface,
+    surfaceVariant = BwDarkSurfaceVariant,
+    onSurfaceVariant = BwDarkOnSurfaceVariant,
+    outline = BwDarkOutline,
+    outlineVariant = BwDarkOutlineVariant,
+    surfaceTint = BwDarkPrimary,
+    error = Color(0xFFE0E0E0),
+    onError = Color(0xFF121212)
+)
+
+val BwLightColorScheme = lightColorScheme(
+    primary = BwLightPrimary,
+    onPrimary = BwLightOnPrimary,
+    primaryContainer = BwLightPrimaryContainer,
+    onPrimaryContainer = BwLightOnPrimaryContainer,
+    secondary = BwLightSecondary,
+    onSecondary = BwLightOnSecondary,
+    secondaryContainer = BwLightSecondaryContainer,
+    onSecondaryContainer = BwLightOnSecondaryContainer,
+    tertiary = BwLightTertiary,
+    onTertiary = BwLightOnTertiary,
+    background = BwLightBackground,
+    onBackground = BwLightOnBackground,
+    surface = BwLightSurface,
+    onSurface = BwLightOnSurface,
+    surfaceVariant = BwLightSurfaceVariant,
+    onSurfaceVariant = BwLightOnSurfaceVariant,
+    outline = BwLightOutline,
+    outlineVariant = BwLightOutlineVariant,
+    surfaceTint = BwLightPrimary,
+    error = Color(0xFF222222),
+    onError = Color(0xFFFAF7F0)
+)
+
 // --- Sunset Orange Palette ---
 private val OrangeDarkBackground = Color(0xFF120E0A)
 private val OrangeDarkSurface = Color(0xFF1A1510)
@@ -423,6 +511,7 @@ val OrangeLightColorScheme = lightColorScheme(
 private fun getStaticColorScheme(palette: String, darkTheme: Boolean): androidx.compose.material3.ColorScheme {
     return if (darkTheme) {
         when (palette) {
+            "BLACK_AND_WHITE" -> BwDarkColorScheme
             "PURPLE" -> PurpleDarkColorScheme
             "BLUE" -> BlueDarkColorScheme
             "ORANGE" -> OrangeDarkColorScheme
@@ -431,6 +520,7 @@ private fun getStaticColorScheme(palette: String, darkTheme: Boolean): androidx.
         }
     } else {
         when (palette) {
+            "BLACK_AND_WHITE" -> BwLightColorScheme
             "PURPLE" -> PurpleLightColorScheme
             "BLUE" -> BlueLightColorScheme
             "ORANGE" -> OrangeLightColorScheme
@@ -453,8 +543,11 @@ fun PixelMusicTheme(
     FontSettings.useSystemFont = useSystemFont
     val context = LocalContext.current
     
+    val isBwTheme = colorPalette == "BLACK_AND_WHITE"
+
     // 1. Calculate the base scheme like you normally do
     val baseColorScheme = when {
+        isBwTheme -> getStaticColorScheme("BLACK_AND_WHITE", darkTheme)
         colorSchemePairOverride != null -> {
             if (darkTheme) colorSchemePairOverride.dark else colorSchemePairOverride.light
         }
@@ -498,7 +591,10 @@ fun PixelMusicTheme(
         navigationColor = activeColorScheme.background
     )
 
-    CompositionLocalProvider(LocalPixelMusicDarkTheme provides darkTheme) {
+    CompositionLocalProvider(
+        LocalPixelMusicDarkTheme provides darkTheme,
+        LocalIsBlackAndWhiteTheme provides isBwTheme
+    ) {
         MaterialTheme(
             colorScheme = activeColorScheme,
             typography = Typography,

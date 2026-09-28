@@ -57,7 +57,7 @@ class ExternalPlayerActivity : ComponentActivity() {
             val colorPalette by themePreferencesRepository.colorPalettePreferenceFlow.collectAsStateWithLifecycle(initialValue = "DYNAMIC")
             val appFontMode by themePreferencesRepository.appFontModeFlow.collectAsStateWithLifecycle(initialValue = AppFontMode.APP_DEFAULT)
             val isAmoledBlackEnabled by themePreferencesRepository.amoledBlackModeFlow.collectAsStateWithLifecycle(initialValue = false)
-            val dynamicColorEnabled = colorPalette == "DYNAMIC" || playerThemePreference == ThemePreference.DYNAMIC
+            val dynamicColorEnabled = (colorPalette == "DYNAMIC" || playerThemePreference == ThemePreference.DYNAMIC) && colorPalette != "BLACK_AND_WHITE"
             val currentAlbumArtColorSchemePair by playerViewModel.currentAlbumArtColorSchemePair.collectAsStateWithLifecycle()
             val colorSchemePairOverride = if (colorPalette == "ALBUM_ART") currentAlbumArtColorSchemePair else null
             PixelMusicTheme(

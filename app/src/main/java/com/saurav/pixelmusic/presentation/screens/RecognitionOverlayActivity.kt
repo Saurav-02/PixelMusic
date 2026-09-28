@@ -66,7 +66,7 @@ class RecognitionOverlayActivity : ComponentActivity() {
         setContent {
             val colorPalette by themePreferencesRepository.colorPalettePreferenceFlow.collectAsStateWithLifecycle(initialValue = "DYNAMIC")
             val playerThemePreference by themePreferencesRepository.playerThemePreferenceFlow.collectAsStateWithLifecycle(initialValue = ThemePreference.ALBUM_ART)
-            val dynamicColorEnabled = colorPalette == "DYNAMIC" || playerThemePreference == ThemePreference.DYNAMIC
+            val dynamicColorEnabled = (colorPalette == "DYNAMIC" || playerThemePreference == ThemePreference.DYNAMIC) && colorPalette != "BLACK_AND_WHITE"
 
             // Force dark theme so the overlay is always deep and sleek
             PixelMusicTheme(

@@ -923,6 +923,7 @@ fun SettingsCategoryScreen(
                                         options = mapOf(
                                             "DYNAMIC" to stringResource(R.string.setcat_color_palette_dynamic),
                                             "ALBUM_ART" to stringResource(R.string.setcat_color_palette_album_art),
+                                            "BLACK_AND_WHITE" to stringResource(R.string.setcat_color_palette_bw),
                                             "SAGE" to stringResource(R.string.setcat_color_palette_sage),
                                             "PURPLE" to stringResource(R.string.setcat_color_palette_purple),
                                             "BLUE" to stringResource(R.string.setcat_color_palette_blue),
