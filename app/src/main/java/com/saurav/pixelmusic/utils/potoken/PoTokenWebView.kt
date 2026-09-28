@@ -311,7 +311,7 @@ class PoTokenWebView private constructor(
                 .url(url)
             val (httpCode, body) = withContext(Dispatchers.IO) {
                 httpClient.newCall(requestBuilder.build()).execute().use { response ->
-                    response.code to if (response.code == 200) response.body?.string() else null
+                    response.code to if (response.code == 200) response.body.string() else null
                 }
             }
             if (body.isNullOrEmpty()) {

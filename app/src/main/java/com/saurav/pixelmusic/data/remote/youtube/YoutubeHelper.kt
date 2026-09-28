@@ -573,9 +573,9 @@ private suspend fun getSongUrlFromYoutube(
         val mimeType = playbackData.format.mimeType
         val bitrate = playbackData.format.bitrate
 
-        val isM4a = mimeType?.contains("mp4", ignoreCase = true) == true ||
-            mimeType?.contains("m4a", ignoreCase = true) == true ||
-            mimeType?.contains("aac", ignoreCase = true) == true
+        val isM4a = mimeType.contains("mp4", ignoreCase = true) ||
+            mimeType.contains("m4a", ignoreCase = true) ||
+            mimeType.contains("aac", ignoreCase = true)
 
         if (!requireM4a || isM4a) {
             playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl?.let {

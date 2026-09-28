@@ -134,7 +134,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
 import android.widget.Toast
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.runtime.CompositionLocalProvider
@@ -1299,7 +1298,10 @@ fun FullPlayerContent(
     // Player Options Menu Bottom Sheet
     if (showSongInfoBottomSheet) {
         val songInfoViewModel: SongInfoBottomSheetViewModel = hiltViewModel()
-        val songOptionsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val songOptionsSheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+        )
 
         val sheetShape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
         ModalBottomSheet(
