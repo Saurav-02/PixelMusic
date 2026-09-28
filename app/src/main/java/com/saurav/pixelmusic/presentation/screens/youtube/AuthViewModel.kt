@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saurav.pixelmusic.data.remote.youtube.Constants
 import com.saurav.pixelmusic.data.remote.youtube.DatastoreRepository
+import com.saurav.pixelmusic.data.remote.youtube.MAX_YT_ACCOUNTS
 import com.saurav.pixelmusic.data.model.youtube.Cookies
 import com.saurav.pixelmusic.data.worker.SyncManager
 import saurav.shru.pixelmusic.innertube.YouTube
@@ -38,9 +39,15 @@ class AuthViewModel @Inject constructor(
                 // First login goes to slot 1; "Add another account" goes to slot 2
                 // and becomes active atomically (no guest-state flicker).
                 val slot = if (datastoreRepository.ytAccountCount() >= 1) 2 else 1
+                _uiState.update { it.copy(isLoggedIn = true) }
+                // Guard: the WebView may still carry an already-added account's
+                // session — never store the same session twice.
+                if (slot == 2 && isDuplicateSession(cookies, excludeSlot = 2)) {
+                    _eventsChannel.emit(ScreenEvent.Out.LoginDuplicate)
+                    return@launch
+                }
                 datastoreRepository.saveYtAccountSession(slot, Cookies(cookies), null, "", "", "")
                 YouTube.cookie = cookies
-                _uiState.update { it.copy(isLoggedIn = true) }
                 _eventsChannel.emit(ScreenEvent.Out.LoginCompleted)
                 // Trigger an immediate background synchronization of user playlists and library
                 syncManager.fullSync()
@@ -96,6 +103,11 @@ class AuthViewModel @Inject constructor(
             // atomically making it the active account.
             if (cookieStr.isNotEmpty()) {
                 val slot = if (datastoreRepository.ytAccountCount() >= 1) 2 else 1
+                if (slot == 2 && isDuplicateSession(cookieStr, excludeSlot = 2)) {
+                    _uiState.update { it.copy(isLoggedIn = true) }
+                    _eventsChannel.emit(ScreenEvent.Out.LoginDuplicate)
+                    return@launch
+                }
                 datastoreRepository.saveYtAccountSession(
                     slot = slot,
                     cookies = Cookies(cookieStr),
@@ -149,9 +161,29 @@ class AuthViewModel @Inject constructor(
         emit(token)
     }
 
+    /**
+     * True when [cookies] matches an already-stored account's session
+     * (cookie order-insensitive), so the same account is never added twice.
+     */
+    private suspend fun isDuplicateSession(cookies: String, excludeSlot: Int): Boolean {
+        val normalized = normalizeCookies(cookies)
+        if (normalized.isEmpty()) return false
+        for (slot in 1..MAX_YT_ACCOUNTS) {
+            if (slot == excludeSlot) continue
+            val existing = normalizeCookies(datastoreRepository.ytRawCookies(slot))
+            if (existing.isNotEmpty() && existing == normalized) return true
+        }
+        return false
+    }
+
+    private fun normalizeCookies(raw: String): String =
+        raw.split(";").map { it.trim() }.filter { it.isNotEmpty() }.sorted().joinToString(";")
+
     sealed interface ScreenEvent {
         sealed class Out {
             object LoginCompleted : Out()
+            /** Tried to add an account whose session is already stored. */
+            object LoginDuplicate : Out()
         }
     }
 }

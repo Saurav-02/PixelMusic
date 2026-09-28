@@ -476,7 +476,9 @@ fun SettingsScreen(
                                 onClick = {
                                     showLoginOptionsDialog = false
                                     isWaitingForAuthReturn = true
-                                    navController.navigateSafely(Screen.YoutubeAuth.route)
+                                    navController.navigateSafely(
+                                        Screen.YoutubeAuth.createRoute(addAccount = ytAccounts.isNotEmpty())
+                                    )
                                 },
                                 shape = RoundedCornerShape(20.dp),
                                 color = MaterialTheme.colorScheme.surfaceContainer,

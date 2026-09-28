@@ -222,6 +222,13 @@ open class DatastoreRepository(private val context: Context) {
 
     suspend fun ytAccountCount(): Int = ytAccounts.first().size
 
+    /** Raw cookie string stored in [slot] ("" when the slot is empty). */
+    suspend fun ytRawCookies(slot: Int): String {
+        require(slot == 1 || slot == 2) { "slot must be 1 or 2" }
+        val prefs = context.youtubeDataStore.data.first()
+        return if (slot == 2) prefs[PreferenceKeys.YT2_COOKIES] ?: "" else prefs[PreferenceKeys.COOKIES] ?: ""
+    }
+
     /**
      * Switches the active account. This is a single atomic write; every
      * account-backed flow ([cookies], [ytUsername], ...) re-emits and the

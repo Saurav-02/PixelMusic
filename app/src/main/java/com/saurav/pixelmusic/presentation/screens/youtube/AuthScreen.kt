@@ -3,6 +3,8 @@ package com.saurav.pixelmusic.presentation.screens.youtube
 import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.CookieManager
+import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun AuthScreen(
     onBack: () -> Unit,
+    addAccount: Boolean = false,
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -31,6 +34,10 @@ fun AuthScreen(
             when (event) {
                 AuthViewModel.ScreenEvent.Out.LoginCompleted -> {
                     Toast.makeText(context, "Successfully logged in!", Toast.LENGTH_SHORT).show()
+                    onBack()
+                }
+                AuthViewModel.ScreenEvent.Out.LoginDuplicate -> {
+                    Toast.makeText(context, "This account is already added", Toast.LENGTH_SHORT).show()
                     onBack()
                 }
             }
@@ -69,7 +76,18 @@ fun AuthScreen(
                         }
                     }
                 }, "Android")
-                loadUrl(Constants.Auth.START_URL)
+                if (addAccount) {
+                    // Drop the existing Google session so the user gets a fresh
+                    // sign-in / account chooser instead of auto-signing in with
+                    // the already-added account (which would create a duplicate).
+                    CookieManager.getInstance().removeAllCookies {
+                        post { loadUrl(Constants.Auth.START_URL) }
+                    }
+                    CookieManager.getInstance().flush()
+                    WebStorage.getInstance().deleteAllData()
+                } else {
+                    loadUrl(Constants.Auth.START_URL)
+                }
             }
         },
         onRelease = { view ->

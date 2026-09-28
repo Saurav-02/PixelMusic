@@ -803,7 +803,7 @@ fun HomeScreen(
         StreamingProviderSheet(
             onDismissRequest = { showStreamingProviderSheet = false },
             onNavigateToYoutubeAuth = {
-                navController.navigateSafely(Screen.YoutubeAuth.route)
+                navController.navigateSafely(Screen.YoutubeAuth.createRoute())
             }
         )
     }

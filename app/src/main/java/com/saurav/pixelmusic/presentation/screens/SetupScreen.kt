@@ -387,7 +387,7 @@ fun SetupScreen(
                             uiState = uiState,
                             onLoginClick = {
                                 isWaitingForAuthReturn = true
-                                navController.navigateSafely(com.saurav.pixelmusic.presentation.navigation.Screen.YoutubeAuth.route)
+                                navController.navigateSafely(com.saurav.pixelmusic.presentation.navigation.Screen.YoutubeAuth.createRoute())
                             },
                             onAdvancedLoginClick = { showAdvancedYtLoginDialog = true }
                         )

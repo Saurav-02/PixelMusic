@@ -91,6 +91,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -376,7 +378,13 @@ class MainActivity : ComponentActivity() {
                                             }
                                         )
                                     }
-                                    composable(Screen.YoutubeAuth.route) {
+                                    composable(
+                                        route = Screen.YoutubeAuth.route,
+                                        arguments = listOf(navArgument("addAccount") {
+                                            type = NavType.BoolType
+                                            defaultValue = false
+                                        })
+                                    ) {
                                         com.saurav.pixelmusic.presentation.screens.youtube.AuthScreen(
                                             onBack = { setupNavController.popBackStack() }
                                         )

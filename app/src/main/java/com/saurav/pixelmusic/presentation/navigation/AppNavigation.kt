@@ -285,7 +285,7 @@ fun AppNavigation(
                     AccountsScreen(
                         onBackClick = { navController.popBackStack() },
                         onOpenYoutubeAuth = {
-                            navController.navigateSafely(Screen.YoutubeAuth.route)
+                            navController.navigateSafely(Screen.YoutubeAuth.createRoute())
                         },
                         onOpenLastfmSettings = {
                             navController.navigateSafely(Screen.SettingsCategory.createRoute("lastfm"))
@@ -638,15 +638,20 @@ fun AppNavigation(
             }
 
             composable(
-                Screen.YoutubeAuth.route,
+                route = Screen.YoutubeAuth.route,
+                arguments = listOf(navArgument("addAccount") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }),
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
                 popEnterTransition = { popEnterTransition() },
                 popExitTransition = { popExitTransition() },
-            ) {
+            ) { backStackEntry ->
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     com.saurav.pixelmusic.presentation.screens.youtube.AuthScreen(
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStack() },
+                        addAccount = backStackEntry.arguments?.getBoolean("addAccount") == true
                     )
                 }
             }
