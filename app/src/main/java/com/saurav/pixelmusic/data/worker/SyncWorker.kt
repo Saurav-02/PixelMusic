@@ -1426,8 +1426,9 @@ constructor(
 
             // 1. Fetch remote user-created playlists (delta sync — only insert new songs)
             var remotePlaylistsSuccess = false
+            var remotePlaylists: List<PlaylistInfo> = emptyList()
             try {
-                val remotePlaylists = YoutubePlaylistDataSource().retrieveAll(settings)
+                remotePlaylists = YoutubePlaylistDataSource().retrieveAll(settings)
                 remotePlaylists.forEach { playlistInfo ->
                     val existingPlaylist = appDatabase.playlistRepository().getPlaylistById(playlistInfo.id)
                     val existingSongCount = existingPlaylist?.info?.lastSyncSongCount ?: 0
@@ -1456,6 +1457,22 @@ constructor(
             if (!remotePlaylistsSuccess && settings.cookies.raw.isNotBlank()) {
                 Log.w(TAG, "SyncWorker: Remote YouTube playlist fetch failed, but user is logged in. Aborting YouTube sync to prevent wiping local synchronized library.")
                 return
+            }
+
+            // Drop cached playlists that no longer exist remotely (e.g. the previous
+            // account's playlists after switching accounts). Only when the remote
+            // fetch actually returned playlists — never on an empty/failed fetch —
+            // so a network blip can't wipe the cache. Everything downstream
+            // (orphan cleanup, library mirror, playlist counts) then reflects
+            // the newly active account.
+            if (remotePlaylistsSuccess && remotePlaylists.isNotEmpty()) {
+                val remoteIds = remotePlaylists.map { it.id }.toSet()
+                appDatabase.playlistRepository().getAll()
+                    .filter { it.info.id !in remoteIds }
+                    .forEach { stale ->
+                        appDatabase.playlistRepository().deleteFullPlaylist(stale.info.id)
+                        Log.d(TAG, "SyncWorker: Removed stale cached playlist '${stale.info.title}' (not in remote library)")
+                    }
             }
 
             // 2. Fetch and sync Liked Songs playlist ("LM") — delta sync and mapping removed
