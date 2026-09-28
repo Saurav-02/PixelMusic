@@ -354,7 +354,7 @@ val BlueLightColorScheme = lightColorScheme(
     onError = Color.White
 )
 
-// --- Black & White / Theme ++ Palette (Creamy White & Carbon Black) ---
+// --- Black & White Palette (Creamy White & Carbon Black) ---
 private val BwDarkBackground = Color(0xFF0C0C0C)
 private val BwDarkSurface = Color(0xFF141414)
 private val BwDarkPrimary = Color(0xFFF7F5EE) // Creamy White

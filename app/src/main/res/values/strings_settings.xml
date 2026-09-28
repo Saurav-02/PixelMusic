@@ -106,7 +106,7 @@
     <string name="setcat_app_color_palette_label">App Color Palette</string>
     <string name="setcat_app_color_palette_desc">Choose a color scheme or adapt to system dynamic colors.</string>
     <string name="setcat_color_palette_dynamic">Dynamic (System)</string>
-    <string name="setcat_color_palette_bw">Black and White (Theme ++)</string>
+    <string name="setcat_color_palette_bw">Black and White</string>
     <string name="setcat_color_palette_album_art">Live (Album Art)</string>
     <string name="setcat_color_palette_sage">Sage Green (Mint)</string>
     <string name="setcat_color_palette_purple">Classic Purple</string>
