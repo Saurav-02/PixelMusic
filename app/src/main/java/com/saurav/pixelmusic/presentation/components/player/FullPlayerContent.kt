@@ -2484,7 +2484,7 @@ private fun PlayerProgressBarSection(
             if (target < 0f) return@collect
             val timeSinceSeek = System.currentTimeMillis() - lastSeekFinishedTime
             val diff = kotlin.math.abs(progress - target)
-            if (timeSinceSeek > 5000L || diff < 0.04f) {
+            if (timeSinceSeek > 1500L || diff < 0.04f) {
                 targetSeekFraction = -1f
             }
         }
@@ -2551,17 +2551,9 @@ private fun PlayerProgressBarSection(
                 .heightIn(min = 70.dp)
         ) {
             // Isolated Slider Component
-            // Wrapped in a Box with detectVerticalDragGestures to prevent the outer
-            // playerSheetVerticalDragGesture from intercepting slider touches. If the
-            // user's drag has a vertical component, the inner handler absorbs it (consuming
-            // the events) so the sheet-collapse gesture never activates in this area.
             androidx.compose.runtime.key(songId) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .pointerInput(Unit) {
-                            detectVerticalDragGestures(onVerticalDrag = { _, _ -> })
-                        }
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     EfficientSlider(
                         valueState = animatedProgressState,

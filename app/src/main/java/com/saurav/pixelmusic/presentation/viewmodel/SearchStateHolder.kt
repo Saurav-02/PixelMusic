@@ -54,7 +54,7 @@ class SearchStateHolder @Inject constructor(
     private val musicRepository: MusicRepository
 ) {
     companion object {
-        const val SEARCH_DEBOUNCE_MS = 80L
+        const val SEARCH_DEBOUNCE_MS = 250L
         const val SEARCH_CACHE_SIZE = 100
         val albumIdMap = java.util.concurrent.ConcurrentHashMap<Long, String>()
     }
@@ -73,7 +73,7 @@ class SearchStateHolder @Inject constructor(
     val searchHistory = _searchHistory.asStateFlow()
 
     private val searchRequests = MutableSharedFlow<SearchRequest>(
-        extraBufferCapacity = 1,
+        extraBufferCapacity = 16,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     private val latestSearchRequestId = AtomicLong(0L)
@@ -150,7 +150,9 @@ class SearchStateHolder @Inject constructor(
                         if (request.requestId == latestSearchRequestId.get()) {
                             val immutable = results.toImmutableList()
                             _searchResults.value = immutable
-                            searchResultCache.put(query, immutable)
+                            if (immutable.isNotEmpty()) {
+                                searchResultCache.put(query, immutable)
+                            }
 
                             // Pre-fetch top song stream URL
                             scope?.launch(Dispatchers.IO) {
@@ -257,85 +259,120 @@ class SearchStateHolder @Inject constructor(
         lastContinuationToken = null
 
         when (filter) {
-            SearchFilterType.ALL -> coroutineScope {
-                val songsDeferred = async { YouTube.search(query, YouTube.SearchFilter.FILTER_SONG).getOrNull() }
-                val artistsDeferred = async { YouTube.search(query, YouTube.SearchFilter.FILTER_ARTIST).getOrNull() }
-                val albumsDeferred = async { YouTube.search(query, YouTube.SearchFilter.FILTER_ALBUM).getOrNull() }
+            SearchFilterType.ALL -> {
+                // 1. Primary fast attempt: YouTube.searchSummary(query)
+                val summaryResult = runCatching {
+                    YouTube.searchSummary(query).getOrNull()
+                }.getOrNull()
 
-                val songsResult = songsDeferred.await()
-                val artistsResult = artistsDeferred.await()
-                val albumsResult = albumsDeferred.await()
+                val summaryItems = summaryResult?.summaries?.flatMap { it.items }.orEmpty()
+                if (summaryItems.isNotEmpty()) {
+                    val rawSongs = summaryItems.filterIsInstance<SongItem>().filterVideo(shouldFilterVideos)
+                    val explicitFiltered = if (hideExplicit) rawSongs.filter { !it.explicit } else rawSongs
+                    val songsList = explicitFiltered.filter { minSongDurationSec <= 0 || it.duration == null || it.duration >= minSongDurationSec }
+                    val artistsList = summaryItems.filterIsInstance<ArtistItem>()
+                    val albumsList = summaryItems.filterIsInstance<AlbumItem>()
+                    val playlistsList = summaryItems.filterIsInstance<PlaylistItem>()
 
-                lastContinuationToken = songsResult?.continuation
-
-                val popularSongs = mutableListOf<SearchResultItem>()
-                val mixedItems = mutableListOf<SearchResultItem>()
-
-                val rawSongs = songsResult?.items?.filterIsInstance<SongItem>()?.filterVideo(shouldFilterVideos).orEmpty()
-                val explicitFiltered = if (hideExplicit) rawSongs.filter { !it.explicit } else rawSongs
-                val songsList = explicitFiltered.filter { minSongDurationSec <= 0 || it.duration == null || it.duration >= minSongDurationSec }
-                val artistsList = artistsResult?.items?.filterIsInstance<ArtistItem>().orEmpty()
-                val albumsList = albumsResult?.items?.filterIsInstance<AlbumItem>().orEmpty()
-
-                // Separate ATV tracks (Popular Songs)
-                val (atvSongs, nonAtvSongs) = songsList.partition {
-                    val musicVideoType = it.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType
-                    musicVideoType == "MUSIC_VIDEO_TYPE_ATV"
-                }
-
-                atvSongs.forEach { popularSongs.add(SearchResultItem.SongItem(it.toNativeSong())) }
-
-                // Mix remaining categories in interleaving order (1 Artist, 1 Album, 1 non-ATV Song)
-                val artistIterator = artistsList.iterator()
-                val albumIterator = albumsList.iterator()
-                val songIterator = nonAtvSongs.iterator()
-
-                while (artistIterator.hasNext() || albumIterator.hasNext() || songIterator.hasNext()) {
-                    if (artistIterator.hasNext()) {
-                        val artist = artistIterator.next()
-                        mixedItems.add(SearchResultItem.ArtistItem(
-                            Artist(id = ytArtistId(artist.title), name = artist.title, songCount = 0, imageUrl = artist.thumbnail, channelId = artist.id)
-                        ))
+                    songsList.distinctBy { it.id }.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
+                    artistsList.distinctBy { it.id }.forEach { a ->
+                        items.add(SearchResultItem.ArtistItem(Artist(id = ytArtistId(a.title), name = a.title, songCount = 0, imageUrl = a.thumbnail, channelId = a.id)))
                     }
-                    if (albumIterator.hasNext()) {
-                        val album = albumIterator.next()
-                        val longId = ytAlbumId(album.title)
-                        albumIdMap[longId] = album.browseId
-                        mixedItems.add(SearchResultItem.AlbumItem(
-                            Album(id = longId, title = album.title,
-                                artist = album.artists?.joinToString { it.name }.orEmpty(),
-                                year = album.year ?: 0, dateAdded = System.currentTimeMillis(),
-                                albumArtUriString = album.thumbnail, songCount = 0)
-                        ))
+                    albumsList.distinctBy { it.id }.forEach { a ->
+                        val longId = ytAlbumId(a.title)
+                        albumIdMap[longId] = a.browseId
+                        items.add(SearchResultItem.AlbumItem(Album(id = longId, title = a.title,
+                            artist = a.artists?.joinToString { it.name }.orEmpty(), year = a.year ?: 0,
+                            dateAdded = System.currentTimeMillis(), albumArtUriString = a.thumbnail, songCount = 0)))
                     }
-                    if (songIterator.hasNext()) {
-                        val song = songIterator.next()
-                        mixedItems.add(SearchResultItem.SongItem(song.toNativeSong()))
+                    playlistsList.distinctBy { it.id }.forEach { p ->
+                        items.add(SearchResultItem.PlaylistItem(Playlist(id = p.id, name = p.title, songIds = emptyList(), coverImageUri = p.thumbnail, source = "YOUTUBE")))
                     }
                 }
 
-                items.addAll(popularSongs)
-                items.addAll(mixedItems)
+                // 2. If summary search returned no songs, fall back to filtered search
+                if (items.none { it is SearchResultItem.SongItem }) {
+                    coroutineScope {
+                        val songsDeferred = async { YouTube.search(query, YouTube.SearchFilter.FILTER_SONG).getOrNull() }
+                        val artistsDeferred = async { YouTube.search(query, YouTube.SearchFilter.FILTER_ARTIST).getOrNull() }
+                        val albumsDeferred = async { YouTube.search(query, YouTube.SearchFilter.FILTER_ALBUM).getOrNull() }
+
+                        val songsResult = songsDeferred.await()
+                        val artistsResult = artistsDeferred.await()
+                        val albumsResult = albumsDeferred.await()
+
+                        lastContinuationToken = songsResult?.continuation ?: lastContinuationToken
+
+                        val rawSongs = songsResult?.items?.filterIsInstance<SongItem>()?.filterVideo(shouldFilterVideos).orEmpty()
+                        val explicitFiltered = if (hideExplicit) rawSongs.filter { !it.explicit } else rawSongs
+                        val songsList = explicitFiltered.filter { minSongDurationSec <= 0 || it.duration == null || it.duration >= minSongDurationSec }
+                        val artistsList = artistsResult?.items?.filterIsInstance<ArtistItem>().orEmpty()
+                        val albumsList = albumsResult?.items?.filterIsInstance<AlbumItem>().orEmpty()
+
+                        songsList.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
+                        artistsList.forEach { a ->
+                            items.add(SearchResultItem.ArtistItem(Artist(id = ytArtistId(a.title), name = a.title, songCount = 0, imageUrl = a.thumbnail, channelId = a.id)))
+                        }
+                        albumsList.forEach { a ->
+                            val longId = ytAlbumId(a.title)
+                            albumIdMap[longId] = a.browseId
+                            items.add(SearchResultItem.AlbumItem(Album(id = longId, title = a.title,
+                                artist = a.artists?.joinToString { it.name }.orEmpty(), year = a.year ?: 0,
+                                dateAdded = System.currentTimeMillis(), albumArtUriString = a.thumbnail, songCount = 0)))
+                        }
+                    }
+                }
+
+                // 3. Fallback to FILTER_VIDEO if still empty
+                if (items.isEmpty()) {
+                    val videoResult = YouTube.search(query, YouTube.SearchFilter.FILTER_VIDEO).getOrNull()
+                    val rawVideos = videoResult?.items?.filterIsInstance<SongItem>().orEmpty()
+                    val explicitFiltered = if (hideExplicit) rawVideos.filter { !it.explicit } else rawVideos
+                    val filteredVideos = explicitFiltered.filter { minSongDurationSec <= 0 || it.duration == null || it.duration >= minSongDurationSec }
+                    filteredVideos.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
+                }
             }
             SearchFilterType.SONGS -> {
                 val result = YouTube.search(query, YouTube.SearchFilter.FILTER_SONG).getOrNull()
                 lastContinuationToken = result?.continuation
-                val rawSongs = result?.items?.filterIsInstance<SongItem>()?.filterVideo(shouldFilterVideos).orEmpty()
+                var rawSongs = result?.items?.filterIsInstance<SongItem>()?.filterVideo(shouldFilterVideos).orEmpty()
+
+                if (rawSongs.isEmpty()) {
+                    val summaryResult = YouTube.searchSummary(query).getOrNull()
+                    val summarySongs = summaryResult?.summaries?.flatMap { it.items }?.filterIsInstance<SongItem>()?.filterVideo(shouldFilterVideos).orEmpty()
+                    if (summarySongs.isNotEmpty()) {
+                        rawSongs = summarySongs
+                    } else {
+                        val videoResult = YouTube.search(query, YouTube.SearchFilter.FILTER_VIDEO).getOrNull()
+                        rawSongs = videoResult?.items?.filterIsInstance<SongItem>().orEmpty()
+                    }
+                }
+
                 val explicitFiltered = if (hideExplicit) rawSongs.filter { !it.explicit } else rawSongs
                 val filteredSongs = explicitFiltered.filter { minSongDurationSec <= 0 || it.duration == null || it.duration >= minSongDurationSec }
-                filteredSongs.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
+                filteredSongs.distinctBy { it.id }.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
             }
             SearchFilterType.ARTISTS -> {
                 val result = YouTube.search(query, YouTube.SearchFilter.FILTER_ARTIST).getOrNull()
                 lastContinuationToken = result?.continuation
-                result?.items?.filterIsInstance<ArtistItem>()?.forEach { a ->
+                var artists = result?.items?.filterIsInstance<ArtistItem>().orEmpty()
+                if (artists.isEmpty()) {
+                    val summaryResult = YouTube.searchSummary(query).getOrNull()
+                    artists = summaryResult?.summaries?.flatMap { it.items }?.filterIsInstance<ArtistItem>().orEmpty()
+                }
+                artists.forEach { a ->
                     items.add(SearchResultItem.ArtistItem(Artist(id = ytArtistId(a.title), name = a.title, songCount = 0, imageUrl = a.thumbnail, channelId = a.id)))
                 }
             }
             SearchFilterType.ALBUMS -> {
                 val result = YouTube.search(query, YouTube.SearchFilter.FILTER_ALBUM).getOrNull()
                 lastContinuationToken = result?.continuation
-                result?.items?.filterIsInstance<AlbumItem>()?.forEach { a ->
+                var albums = result?.items?.filterIsInstance<AlbumItem>().orEmpty()
+                if (albums.isEmpty()) {
+                    val summaryResult = YouTube.searchSummary(query).getOrNull()
+                    albums = summaryResult?.summaries?.flatMap { it.items }?.filterIsInstance<AlbumItem>().orEmpty()
+                }
+                albums.forEach { a ->
                     val longId = ytAlbumId(a.title)
                     albumIdMap[longId] = a.browseId
                     items.add(SearchResultItem.AlbumItem(Album(id = longId, title = a.title,
@@ -346,7 +383,12 @@ class SearchStateHolder @Inject constructor(
             SearchFilterType.PLAYLISTS -> {
                 val result = YouTube.search(query, YouTube.SearchFilter.FILTER_FEATURED_PLAYLIST).getOrNull()
                 lastContinuationToken = result?.continuation
-                result?.items?.filterIsInstance<PlaylistItem>()?.forEach { p ->
+                var playlists = result?.items?.filterIsInstance<PlaylistItem>().orEmpty()
+                if (playlists.isEmpty()) {
+                    val summaryResult = YouTube.searchSummary(query).getOrNull()
+                    playlists = summaryResult?.summaries?.flatMap { it.items }?.filterIsInstance<PlaylistItem>().orEmpty()
+                }
+                playlists.forEach { p ->
                     items.add(SearchResultItem.PlaylistItem(Playlist(id = p.id, name = p.title, songIds = emptyList(), coverImageUri = p.thumbnail, source = "YOUTUBE")))
                 }
             }

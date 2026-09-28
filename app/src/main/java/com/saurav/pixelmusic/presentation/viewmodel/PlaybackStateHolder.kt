@@ -443,6 +443,7 @@ class PlaybackStateHolder @Inject constructor(
             return
         }
         val controller = mediaController ?: return
+        if (!controller.isConnected) return
 
         // BUG 4 FIX: Always navigate to the actual previously-played song from the
         // history stack instead of using ExoPlayer's seekToPrevious() which respects
@@ -492,6 +493,7 @@ class PlaybackStateHolder @Inject constructor(
             castStateHolder.castPlayer?.next()
         } else {
             val controller = mediaController ?: return
+            if (!controller.isConnected) return
             val nextIndex = controller.currentMediaItemIndex + 1
             if (nextIndex < controller.mediaItemCount) {
                 controller.seekTo(nextIndex, 0L)

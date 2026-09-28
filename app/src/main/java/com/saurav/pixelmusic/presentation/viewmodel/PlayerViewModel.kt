@@ -1400,10 +1400,13 @@ class PlayerViewModel @Inject constructor(
          */
         override fun onDisconnected(controller: MediaController) {
             Log.w("PlayerViewModel", "MediaController disconnected — service may have been killed. Scheduling reconnect.")
+            mediaController = null
+            playbackStateHolder.setMediaController(null)
+            _isMediaControllerReady.value = false
             viewModelScope.launch(Dispatchers.Main) {
                 // Small delay so the service has time to restart before we try to bind again.
                 kotlinx.coroutines.delay(300L)
-                connectMediaController()
+                connectMediaController(force = true)
             }
         }
     }
@@ -2230,10 +2233,23 @@ class PlayerViewModel @Inject constructor(
 
     private var lastConnectionAttempt = 0L
 
-    private fun connectMediaController() {
+    fun checkAndReconnectMediaController(action: (() -> Unit)? = null) {
+        val currentController = mediaController
+        if (currentController != null && currentController.isConnected) {
+            action?.invoke()
+            return
+        }
+        if (action != null) {
+            pendingPlaybackAction = action
+        }
+        Log.i("PlayerViewModel", "MediaController is null or disconnected. Triggering reconnect.")
+        connectMediaController(force = true)
+    }
+
+    private fun connectMediaController(force: Boolean = false) {
         val now = System.currentTimeMillis()
-        // Prevent rapid overlapping connection requests
-        if (now - lastConnectionAttempt < 500L) return
+        // Prevent rapid overlapping connection requests unless forced
+        if (!force && now - lastConnectionAttempt < 500L) return
         lastConnectionAttempt = now
 
         activeMediaControllerFuture?.let {
@@ -2274,13 +2290,7 @@ class PlayerViewModel @Inject constructor(
         }, androidx.core.content.ContextCompat.getMainExecutor(context))
     }
 
-    fun checkAndReconnectMediaController() {
-        val currentController = mediaController
-        if (currentController == null || !currentController.isConnected) {
-            Log.i("PlayerViewModel", "MediaController is null or disconnected. Triggering reconnect.")
-            connectMediaController()
-        }
-    }
+
 
 
     private fun checkAndUpdateDailyMixIfNeeded() {
@@ -5434,57 +5444,67 @@ class PlayerViewModel @Inject constructor(
                 }
             }
         } else {
-            mediaController?.let { controller ->
-                if (controller.isPlaying) {
-                    controller.pause()
-                } else {
-                    if (controller.currentMediaItem == null) {
-                        val currentQueue = _playerUiState.value.currentPlaybackQueue
-                        val currentSong = playbackStateHolder.stablePlayerState.value.currentSong
-                        when {
-                            currentQueue.isNotEmpty() && currentSong != null -> {
-                                viewModelScope.launch {
-                                    transitionSchedulerJob?.cancel()
-                                    internalPlaySongs(
-                                        currentQueue.toList(),
-                                        currentSong,
-                                        _playerUiState.value.currentQueueSourceName
-                                    )
-                                }
+            val controller = mediaController
+            if (controller == null || !controller.isConnected) {
+                checkAndReconnectMediaController { playPause() }
+                return
+            }
+            if (controller.isPlaying) {
+                controller.pause()
+            } else {
+                if (controller.currentMediaItem == null) {
+                    val currentQueue = _playerUiState.value.currentPlaybackQueue
+                    val currentSong = playbackStateHolder.stablePlayerState.value.currentSong
+                    when {
+                        currentQueue.isNotEmpty() && currentSong != null -> {
+                            viewModelScope.launch {
+                                transitionSchedulerJob?.cancel()
+                                internalPlaySongs(
+                                    currentQueue.toList(),
+                                    currentSong,
+                                    _playerUiState.value.currentQueueSourceName
+                                )
                             }
-                            currentSong != null -> {
-                                loadAndPlaySong(currentSong)
-                            }
-                            else -> {
-                                viewModelScope.launch {
-                                    val fallbackSong = musicRepository.getFirstPlayableSong()
-                                    if (fallbackSong != null) {
-                                        loadAndPlaySong(fallbackSong)
-                                    } else {
-                                        controller.play()
-                                    }
+                        }
+                        currentSong != null -> {
+                            loadAndPlaySong(currentSong)
+                        }
+                        else -> {
+                            viewModelScope.launch {
+                                val fallbackSong = musicRepository.getFirstPlayableSong()
+                                if (fallbackSong != null) {
+                                    loadAndPlaySong(fallbackSong)
+                                } else {
+                                    controller.play()
                                 }
                             }
                         }
-                    } else {
-                        controller.play()
                     }
+                } else {
+                    controller.play()
                 }
             }
         }
     }
 
     fun seekTo(position: Long) {
+        if (mediaController == null || mediaController?.isConnected != true) {
+            checkAndReconnectMediaController { seekTo(position) }
+        }
         playbackStateHolder.seekTo(position)
     }
 
     fun nextSong() {
+        if (mediaController == null || mediaController?.isConnected != true) {
+            checkAndReconnectMediaController { nextSong() }
+        }
         playbackStateHolder.nextSong()
     }
 
     fun previousSong() {
-        // Pass the in-memory queue media IDs so PlaybackStateHolder can resolve the
-        // previous-song index without issuing N Binder IPC calls to the MediaController.
+        if (mediaController == null || mediaController?.isConnected != true) {
+            checkAndReconnectMediaController { previousSong() }
+        }
         val queueMediaIds = _playerUiState.value.currentPlaybackQueue.map { it.id }
         playbackStateHolder.previousSong(queueMediaIds.ifEmpty { null })
     }

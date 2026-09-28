@@ -248,6 +248,7 @@ object YouTube {
                 ?.content
                 ?.sectionListRenderer
                 ?.contents
+                ?: response.contents?.sectionListRenderer?.contents
                 .orEmpty()
         val topItems = mutableListOf<YTItem>()
         val summaries = mutableListOf<SearchSummary>()
@@ -303,6 +304,7 @@ object YouTube {
                 ?.content
                 ?.sectionListRenderer
                 ?.contents
+                ?: response.contents?.sectionListRenderer?.contents
                 .orEmpty()
         val shelves =
             contents.flatMap { content ->

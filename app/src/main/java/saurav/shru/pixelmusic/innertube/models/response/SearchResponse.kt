@@ -14,6 +14,7 @@ package saurav.shru.pixelmusic.innertube.models.response
 import saurav.shru.pixelmusic.innertube.models.Continuation
 import saurav.shru.pixelmusic.innertube.models.ContinuationItemRenderer
 import saurav.shru.pixelmusic.innertube.models.MusicResponsiveListItemRenderer
+import saurav.shru.pixelmusic.innertube.models.SectionListRenderer
 import saurav.shru.pixelmusic.innertube.models.Tabs
 import kotlinx.serialization.Serializable
 
@@ -24,7 +25,8 @@ data class SearchResponse(
 ) {
     @Serializable
     data class Contents(
-        val tabbedSearchResultsRenderer: Tabs?,
+        val tabbedSearchResultsRenderer: Tabs? = null,
+        val sectionListRenderer: SectionListRenderer? = null,
     )
 
     @Serializable
