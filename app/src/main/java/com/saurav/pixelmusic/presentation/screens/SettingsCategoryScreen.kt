@@ -997,6 +997,7 @@ fun SettingsCategoryScreen(
                                                 com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.HIDDEN.name to "Hidden",
                                                 com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.KARAOKE.name to "Karaoke Style",
                                                 com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.WORD_BY_WORD.name to "Word by Word",
+                                                com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.SINGLE_WORD.name to "Single Word Pop",
                                                 com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.BLUR_FOCUS.name to "Blur Focus",
                                                 com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.GRADIENT_SWEEP.name to "Gradient Sweep",
                                                 com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.SLIDE_FADE.name to "Slide & Fade"

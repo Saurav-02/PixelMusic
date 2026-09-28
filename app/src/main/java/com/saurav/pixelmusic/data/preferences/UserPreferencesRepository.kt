@@ -122,6 +122,7 @@ enum class NowPlayingLyricsStyle {
     HIDDEN,
     KARAOKE,
     WORD_BY_WORD,
+    SINGLE_WORD,
     BLUR_FOCUS,
     GRADIENT_SWEEP,
     SLIDE_FADE

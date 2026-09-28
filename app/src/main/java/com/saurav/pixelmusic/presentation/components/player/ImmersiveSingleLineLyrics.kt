@@ -25,11 +25,61 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.saurav.pixelmusic.data.model.Lyrics
 import com.saurav.pixelmusic.data.model.SyncedLine
 import com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle
-import com.saurav.pixelmusic.presentation.components.clusterSyncedWords
 import com.saurav.pixelmusic.presentation.components.sanitizeLyricLineText
 import com.saurav.pixelmusic.presentation.components.sanitizeSyncedWords
 import com.saurav.pixelmusic.ui.theme.GoogleSansRounded
 import kotlinx.coroutines.flow.StateFlow
+
+internal data class DisplayWord(
+    val word: String,
+    val startTimeMs: Long,
+    val endTimeMs: Long
+)
+
+internal fun resolveDisplayWords(
+    syncedLine: SyncedLine?,
+    nextLineTimeMs: Long
+): List<DisplayWord> {
+    if (syncedLine == null) return emptyList()
+
+    val explicitWords = syncedLine.words?.let(::sanitizeSyncedWords)
+    if (!explicitWords.isNullOrEmpty()) {
+        return explicitWords.mapIndexed { idx, w ->
+            val nextTime = if (idx < explicitWords.lastIndex) {
+                explicitWords[idx + 1].time.toLong()
+            } else {
+                maxOf(w.time.toLong() + 400L, nextLineTimeMs)
+            }
+            DisplayWord(
+                word = w.word,
+                startTimeMs = w.time.toLong(),
+                endTimeMs = nextTime
+            )
+        }
+    }
+
+    val sanitizedLine = sanitizeLyricLineText(syncedLine.line)
+    val rawTokens = sanitizedLine.split("\\s+".toRegex()).filter { it.isNotBlank() }
+    if (rawTokens.isEmpty()) return emptyList()
+
+    val lineStart = syncedLine.time.toLong()
+    val totalDuration = (nextLineTimeMs - lineStart).coerceIn(1200L, 8000L)
+    val singingDuration = (totalDuration * 0.90f).toLong()
+    val totalChars = rawTokens.sumOf { it.length }.coerceAtLeast(1)
+
+    var currentStart = lineStart
+    return rawTokens.map { token ->
+        val wordDuration = ((token.length.toFloat() / totalChars) * singingDuration).toLong().coerceAtLeast(160L)
+        val wordEnd = currentStart + wordDuration
+        DisplayWord(
+            word = token,
+            startTimeMs = currentStart,
+            endTimeMs = wordEnd
+        ).also {
+            currentStart = wordEnd
+        }
+    }
+}
 
 @Composable
 fun ImmersiveSingleLineLyrics(
@@ -59,6 +109,16 @@ fun ImmersiveSingleLineLyrics(
     val currentLine = if (currentLineIndex >= 0) syncedLines[currentLineIndex] else null
     val currentLineText = remember(currentLine) {
         currentLine?.line?.let { sanitizeLyricLineText(it) }.orEmpty()
+    }
+
+    val nextLineTimeMs = remember(currentLineIndex, syncedLines) {
+        if (currentLineIndex in 0 until syncedLines.lastIndex) {
+            syncedLines[currentLineIndex + 1].time.toLong()
+        } else if (currentLineIndex >= 0) {
+            syncedLines[currentLineIndex].time.toLong() + 7000L
+        } else {
+            0L
+        }
     }
 
     val clickableModifier = if (onClick != null) {
@@ -91,14 +151,24 @@ fun ImmersiveSingleLineLyrics(
             NowPlayingLyricsStyle.WORD_BY_WORD -> {
                 WordByWordStyleLyrics(
                     syncedLine = currentLine,
+                    nextLineTimeMs = nextLineTimeMs,
                     effectivePosition = effectivePosition,
                     textColor = textColor,
+                    accentColor = accentColor
+                )
+            }
+            NowPlayingLyricsStyle.SINGLE_WORD -> {
+                SingleWordStyleLyrics(
+                    syncedLine = currentLine,
+                    nextLineTimeMs = nextLineTimeMs,
+                    effectivePosition = effectivePosition,
                     accentColor = accentColor
                 )
             }
             NowPlayingLyricsStyle.BLUR_FOCUS -> {
                 BlurFocusStyleLyrics(
                     syncedLine = currentLine,
+                    nextLineTimeMs = nextLineTimeMs,
                     effectivePosition = effectivePosition,
                     textColor = textColor,
                     accentColor = accentColor
@@ -179,85 +249,82 @@ private fun KaraokeStyleLyrics(
 @Composable
 private fun WordByWordStyleLyrics(
     syncedLine: SyncedLine?,
+    nextLineTimeMs: Long,
     effectivePosition: Long,
     textColor: Color,
     accentColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val lineText = remember(syncedLine) {
-        syncedLine?.line?.let { sanitizeLyricLineText(it) }.orEmpty()
-    }
-    val rawWords = syncedLine?.words
-    val sanitizedWords = remember(rawWords) {
-        rawWords?.let(::sanitizeSyncedWords)
-    }
-    val wordClusters = remember(sanitizedWords) {
-        sanitizedWords?.takeIf { it.isNotEmpty() }?.let(::clusterSyncedWords)
+    val displayWords = remember(syncedLine, nextLineTimeMs) {
+        resolveDisplayWords(syncedLine, nextLineTimeMs)
     }
 
-    AnimatedContent(
-        targetState = lineText,
-        transitionSpec = {
-            (fadeIn(animationSpec = tween(350)) +
-             slideInVertically(initialOffsetY = { it / 3 }, animationSpec = spring(dampingRatio = 0.85f, stiffness = 120f))) togetherWith
-            (fadeOut(animationSpec = tween(250)) +
-             slideOutVertically(targetOffsetY = { -it / 3 }, animationSpec = tween(250)))
-        },
-        label = "word_by_word_line_transition",
-        modifier = modifier.fillMaxWidth()
-    ) { currentText ->
-        if (currentText.isBlank()) {
-            Spacer(modifier = Modifier.height(36.dp).fillMaxWidth())
-            return@AnimatedContent
-        }
+    if (displayWords.isEmpty()) {
+        Spacer(modifier = Modifier.height(36.dp).fillMaxWidth())
+        return
+    }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 36.dp),
-            contentAlignment = Alignment.CenterStart
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 36.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.Start),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            maxLines = 2
         ) {
-            if (wordClusters.isNullOrEmpty() || sanitizedWords.isNullOrEmpty()) {
-                Text(
-                    text = currentText,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontFamily = GoogleSansRounded,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp
-                    ),
-                    color = textColor,
-                    textAlign = TextAlign.Start,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            } else {
-                val highlightedWordIndex = remember(effectivePosition, sanitizedWords) {
-                    sanitizedWords.indexOfLast { it.time <= effectivePosition }
-                }
-
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.Start),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                    maxLines = 2
-                ) {
-                    wordClusters.forEach { cluster ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(0.dp)
-                        ) {
-                            cluster.words.forEachIndexed { clusterOffset, word ->
-                                val wordIndex = cluster.startIndex + clusterOffset
-                                key("${syncedLine?.time}_${word.time}_${word.word}_$wordIndex") {
-                                    ImmersiveWordSpan(
-                                        word = word.word,
-                                        isHighlighted = wordIndex == highlightedWordIndex,
-                                        isPast = wordIndex < highlightedWordIndex,
-                                        activeColor = accentColor,
-                                        inactiveColor = textColor
+            displayWords.forEachIndexed { index, item ->
+                if (effectivePosition >= item.startTimeMs) {
+                    val isCurrent = effectivePosition < item.endTimeMs
+                    key("${syncedLine?.time}_${item.startTimeMs}_${item.word}_$index") {
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(tween(180)) +
+                                    slideInVertically(
+                                        initialOffsetY = { it },
+                                        animationSpec = spring(
+                                            dampingRatio = 0.72f,
+                                            stiffness = 140f
+                                        )
+                                    ) +
+                                    scaleIn(
+                                        initialScale = 0.6f,
+                                        animationSpec = spring(
+                                            dampingRatio = 0.72f,
+                                            stiffness = 140f
+                                        )
                                     )
+                        ) {
+                            val wordScale by animateFloatAsState(
+                                targetValue = if (isCurrent) 1.10f else 1.0f,
+                                animationSpec = spring(
+                                    stiffness = Spring.StiffnessLow,
+                                    dampingRatio = Spring.DampingRatioMediumBouncy
+                                ),
+                                label = "wordScale"
+                            )
+                            val wordColor by animateColorAsState(
+                                targetValue = if (isCurrent) accentColor else textColor,
+                                animationSpec = tween(durationMillis = 180),
+                                label = "wordColor"
+                            )
+
+                            Text(
+                                text = item.word,
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontFamily = GoogleSansRounded,
+                                    fontWeight = if (isCurrent) FontWeight.ExtraBold else FontWeight.Bold,
+                                    fontSize = 22.sp
+                                ),
+                                color = wordColor,
+                                modifier = Modifier.graphicsLayer {
+                                    scaleX = wordScale
+                                    scaleY = wordScale
                                 }
-                            }
+                            )
                         }
                     }
                 }
@@ -267,77 +334,77 @@ private fun WordByWordStyleLyrics(
 }
 
 @Composable
-private fun ImmersiveWordSpan(
-    word: String,
-    isHighlighted: Boolean,
-    isPast: Boolean,
-    activeColor: Color,
-    inactiveColor: Color,
+private fun SingleWordStyleLyrics(
+    syncedLine: SyncedLine?,
+    nextLineTimeMs: Long,
+    effectivePosition: Long,
+    accentColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val wordScale by animateFloatAsState(
-        targetValue = if (isHighlighted) 1.12f else 1.0f,
-        animationSpec = spring(
-            stiffness = Spring.StiffnessLow,
-            dampingRatio = Spring.DampingRatioMediumBouncy
-        ),
-        label = "wordScale"
-    )
+    val displayWords = remember(syncedLine, nextLineTimeMs) {
+        resolveDisplayWords(syncedLine, nextLineTimeMs)
+    }
 
-    val wordAlpha by animateFloatAsState(
-        targetValue = when {
-            isHighlighted -> 1.0f
-            isPast -> 0.90f
-            else -> 0.38f
+    val activeWord = remember(effectivePosition, displayWords) {
+        if (displayWords.isEmpty()) null
+        else displayWords.firstOrNull { effectivePosition in it.startTimeMs until it.endTimeMs }
+            ?: displayWords.lastOrNull { effectivePosition >= it.endTimeMs }
+    }
+
+    AnimatedContent(
+        targetState = activeWord?.word.orEmpty(),
+        transitionSpec = {
+            (fadeIn(animationSpec = tween(180)) +
+             scaleIn(initialScale = 0.6f, animationSpec = spring(dampingRatio = 0.70f, stiffness = 160f)) +
+             slideInVertically(initialOffsetY = { it }, animationSpec = spring(dampingRatio = 0.70f, stiffness = 160f))) togetherWith
+            (fadeOut(animationSpec = tween(140)) +
+             scaleOut(targetScale = 0.85f, animationSpec = tween(140)) +
+             slideOutVertically(targetOffsetY = { -it / 2 }, animationSpec = tween(140)))
         },
-        animationSpec = tween(durationMillis = 180),
-        label = "wordAlpha"
-    )
-
-    val wordColor by animateColorAsState(
-        targetValue = when {
-            isHighlighted -> activeColor
-            isPast -> inactiveColor
-            else -> inactiveColor
-        },
-        animationSpec = tween(durationMillis = 180),
-        label = "wordColor"
-    )
-
-    Text(
-        text = word,
-        style = MaterialTheme.typography.titleLarge.copy(
-            fontFamily = GoogleSansRounded,
-            fontWeight = if (isHighlighted) FontWeight.ExtraBold else if (isPast) FontWeight.Bold else FontWeight.Normal,
-            fontSize = 21.sp
-        ),
-        color = wordColor,
-        modifier = modifier.graphicsLayer {
-            scaleX = wordScale
-            scaleY = wordScale
-            alpha = wordAlpha
+        label = "single_word_pop_transition",
+        modifier = modifier.fillMaxWidth()
+    ) { wordText ->
+        if (wordText.isNotBlank()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 36.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    text = wordText,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontFamily = GoogleSansRounded,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 26.sp
+                    ),
+                    color = accentColor,
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.height(36.dp).fillMaxWidth())
         }
-    )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun BlurFocusStyleLyrics(
     syncedLine: SyncedLine?,
+    nextLineTimeMs: Long,
     effectivePosition: Long,
     textColor: Color,
     accentColor: Color,
     modifier: Modifier = Modifier
 ) {
+    val displayWords = remember(syncedLine, nextLineTimeMs) {
+        resolveDisplayWords(syncedLine, nextLineTimeMs)
+    }
     val lineText = remember(syncedLine) {
         syncedLine?.line?.let { sanitizeLyricLineText(it) }.orEmpty()
-    }
-    val rawWords = syncedLine?.words
-    val sanitizedWords = remember(rawWords) {
-        rawWords?.let(::sanitizeSyncedWords)
-    }
-    val wordClusters = remember(sanitizedWords) {
-        sanitizedWords?.takeIf { it.isNotEmpty() }?.let(::clusterSyncedWords)
     }
 
     AnimatedContent(
@@ -351,7 +418,7 @@ private fun BlurFocusStyleLyrics(
         label = "blur_focus_line_transition",
         modifier = modifier.fillMaxWidth()
     ) { currentText ->
-        if (currentText.isBlank()) {
+        if (currentText.isBlank() || displayWords.isEmpty()) {
             Spacer(modifier = Modifier.height(36.dp).fillMaxWidth())
             return@AnimatedContent
         }
@@ -371,107 +438,62 @@ private fun BlurFocusStyleLyrics(
                 .blur(lineBlurAnim.value.dp),
             contentAlignment = Alignment.CenterStart
         ) {
-            if (wordClusters.isNullOrEmpty() || sanitizedWords.isNullOrEmpty()) {
-                Text(
-                    text = currentText,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontFamily = GoogleSansRounded,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp
-                    ),
-                    color = textColor,
-                    textAlign = TextAlign.Start,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            } else {
-                val highlightedWordIndex = remember(effectivePosition, sanitizedWords) {
-                    sanitizedWords.indexOfLast { it.time <= effectivePosition }
-                }
-
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.Start),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                    maxLines = 2
-                ) {
-                    wordClusters.forEach { cluster ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(0.dp)
-                        ) {
-                            cluster.words.forEachIndexed { clusterOffset, word ->
-                                val wordIndex = cluster.startIndex + clusterOffset
-                                key("${syncedLine?.time}_${word.time}_${word.word}_$wordIndex") {
-                                    BlurWordSpan(
-                                        word = word.word,
-                                        isHighlighted = wordIndex == highlightedWordIndex,
-                                        isPast = wordIndex < highlightedWordIndex,
-                                        activeColor = accentColor,
-                                        inactiveColor = textColor
-                                    )
-                                }
-                            }
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.Start),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                maxLines = 2
+            ) {
+                displayWords.forEachIndexed { index, item ->
+                    val isCurrent = effectivePosition in item.startTimeMs until item.endTimeMs
+                    val isPast = effectivePosition >= item.endTimeMs
+                    key("${syncedLine?.time}_${item.startTimeMs}_${item.word}_$index") {
+                        val targetBlur = when {
+                            isCurrent -> 0.dp
+                            isPast -> 0.dp
+                            else -> 3.5.dp
                         }
+                        val wordBlur by animateDpAsState(
+                            targetValue = targetBlur,
+                            animationSpec = tween(durationMillis = 220),
+                            label = "blurWord"
+                        )
+                        val wordAlpha by animateFloatAsState(
+                            targetValue = when {
+                                isCurrent -> 1.0f
+                                isPast -> 0.85f
+                                else -> 0.35f
+                            },
+                            animationSpec = tween(durationMillis = 220),
+                            label = "blurAlpha"
+                        )
+                        val wordScale by animateFloatAsState(
+                            targetValue = if (isCurrent) 1.08f else 1.0f,
+                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 150f),
+                            label = "blurScale"
+                        )
+
+                        Text(
+                            text = item.word,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = if (isCurrent) FontWeight.ExtraBold else FontWeight.Medium,
+                                fontSize = 21.sp
+                            ),
+                            color = if (isCurrent) accentColor else textColor,
+                            modifier = Modifier
+                                .blur(wordBlur)
+                                .graphicsLayer {
+                                    scaleX = wordScale
+                                    scaleY = wordScale
+                                    alpha = wordAlpha
+                                }
+                        )
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-private fun BlurWordSpan(
-    word: String,
-    isHighlighted: Boolean,
-    isPast: Boolean,
-    activeColor: Color,
-    inactiveColor: Color,
-    modifier: Modifier = Modifier
-) {
-    val targetBlur = when {
-        isHighlighted -> 0.dp
-        isPast -> 0.dp
-        else -> 3.5.dp
-    }
-    val wordBlur by animateDpAsState(
-        targetValue = targetBlur,
-        animationSpec = tween(durationMillis = 220),
-        label = "blurWord"
-    )
-
-    val wordAlpha by animateFloatAsState(
-        targetValue = when {
-            isHighlighted -> 1.0f
-            isPast -> 0.85f
-            else -> 0.35f
-        },
-        animationSpec = tween(durationMillis = 220),
-        label = "blurAlpha"
-    )
-
-    val wordScale by animateFloatAsState(
-        targetValue = if (isHighlighted) 1.08f else 1.0f,
-        animationSpec = spring(dampingRatio = 0.8f, stiffness = 150f),
-        label = "blurScale"
-    )
-
-    Text(
-        text = word,
-        style = MaterialTheme.typography.titleLarge.copy(
-            fontFamily = GoogleSansRounded,
-            fontWeight = if (isHighlighted) FontWeight.ExtraBold else FontWeight.Medium,
-            fontSize = 21.sp
-        ),
-        color = if (isHighlighted) activeColor else inactiveColor,
-        modifier = modifier
-            .blur(wordBlur)
-            .graphicsLayer {
-                scaleX = wordScale
-                scaleY = wordScale
-                alpha = wordAlpha
-            }
-    )
 }
 
 @Composable
