@@ -20,6 +20,8 @@
 
 * 🛠️ **Build Fixes:** Fixed missing imports and the end-of-track timer call in the full player.
 
+* 👥 **YouTube Multi-Account:** Connect up to 2 YouTube accounts and switch between them seamlessly from Settings — the library, synced playlists, and counts now follow the active account. Also fixed adding a second account duplicating the first, and stale playlists lingering after switching.
+
 ---
 
 **Sub release 4.4.0**
