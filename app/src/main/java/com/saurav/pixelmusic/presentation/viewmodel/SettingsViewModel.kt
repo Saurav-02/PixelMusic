@@ -39,6 +39,7 @@ import com.saurav.pixelmusic.data.model.LyricsSourcePreference
 import com.saurav.pixelmusic.data.worker.SyncManager
 import com.saurav.pixelmusic.data.worker.SyncProgress
 import com.saurav.pixelmusic.data.remote.youtube.DatastoreRepository
+import com.saurav.pixelmusic.data.remote.youtube.YtAccount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
@@ -1012,14 +1013,43 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    /** YouTube accounts for the multi-account switcher, active account first. */
+    val ytAccounts: StateFlow<List<YtAccount>> = datastoreRepository.ytAccounts
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /**
+     * Switches the active YouTube account. The DataStore write is atomic, so
+     * the UI, the innertube singleton and all request helpers follow
+     * immediately; a library re-sync then refreshes content for the new
+     * account in the background.
+     */
+    fun switchYtAccount(slot: Int) {
+        viewModelScope.launch {
+            datastoreRepository.setActiveYtAccount(slot)
+            syncManager.fullSync()
+        }
+    }
+
+    /**
+     * Removes a YouTube account. If another account remains it becomes active;
+     * if it was the last one, downloads are cleared like a full logout.
+     */
+    fun removeYtAccount(slot: Int) {
+        viewModelScope.launch {
+            val remaining = datastoreRepository.removeYtAccount(slot)
+            if (remaining) {
+                syncManager.fullSync()
+            } else {
+                withContext(Dispatchers.IO) {
+                    com.saurav.pixelmusic.data.database.youtube.AppDatabase.clearDownloads(context)
+                }
+            }
+        }
+    }
+
     fun logoutYoutube() {
         viewModelScope.launch {
-            datastoreRepository.saveCookies(com.saurav.pixelmusic.data.model.youtube.Cookies(""))
-            datastoreRepository.saveDataSyncId("")
-            datastoreRepository.saveYtProfile("", "", "")
-            withContext(Dispatchers.IO) {
-                com.saurav.pixelmusic.data.database.youtube.AppDatabase.clearDownloads(context)
-            }
+            removeYtAccount(datastoreRepository.activeYtAccount.first())
         }
     }
 

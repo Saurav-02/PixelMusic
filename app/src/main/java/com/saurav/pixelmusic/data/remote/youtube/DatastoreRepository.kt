@@ -10,11 +10,29 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.saurav.pixelmusic.data.model.youtube.Cookies
 import com.saurav.pixelmusic.data.model.youtube.UmihiSettings
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
 val Context.youtubeDataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.Datastore.NAME)
+
+/** Maximum number of YouTube accounts supported. */
+const val MAX_YT_ACCOUNTS = 2
+
+/**
+ * One stored YouTube account. Slot 1 lives in the legacy preference keys,
+ * slot 2 in the dedicated YT2_* keys. [isActive] marks the account whose
+ * cookies/profile back every request in the app.
+ */
+data class YtAccount(
+    val slot: Int,
+    val username: String,
+    val handle: String,
+    val avatarUrl: String,
+    val isActive: Boolean,
+)
 
 open class DatastoreRepository(private val context: Context) {
     object PreferenceKeys {
@@ -44,6 +62,12 @@ open class DatastoreRepository(private val context: Context) {
         val YT_USERNAME = stringPreferencesKey("yt_username")
         val YT_HANDLE = stringPreferencesKey("yt_handle")
         val YT_AVATAR_URL = stringPreferencesKey("yt_avatar_url")
+        val ACTIVE_YT_ACCOUNT = intPreferencesKey("active_yt_account")
+        val YT2_COOKIES = stringPreferencesKey("yt_account2_cookies")
+        val YT2_DATA_SYNC_ID = stringPreferencesKey("yt_account2_data_sync_id")
+        val YT2_USERNAME = stringPreferencesKey("yt_account2_username")
+        val YT2_HANDLE = stringPreferencesKey("yt_account2_handle")
+        val YT2_AVATAR_URL = stringPreferencesKey("yt_account2_avatar_url")
     }
 
     suspend fun <T> save(key: Preferences.Key<T>, value: T) {
@@ -103,24 +127,35 @@ open class DatastoreRepository(private val context: Context) {
 
 
 
-    val cookies = context.youtubeDataStore.data.map {
-        Cookies(it[PreferenceKeys.COOKIES] ?: "")
+    /**
+     * Slot of the active YouTube account (1 or 2). Every account-backed flow
+     * below resolves against this, so switching accounts is a single atomic
+     * preference write and the whole app follows.
+     */
+    private val activeYtAccountSlot: Flow<Int> = context.youtubeDataStore.data.map {
+        it[PreferenceKeys.ACTIVE_YT_ACCOUNT] ?: 1
     }
 
-    val dataSyncId = context.youtubeDataStore.data.map {
-        it[PreferenceKeys.DATA_SYNC_ID] ?: ""
+    val activeYtAccount: Flow<Int> = activeYtAccountSlot
+
+    val cookies: Flow<Cookies> = combine(activeYtAccountSlot, context.youtubeDataStore.data) { active, prefs ->
+        Cookies(if (active == 2) prefs[PreferenceKeys.YT2_COOKIES] ?: "" else prefs[PreferenceKeys.COOKIES] ?: "")
     }
 
-    val ytUsername = context.youtubeDataStore.data.map {
-        it[PreferenceKeys.YT_USERNAME] ?: ""
+    val dataSyncId: Flow<String> = combine(activeYtAccountSlot, context.youtubeDataStore.data) { active, prefs ->
+        if (active == 2) prefs[PreferenceKeys.YT2_DATA_SYNC_ID] ?: "" else prefs[PreferenceKeys.DATA_SYNC_ID] ?: ""
     }
 
-    val ytHandle = context.youtubeDataStore.data.map {
-        it[PreferenceKeys.YT_HANDLE] ?: ""
+    val ytUsername: Flow<String> = combine(activeYtAccountSlot, context.youtubeDataStore.data) { active, prefs ->
+        if (active == 2) prefs[PreferenceKeys.YT2_USERNAME] ?: "" else prefs[PreferenceKeys.YT_USERNAME] ?: ""
     }
 
-    val ytAvatarUrl = context.youtubeDataStore.data.map {
-        it[PreferenceKeys.YT_AVATAR_URL] ?: ""
+    val ytHandle: Flow<String> = combine(activeYtAccountSlot, context.youtubeDataStore.data) { active, prefs ->
+        if (active == 2) prefs[PreferenceKeys.YT2_HANDLE] ?: "" else prefs[PreferenceKeys.YT_HANDLE] ?: ""
+    }
+
+    val ytAvatarUrl: Flow<String> = combine(activeYtAccountSlot, context.youtubeDataStore.data) { active, prefs ->
+        if (active == 2) prefs[PreferenceKeys.YT2_AVATAR_URL] ?: "" else prefs[PreferenceKeys.YT_AVATAR_URL] ?: ""
     }
 
     val ytIsProUser = context.youtubeDataStore.data.map {
@@ -128,24 +163,155 @@ open class DatastoreRepository(private val context: Context) {
     }
 
     suspend fun saveYtProfile(name: String, handle: String, avatarUrl: String, isPro: Boolean = false) {
-        context.youtubeDataStore.edit {
-            it[PreferenceKeys.YT_USERNAME] = name
-            it[PreferenceKeys.YT_HANDLE] = handle
-            it[PreferenceKeys.YT_AVATAR_URL] = avatarUrl
-            it[PreferenceKeys.IS_PRO_USER] = isPro
+        context.youtubeDataStore.edit { prefs ->
+            if ((prefs[PreferenceKeys.ACTIVE_YT_ACCOUNT] ?: 1) == 2) {
+                prefs[PreferenceKeys.YT2_USERNAME] = name
+                prefs[PreferenceKeys.YT2_HANDLE] = handle
+                prefs[PreferenceKeys.YT2_AVATAR_URL] = avatarUrl
+            } else {
+                prefs[PreferenceKeys.YT_USERNAME] = name
+                prefs[PreferenceKeys.YT_HANDLE] = handle
+                prefs[PreferenceKeys.YT_AVATAR_URL] = avatarUrl
+            }
+            prefs[PreferenceKeys.IS_PRO_USER] = isPro
         }
     }
 
     suspend fun saveCookies(cookies: Cookies) {
-        context.youtubeDataStore.edit {
-            it[PreferenceKeys.COOKIES] = cookies.toRawCookie()
+        context.youtubeDataStore.edit { prefs ->
+            val key = if ((prefs[PreferenceKeys.ACTIVE_YT_ACCOUNT] ?: 1) == 2) PreferenceKeys.YT2_COOKIES else PreferenceKeys.COOKIES
+            prefs[key] = cookies.toRawCookie()
         }
     }
 
     suspend fun saveDataSyncId(newId: String) {
-        context.youtubeDataStore.edit {
-            it[PreferenceKeys.DATA_SYNC_ID] = newId
+        context.youtubeDataStore.edit { prefs ->
+            val key = if ((prefs[PreferenceKeys.ACTIVE_YT_ACCOUNT] ?: 1) == 2) PreferenceKeys.YT2_DATA_SYNC_ID else PreferenceKeys.DATA_SYNC_ID
+            prefs[key] = newId
         }
+    }
+
+    /** All stored YouTube accounts, active account first. */
+    val ytAccounts: Flow<List<YtAccount>> = context.youtubeDataStore.data.map { prefs ->
+        val active = prefs[PreferenceKeys.ACTIVE_YT_ACCOUNT] ?: 1
+        buildList {
+            if ((prefs[PreferenceKeys.COOKIES] ?: "").isNotEmpty()) {
+                add(
+                    YtAccount(
+                        slot = 1,
+                        username = prefs[PreferenceKeys.YT_USERNAME] ?: "",
+                        handle = prefs[PreferenceKeys.YT_HANDLE] ?: "",
+                        avatarUrl = prefs[PreferenceKeys.YT_AVATAR_URL] ?: "",
+                        isActive = active == 1,
+                    )
+                )
+            }
+            if ((prefs[PreferenceKeys.YT2_COOKIES] ?: "").isNotEmpty()) {
+                add(
+                    YtAccount(
+                        slot = 2,
+                        username = prefs[PreferenceKeys.YT2_USERNAME] ?: "",
+                        handle = prefs[PreferenceKeys.YT2_HANDLE] ?: "",
+                        avatarUrl = prefs[PreferenceKeys.YT2_AVATAR_URL] ?: "",
+                        isActive = active == 2,
+                    )
+                )
+            }
+        }.sortedByDescending { it.isActive }
+    }
+
+    suspend fun ytAccountCount(): Int = ytAccounts.first().size
+
+    /**
+     * Switches the active account. This is a single atomic write; every
+     * account-backed flow ([cookies], [ytUsername], ...) re-emits and the
+     * whole app (UI, innertube singleton, request helpers) follows without
+     * any further action.
+     */
+    suspend fun setActiveYtAccount(slot: Int) {
+        require(slot == 1 || slot == 2) { "slot must be 1 or 2" }
+        context.youtubeDataStore.edit { it[PreferenceKeys.ACTIVE_YT_ACCOUNT] = slot }
+    }
+
+    /**
+     * Stores a freshly logged-in session into [slot] and makes it active,
+     * atomically. Callers pick slot 1 for the first login and slot 2 when
+     * adding another account.
+     */
+    suspend fun saveYtAccountSession(
+        slot: Int,
+        cookies: Cookies,
+        dataSyncId: String?,
+        name: String,
+        handle: String,
+        avatarUrl: String,
+    ) {
+        require(slot == 1 || slot == 2) { "slot must be 1 or 2" }
+        context.youtubeDataStore.edit { prefs ->
+            if (slot == 2) {
+                prefs[PreferenceKeys.YT2_COOKIES] = cookies.toRawCookie()
+                if (dataSyncId != null) prefs[PreferenceKeys.YT2_DATA_SYNC_ID] = dataSyncId
+                prefs[PreferenceKeys.YT2_USERNAME] = name
+                prefs[PreferenceKeys.YT2_HANDLE] = handle
+                prefs[PreferenceKeys.YT2_AVATAR_URL] = avatarUrl
+            } else {
+                prefs[PreferenceKeys.COOKIES] = cookies.toRawCookie()
+                if (dataSyncId != null) prefs[PreferenceKeys.DATA_SYNC_ID] = dataSyncId
+                prefs[PreferenceKeys.YT_USERNAME] = name
+                prefs[PreferenceKeys.YT_HANDLE] = handle
+                prefs[PreferenceKeys.YT_AVATAR_URL] = avatarUrl
+            }
+            prefs[PreferenceKeys.ACTIVE_YT_ACCOUNT] = slot
+        }
+    }
+
+    /**
+     * Removes the account in [slot]. If the removed account was active and
+     * another account exists, that account is promoted into slot 1 and
+     * becomes active.
+     * @return true if at least one account remains afterwards.
+     */
+    suspend fun removeYtAccount(slot: Int): Boolean {
+        var remaining = false
+        context.youtubeDataStore.edit { prefs ->
+            val cookies1 = prefs[PreferenceKeys.COOKIES] ?: ""
+            val cookies2 = prefs[PreferenceKeys.YT2_COOKIES] ?: ""
+            when {
+                slot == 2 -> {
+                    prefs.remove(PreferenceKeys.YT2_COOKIES)
+                    prefs.remove(PreferenceKeys.YT2_DATA_SYNC_ID)
+                    prefs.remove(PreferenceKeys.YT2_USERNAME)
+                    prefs.remove(PreferenceKeys.YT2_HANDLE)
+                    prefs.remove(PreferenceKeys.YT2_AVATAR_URL)
+                    prefs[PreferenceKeys.ACTIVE_YT_ACCOUNT] = 1
+                    remaining = cookies1.isNotEmpty()
+                }
+                cookies2.isNotEmpty() -> {
+                    prefs[PreferenceKeys.COOKIES] = cookies2
+                    prefs[PreferenceKeys.DATA_SYNC_ID] = prefs[PreferenceKeys.YT2_DATA_SYNC_ID] ?: ""
+                    prefs[PreferenceKeys.YT_USERNAME] = prefs[PreferenceKeys.YT2_USERNAME] ?: ""
+                    prefs[PreferenceKeys.YT_HANDLE] = prefs[PreferenceKeys.YT2_HANDLE] ?: ""
+                    prefs[PreferenceKeys.YT_AVATAR_URL] = prefs[PreferenceKeys.YT2_AVATAR_URL] ?: ""
+                    prefs.remove(PreferenceKeys.YT2_COOKIES)
+                    prefs.remove(PreferenceKeys.YT2_DATA_SYNC_ID)
+                    prefs.remove(PreferenceKeys.YT2_USERNAME)
+                    prefs.remove(PreferenceKeys.YT2_HANDLE)
+                    prefs.remove(PreferenceKeys.YT2_AVATAR_URL)
+                    prefs[PreferenceKeys.ACTIVE_YT_ACCOUNT] = 1
+                    remaining = true
+                }
+                else -> {
+                    prefs[PreferenceKeys.COOKIES] = ""
+                    prefs[PreferenceKeys.DATA_SYNC_ID] = ""
+                    prefs[PreferenceKeys.YT_USERNAME] = ""
+                    prefs[PreferenceKeys.YT_HANDLE] = ""
+                    prefs[PreferenceKeys.YT_AVATAR_URL] = ""
+                    prefs[PreferenceKeys.ACTIVE_YT_ACCOUNT] = 1
+                    remaining = false
+                }
+            }
+        }
+        return remaining
     }
 
     suspend fun getPersistentQueue(): String {

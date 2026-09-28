@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saurav.pixelmusic.data.remote.youtube.Constants
 import com.saurav.pixelmusic.data.remote.youtube.DatastoreRepository
-import com.saurav.pixelmusic.data.remote.youtube.UmihiHelper.printd
 import com.saurav.pixelmusic.data.model.youtube.Cookies
 import com.saurav.pixelmusic.data.worker.SyncManager
 import saurav.shru.pixelmusic.innertube.YouTube
@@ -36,7 +35,11 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             if (url?.contains(Constants.Auth.END_URL) == true && !_uiState.value.isLoggedIn) {
                 val cookies = CookieManager.getInstance().getCookie(url).orEmpty()
-                saveCookies(Cookies(cookies))
+                // First login goes to slot 1; "Add another account" goes to slot 2
+                // and becomes active atomically (no guest-state flicker).
+                val slot = if (datastoreRepository.ytAccountCount() >= 1) 2 else 1
+                datastoreRepository.saveYtAccountSession(slot, Cookies(cookies), null, "", "", "")
+                YouTube.cookie = cookies
                 _uiState.update { it.copy(isLoggedIn = true) }
                 _eventsChannel.emit(ScreenEvent.Out.LoginCompleted)
                 // Trigger an immediate background synchronization of user playlists and library
@@ -88,21 +91,23 @@ class AuthViewModel @Inject constructor(
                 cookieStr = tokenString.trim()
             }
 
-            // 2. Save the extracted Cookie
+            // 2-4. Save the whole session (cookies, dataSyncId, profile) into
+            // slot 1 for the first login or slot 2 when adding another account,
+            // atomically making it the active account.
             if (cookieStr.isNotEmpty()) {
-                val cookies = Cookies(cookieStr)
-                saveCookies(cookies)
-            }
-
-            // 3. Save the DataSyncId if it exists
-            if (dataSyncId.isNotEmpty()) {
-                datastoreRepository.saveDataSyncId(dataSyncId)
-                YouTube.dataSyncId = dataSyncId
-            }
-
-            // 4. Save the Profile Info! (This is what updates the "Guest User" header)
-            if (accountName.isNotEmpty() || accountHandle.isNotEmpty()) {
-                datastoreRepository.saveYtProfile(accountName, accountHandle, "")
+                val slot = if (datastoreRepository.ytAccountCount() >= 1) 2 else 1
+                datastoreRepository.saveYtAccountSession(
+                    slot = slot,
+                    cookies = Cookies(cookieStr),
+                    dataSyncId = dataSyncId.ifEmpty { null },
+                    name = accountName,
+                    handle = accountHandle,
+                    avatarUrl = "",
+                )
+                YouTube.cookie = cookieStr
+                if (dataSyncId.isNotEmpty()) {
+                    YouTube.dataSyncId = dataSyncId
+                }
             }
 
             // 5. Complete the login and trigger the background sync
@@ -142,14 +147,6 @@ class AuthViewModel @Inject constructor(
         }.trim()
         
         emit(token)
-    }
-
-    private fun saveCookies(cookies: Cookies) {
-        printd("Got cookies: $cookies")
-        viewModelScope.launch {
-            datastoreRepository.saveCookies(cookies)
-            YouTube.cookie = cookies.toRawCookie()
-        }
     }
 
     sealed interface ScreenEvent {

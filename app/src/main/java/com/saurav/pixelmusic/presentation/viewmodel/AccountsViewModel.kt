@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -133,9 +134,13 @@ class AccountsViewModel @Inject constructor(
                 runCatching {
                     when (service) {
                         ExternalServiceAccount.YOUTUBE -> {
-                            datastoreRepository.saveCookies(com.saurav.pixelmusic.data.model.youtube.Cookies(""))
-                            datastoreRepository.saveDataSyncId("")
-                            com.saurav.pixelmusic.data.database.youtube.AppDatabase.clearDownloads(context)
+                            // Removes the active YouTube account; if another
+                            // account remains it is promoted and becomes active.
+                            val active = datastoreRepository.activeYtAccount.first()
+                            val remaining = datastoreRepository.removeYtAccount(active)
+                            if (!remaining) {
+                                com.saurav.pixelmusic.data.database.youtube.AppDatabase.clearDownloads(context)
+                            }
                         }
                         ExternalServiceAccount.LASTFM -> {
                             userPreferencesRepository.setLastfmSession("")

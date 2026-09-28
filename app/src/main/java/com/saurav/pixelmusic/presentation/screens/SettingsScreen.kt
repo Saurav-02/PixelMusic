@@ -135,6 +135,7 @@ fun SettingsScreen(
     val maxTopBarHeightPx = with(density) { maxTopBarHeight.toPx() }
 
     val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
+    val ytAccounts by settingsViewModel.ytAccounts.collectAsStateWithLifecycle()
     val isProUser = uiState.ytIsProUser
     val audioSessionId by playerViewModel.activeAudioSessionId.collectAsStateWithLifecycle()
 
@@ -275,9 +276,11 @@ fun SettingsScreen(
     item {
         com.saurav.pixelmusic.presentation.components.ExpandableAccountCard(
             uiState = uiState,
+            accounts = ytAccounts,
             isPro = isProUser,
             onLoginNew = { showLoginOptionsDialog = true },
-            onLogout = { settingsViewModel.logoutYoutube() },
+            onSwitchAccount = { settingsViewModel.switchYtAccount(it) },
+            onRemoveAccount = { settingsViewModel.removeYtAccount(it) },
             onManageAccounts = { navController.navigateSafely(Screen.Accounts.route) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
         )
