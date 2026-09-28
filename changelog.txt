@@ -1,11 +1,6 @@
 **Sub release 4.5.0**
 
-⚡ **Instagram Story Video Share Fix (Test Build)**
-• Fixed an issue where sharing song cards as a video to Instagram Story resulted in a blank story canvas.
-• Properly assigned video assets using `setDataAndType` for background media handling in Instagram Stories instead of treating videos as sticker assets.
-
-🚀 **MAJOR UPDATE & OVERHAUL**
-This version brings a substantial number of changes across the entire app, featuring extensive modifications, major performance improvements, and critical bug fixes to deliver a significantly smoother and more reliable experience.
+* ⚡ **Instagram Story Video Share Fix:** Fixed an issue where sharing song cards as a video to Instagram Story resulted in a blank story canvas; video assets are now properly assigned using `setDataAndType` for background media handling in Instagram Stories instead of being treated as sticker assets.
 
 * ⚫ **Black & White Theme:** Added a new monochrome "Black and White" palette (Theme ++) with pure black, pure white, and neutral greys, plus a grayscale color filter applied to all thumbnails in this mode.
 
