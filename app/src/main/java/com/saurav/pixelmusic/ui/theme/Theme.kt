@@ -354,44 +354,44 @@ val BlueLightColorScheme = lightColorScheme(
     onError = Color.White
 )
 
-// --- Black & White Palette (Creamy White & Carbon Black) ---
-private val BwDarkBackground = Color(0xFF0C0C0C)
-private val BwDarkSurface = Color(0xFF141414)
-private val BwDarkPrimary = Color(0xFFF7F5EE) // Creamy White
-private val BwDarkOnPrimary = Color(0xFF121212) // Carbon Black
-private val BwDarkPrimaryContainer = Color(0xFF282828)
-private val BwDarkOnPrimaryContainer = Color(0xFFF7F5EE)
-private val BwDarkSecondary = Color(0xFFD6D3CA) // Soft Creamy Pearl
-private val BwDarkOnSecondary = Color(0xFF121212)
-private val BwDarkSecondaryContainer = Color(0xFF222222)
-private val BwDarkOnSecondaryContainer = Color(0xFFE5E2D9)
-private val BwDarkTertiary = Color(0xFFB0ACA2) // Warm Ash
-private val BwDarkOnTertiary = Color(0xFF121212)
-private val BwDarkOnBackground = Color(0xFFF7F5EE)
-private val BwDarkOnSurface = Color(0xFFF7F5EE)
-private val BwDarkSurfaceVariant = Color(0xFF222222)
-private val BwDarkOnSurfaceVariant = Color(0xFFB5B2A9)
-private val BwDarkOutline = Color(0xFF6B6861)
-private val BwDarkOutlineVariant = Color(0xFF383632)
+// --- Black & White Palette (Pure Black, Pure White & Neutral Grey) ---
+private val BwDarkBackground = Color(0xFF000000) // Pure Black
+private val BwDarkSurface = Color(0xFF121212)    // Dark Neutral Grey
+private val BwDarkPrimary = Color(0xFFFFFFFF)    // Pure White
+private val BwDarkOnPrimary = Color(0xFF000000)  // Pure Black
+private val BwDarkPrimaryContainer = Color(0xFF262626) // Medium-dark Grey
+private val BwDarkOnPrimaryContainer = Color(0xFFFFFFFF)
+private val BwDarkSecondary = Color(0xFFE0E0E0)  // Light Grey
+private val BwDarkOnSecondary = Color(0xFF000000)
+private val BwDarkSecondaryContainer = Color(0xFF1E1E1E)
+private val BwDarkOnSecondaryContainer = Color(0xFFE0E0E0)
+private val BwDarkTertiary = Color(0xFFBDBDBD)   // Mid Grey
+private val BwDarkOnTertiary = Color(0xFF000000)
+private val BwDarkOnBackground = Color(0xFFFFFFFF) // Pure White
+private val BwDarkOnSurface = Color(0xFFFFFFFF)    // Pure White
+private val BwDarkSurfaceVariant = Color(0xFF242424) // Neutral Grey
+private val BwDarkOnSurfaceVariant = Color(0xFFBDBDBD) // Neutral Light Grey
+private val BwDarkOutline = Color(0xFF757575)
+private val BwDarkOutlineVariant = Color(0xFF383838)
 
-private val BwLightBackground = Color(0xFFFAF7F0) // Creamy White
-private val BwLightSurface = Color(0xFFF4F0E7) // Soft Creamy Ivory
-private val BwLightPrimary = Color(0xFF141414) // Carbon Black
-private val BwLightOnPrimary = Color(0xFFFAF7F0) // Creamy White
-private val BwLightPrimaryContainer = Color(0xFFE2DDD2) // Alabaster Container
-private val BwLightOnPrimaryContainer = Color(0xFF141414)
-private val BwLightSecondary = Color(0xFF333333) // Deep Charcoal
+private val BwLightBackground = Color(0xFFFFFFFF) // Pure White
+private val BwLightSurface = Color(0xFFF5F5F5)    // Neutral Off-White / Light Grey
+private val BwLightPrimary = Color(0xFF000000)    // Pure Black
+private val BwLightOnPrimary = Color(0xFFFFFFFF)  // Pure White
+private val BwLightPrimaryContainer = Color(0xFFE0E0E0) // Neutral Grey
+private val BwLightOnPrimaryContainer = Color(0xFF000000)
+private val BwLightSecondary = Color(0xFF424242)  // Dark Neutral Grey
 private val BwLightOnSecondary = Color(0xFFFFFFFF)
-private val BwLightSecondaryContainer = Color(0xFFEAE5DB)
-private val BwLightOnSecondaryContainer = Color(0xFF1C1C1C)
-private val BwLightTertiary = Color(0xFF5A5852)
+private val BwLightSecondaryContainer = Color(0xFFEEEEEE)
+private val BwLightOnSecondaryContainer = Color(0xFF000000)
+private val BwLightTertiary = Color(0xFF616161)   // Mid Neutral Grey
 private val BwLightOnTertiary = Color(0xFFFFFFFF)
-private val BwLightOnBackground = Color(0xFF141414) // Carbon Black text
-private val BwLightOnSurface = Color(0xFF141414)
-private val BwLightSurfaceVariant = Color(0xFFE5E0D5)
-private val BwLightOnSurfaceVariant = Color(0xFF524F49)
-private val BwLightOutline = Color(0xFF8C8880)
-private val BwLightOutlineVariant = Color(0xFFC7C2B6)
+private val BwLightOnBackground = Color(0xFF000000) // Pure Black text
+private val BwLightOnSurface = Color(0xFF000000)
+private val BwLightSurfaceVariant = Color(0xFFE0E0E0)
+private val BwLightOnSurfaceVariant = Color(0xFF424242)
+private val BwLightOutline = Color(0xFF757575)
+private val BwLightOutlineVariant = Color(0xFFBDBDBD)
 
 val BwDarkColorScheme = darkColorScheme(
     primary = BwDarkPrimary,
@@ -414,7 +414,7 @@ val BwDarkColorScheme = darkColorScheme(
     outlineVariant = BwDarkOutlineVariant,
     surfaceTint = BwDarkPrimary,
     error = Color(0xFFE0E0E0),
-    onError = Color(0xFF121212)
+    onError = Color(0xFF000000)
 )
 
 val BwLightColorScheme = lightColorScheme(
@@ -437,8 +437,8 @@ val BwLightColorScheme = lightColorScheme(
     outline = BwLightOutline,
     outlineVariant = BwLightOutlineVariant,
     surfaceTint = BwLightPrimary,
-    error = Color(0xFF222222),
-    onError = Color(0xFFFAF7F0)
+    error = Color(0xFF000000),
+    onError = Color(0xFFFFFFFF)
 )
 
 // --- Sunset Orange Palette ---

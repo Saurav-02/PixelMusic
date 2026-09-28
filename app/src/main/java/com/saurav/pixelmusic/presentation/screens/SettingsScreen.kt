@@ -303,10 +303,14 @@ fun SettingsScreen(
                     var itemIndex = 0
 
                     val isBw = com.saurav.pixelmusic.ui.theme.LocalIsBlackAndWhiteTheme.current
+                    val bwCategoryColors = if (isDark) {
+                        Color(0xFF242424) to Color(0xFFFFFFFF)
+                    } else {
+                        Color(0xFFE0E0E0) to Color(0xFF000000)
+                    }
                     mainCategories.forEach { category ->
                         val colors = if (isBw) {
-                            if (isDark) Color(0xFF222222) to Color(0xFFF7F5EE)
-                            else Color(0xFFE5E0D5) to Color(0xFF141414)
+                            bwCategoryColors
                         } else {
                             getCategoryColors(category, isDark)
                         }
@@ -342,7 +346,7 @@ fun SettingsScreen(
 
                     ExpressiveCategoryItem(
                         category = SettingsCategory.DEVICE_CAPABILITIES,
-                        customColors = if (isBw) (if (isDark) Color(0xFF222222) to Color(0xFFF7F5EE) else Color(0xFFE5E0D5) to Color(0xFF141414)) else getCategoryColors(SettingsCategory.DEVICE_CAPABILITIES, isDark),
+                        customColors = if (isBw) bwCategoryColors else getCategoryColors(SettingsCategory.DEVICE_CAPABILITIES, isDark),
                         onClick = { navController.navigateSafely(Screen.DeviceCapabilities.route) },
                         shape = shapeFor(itemIndex)
                     )
@@ -353,7 +357,7 @@ fun SettingsScreen(
 
                     ExpressiveCategoryItem(
                         category = SettingsCategory.ABOUT,
-                        customColors = if (isBw) (if (isDark) Color(0xFF222222) to Color(0xFFF7F5EE) else Color(0xFFE5E0D5) to Color(0xFF141414)) else getCategoryColors(SettingsCategory.ABOUT, isDark),
+                        customColors = if (isBw) bwCategoryColors else getCategoryColors(SettingsCategory.ABOUT, isDark),
                         onClick = { navController.navigateSafely("about") },
                         shape = shapeFor(itemIndex)
                     )
