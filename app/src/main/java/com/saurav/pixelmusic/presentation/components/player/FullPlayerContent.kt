@@ -1032,11 +1032,13 @@ fun FullPlayerContent(
     LaunchedEffect(optimizedAlbumArtUri, isDarkTheme) {
         extractedColor = extractDominantColor(context, optimizedAlbumArtUri, bgColor, isDarkTheme)
     }
+    val isBwTheme = com.saurav.pixelmusic.ui.theme.LocalIsBlackAndWhiteTheme.current
+    val targetWash = if (isBwTheme) bgColor else androidx.compose.ui.graphics.lerp(bgColor, extractedColor, 0.5f)
     val washColor by animateColorAsState(
-                    targetValue = androidx.compose.ui.graphics.lerp(bgColor, extractedColor, 0.5f),
-                    animationSpec = tween(500),
-                    label = "immersiveWashColor"
-                )
+        targetValue = targetWash,
+        animationSpec = tween(500),
+        label = "immersiveWashColor"
+    )
 
                 Box(modifier = Modifier.fillMaxSize().background(washColor)) {   // ADD THIS
                     Column(modifier = Modifier.fillMaxSize()) {                  // ADD THIS

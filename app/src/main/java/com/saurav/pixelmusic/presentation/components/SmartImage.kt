@@ -94,6 +94,15 @@ fun SmartImage(
     // Initialize the shared Compose State-backed cache once
     SmartImageCache.initialize(connectivityStateHolder, userPreferencesRepository)
 
+    val isBwTheme = com.saurav.pixelmusic.ui.theme.LocalIsBlackAndWhiteTheme.current
+    val effectiveColorFilter = if (isBwTheme) {
+        androidx.compose.ui.graphics.ColorFilter.colorMatrix(
+            androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0f) }
+        )
+    } else {
+        colorFilter
+    }
+
     val clippedModifier = modifier.clip(shape)
 
     // Handle direct models (Bitmap, Vector, etc) early to avoid ImageRequest overhead
@@ -113,7 +122,7 @@ fun SmartImage(
                 modifier = clippedModifier,
                 contentDescription = contentDescription,
                 contentScale = contentScale,
-                colorFilter = colorFilter,
+                colorFilter = effectiveColorFilter,
                 alpha = alpha
             )
         }
@@ -196,7 +205,7 @@ fun SmartImage(
             contentDescription = contentDescription,
             modifier = clippedModifier,
             contentScale = contentScale,
-            colorFilter = colorFilter,
+            colorFilter = effectiveColorFilter,
             alpha = alpha
         ) {
             val state = painter.state
@@ -215,7 +224,7 @@ fun SmartImage(
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = contentScale,
-                            colorFilter = colorFilter,
+                            colorFilter = effectiveColorFilter,
                             alpha = alpha
                         )
                     } else {
@@ -247,7 +256,7 @@ fun SmartImage(
             contentDescription = contentDescription,
             modifier = clippedModifier,
             contentScale = contentScale,
-            colorFilter = colorFilter,
+            colorFilter = effectiveColorFilter,
             alpha = alpha,
             placeholder = painterResource(placeholderResId),
             error = painterResource(errorResId)

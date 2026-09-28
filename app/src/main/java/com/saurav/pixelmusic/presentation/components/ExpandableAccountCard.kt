@@ -98,7 +98,12 @@ fun ExpandableAccountCard(
                                 model = avatarUrl,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize().clip(CircleShape),
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
+                                colorFilter = if (com.saurav.pixelmusic.ui.theme.LocalIsBlackAndWhiteTheme.current) {
+                                    androidx.compose.ui.graphics.ColorFilter.colorMatrix(
+                                        androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0f) }
+                                    )
+                                } else null
                             )
                         } else {
                             val initial = nameText.firstOrNull()?.toString()?.uppercase() ?: "G"

@@ -83,18 +83,31 @@ fun PlaylistCover(
             .then(shapeMod)
             .clip(shape)
     ) {
+        val isBw = com.saurav.pixelmusic.ui.theme.LocalIsBlackAndWhiteTheme.current
+        val bwColorFilter = if (isBw) {
+            androidx.compose.ui.graphics.ColorFilter.colorMatrix(
+                androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0f) }
+            )
+        } else null
+
         if (!playlist.coverImageUri.isNullOrBlank()) {
             AsyncImage(
                 model = if (playlist.coverImageUri.startsWith("/")) java.io.File(playlist.coverImageUri) else playlist.coverImageUri,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                colorFilter = bwColorFilter
             )
         } else if (playlist.coverColorArgb != null) {
+            val baseColor = Color(playlist.coverColorArgb)
+            val effectiveColor = if (isBw) {
+                val lum = 0.299f * baseColor.red + 0.587f * baseColor.green + 0.114f * baseColor.blue
+                Color(lum, lum, lum, baseColor.alpha)
+            } else baseColor
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(playlist.coverColorArgb)),
+                    .background(effectiveColor),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
