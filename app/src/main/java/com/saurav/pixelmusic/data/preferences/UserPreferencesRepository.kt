@@ -119,7 +119,12 @@ enum class PlayerDesignStyle {
 }
 
 enum class NowPlayingLyricsStyle {
-    HIDDEN, KARAOKE
+    HIDDEN,
+    KARAOKE,
+    WORD_BY_WORD,
+    BLUR_FOCUS,
+    GRADIENT_SWEEP,
+    SLIDE_FADE
 }
 
 enum class ShareCardFormat {

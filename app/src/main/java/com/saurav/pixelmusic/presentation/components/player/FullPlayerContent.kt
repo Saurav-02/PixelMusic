@@ -661,13 +661,16 @@ fun FullPlayerContent(
 
     val singleLineLyricsSection: @Composable () -> Unit = {
         if (isImmersive &&
-            nowPlayingLyricsStyle == com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.KARAOKE && 
+            nowPlayingLyricsStyle != com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.HIDDEN && 
             lyricsProvider()?.synced?.isNotEmpty() == true) {
             ImmersiveSingleLineLyrics(
                 lyrics = lyricsProvider(),
                 playbackPositionFlow = playerViewModel.currentPlaybackPosition,
                 syncOffsetMs = lyricsSyncOffset,
-                textColor = playerOnBaseColor
+                textColor = playerOnBaseColor,
+                accentColor = playerAccentColor,
+                lyricsStyle = nowPlayingLyricsStyle,
+                onClick = onLyricsClick
             )
         }
     }
