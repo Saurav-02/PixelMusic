@@ -1,17 +1,29 @@
+**Sub release 4.5.0**
+
 ⚡ **Instagram Story Video Share Fix (Test Build)**
 • Fixed an issue where sharing song cards as a video to Instagram Story resulted in a blank story canvas.
 • Properly assigned video assets using `setDataAndType` for background media handling in Instagram Stories instead of treating videos as sticker assets.
 
-⚠️ **IMPORTANT NOTICE: APPLICATION ID CHANGE**
-We are changing our Application ID to `com.saurav.pixelmusic`. Because of this change, the new update cannot be installed over the previous version directly.
-
-Before updating, please take a full backup of your data:
-1. Go to **Settings** -> **Backup and restore** -> **Backup all data**.
-2. Go to **Accounts** -> **Account management** -> **Copy cookies** for faster login (or you can manually sign in).
-3. Then install the latest version, import your backup, and you're done! Enjoy ♥️
-
 🚀 **MAJOR UPDATE & OVERHAUL**
 This version brings a substantial number of changes across the entire app, featuring extensive modifications, major performance improvements, and critical bug fixes to deliver a significantly smoother and more reliable experience.
+
+* ⚫ **Black & White Theme:** Added a new monochrome "Black and White" palette (Theme ++) with pure black, pure white, and neutral greys, plus a grayscale color filter applied to all thumbnails in this mode.
+
+* 🎤 **Immersive Lyrics Styles:** New word-by-word, blur focus, gradient sweep, and slide & fade styles for immersive lyrics, with progressive word reveal, single word pop, and word timing interpolation.
+
+* ⏱️ **Sleep Timer & Equalizer in Player Options:** Fixed the sleep timer, removed it from the queue sheet, and added sleep timer plus equalizer to the player options sheet. The options sheet now fully expands with better divider visibility and origin navigation in the header.
+
+* 🔍 **Search & Player Stability:** Resolved intermittent search failures and player controls freezing.
+
+* 📶 **Data-Saving Optimizations:** New data-saving optimizations for queue preloading, audio buffering, mobile bitrate, and lyrics fetching.
+
+* ⏳ **Minimum Duration Filter:** Cloud YouTube songs can now be filtered by minimum duration in search and radio/auto-queue.
+
+* 🚀 **Fresh Cold Launch:** The app now starts a fresh session on cold launch instead of restoring the last played song or mini player.
+
+* 🎨 **Player Queue Polish:** Removed the full player queue scale-down to fix the status bar seam, with a smooth blur effect when the queue opens.
+
+* 🛠️ **Build Fixes:** Fixed missing imports and the end-of-track timer call in the full player.
 
 ---
 
