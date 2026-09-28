@@ -21,6 +21,7 @@ import com.saurav.pixelmusic.data.database.MusicDao
 import saurav.shru.pixelmusic.innertube.models.SongItem
 import kotlinx.coroutines.flow.first
 import android.media.MediaMetadataRetriever
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import android.util.Log
 import androidx.compose.animation.core.Animatable
@@ -87,7 +88,11 @@ import com.saurav.pixelmusic.data.service.MusicNotificationProvider
 import com.saurav.pixelmusic.data.service.MusicService
 import com.saurav.pixelmusic.data.service.player.CastPlayer
 import com.saurav.pixelmusic.data.service.http.MediaFileHttpServerService
+import com.saurav.pixelmusic.R
 import com.saurav.pixelmusic.data.service.player.DualPlayerEngine
+import com.saurav.pixelmusic.data.session.ListenTogetherManager
+import com.saurav.pixelmusic.data.session.ListenTogetherUiState
+import com.saurav.pixelmusic.data.session.SessionTrack
 import com.saurav.pixelmusic.data.worker.SyncManager
 import com.saurav.pixelmusic.data.worker.YouTubeLibrarySyncManager
 import com.saurav.pixelmusic.utils.AppShortcutManager
@@ -114,6 +119,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -311,7 +317,8 @@ class PlayerViewModel @Inject constructor(
     val multiSelectionStateHolder: MultiSelectionStateHolder,
     val playlistSelectionStateHolder: PlaylistSelectionStateHolder,
     private val sessionToken: SessionToken,
-    private val mediaControllerFactory: com.saurav.pixelmusic.data.media.MediaControllerFactory
+    private val mediaControllerFactory: com.saurav.pixelmusic.data.media.MediaControllerFactory,
+    private val listenTogetherManager: ListenTogetherManager
 ) : ViewModel() {
 
     private val _playerUiState = MutableStateFlow(PlayerUiState())
@@ -769,6 +776,209 @@ class PlayerViewModel @Inject constructor(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val toastEvents = _toastEvents.asSharedFlow()
+
+    // ------------------------------------------------------------------
+    // Listen Together — Resso-style synchronized listening sessions.
+    // The host (DJ) publishes playback snapshots to Firebase Realtime
+    // Database; guests mirror them in real time. Each device streams its
+    // own audio — only the "what / playing / where" is synced.
+    // ------------------------------------------------------------------
+
+    /** Whether the Listen Together bottom sheet is visible. */
+    private val _showListenTogetherSheet = MutableStateFlow(false)
+    val showListenTogetherSheet: StateFlow<Boolean> = _showListenTogetherSheet.asStateFlow()
+
+    /** Session state machine — Idle / Creating / Joining / Hosting / Guest / Error. */
+    val listenTogetherUiState: StateFlow<ListenTogetherUiState> = listenTogetherManager.uiState
+
+    /**
+     * Set while guest-sync itself drives playback, so the guest transport
+     * lock ([blockTransportForGuest]) doesn't block it.
+     */
+    @Volatile
+    private var sessionSyncBypass = false
+
+    private var hostSyncJob: Job? = null
+    private var guestSyncJob: Job? = null
+    private var guestLoadWatchdog: Job? = null
+    private var lastGuestVideoId: String? = null
+
+    fun openListenTogetherSheet() { _showListenTogetherSheet.value = true }
+    fun closeListenTogetherSheet() { _showListenTogetherSheet.value = false }
+
+    /** Guests can't drive playback — the host is the DJ. */
+    private fun blockTransportForGuest(): Boolean {
+        if (listenTogetherManager.isGuestActive() && !sessionSyncBypass) {
+            sendToast(context.getString(R.string.listen_together_host_only))
+            return true
+        }
+        return false
+    }
+
+    /** Starts hosting a session, then begins publishing playback state. */
+    fun startHostingSession(hostName: String) {
+        viewModelScope.launch {
+            if (listenTogetherManager.startHosting(hostName)) {
+                closeListenTogetherSheet()
+                startHostSync()
+                sendToast(context.getString(R.string.listen_together_share_code))
+            }
+        }
+    }
+
+    /** Joins a session by room code, then starts mirroring the host. */
+    fun joinListenTogetherSession(code: String, guestName: String) {
+        viewModelScope.launch {
+            if (listenTogetherManager.joinSession(code, guestName)) {
+                closeListenTogetherSheet()
+                startGuestSync()
+            }
+        }
+    }
+
+    /** Leaves the current session (hosts also delete the room). */
+    fun leaveListenTogetherSession() {
+        stopSessionSync()
+        listenTogetherManager.leaveSession()
+        closeListenTogetherSheet()
+    }
+
+    private fun stopSessionSync() {
+        hostSyncJob?.cancel()
+        hostSyncJob = null
+        guestSyncJob?.cancel()
+        guestSyncJob = null
+        guestLoadWatchdog?.cancel()
+        guestLoadWatchdog = null
+        lastGuestVideoId = null
+        sessionSyncBypass = false
+    }
+
+    // ------------------------------------------------------------ host sync
+
+    /** Publishes the host's playback snapshot ~1/sec (manager throttles writes). */
+    private fun startHostSync() {
+        stopSessionSync()
+        hostSyncJob = viewModelScope.launch {
+            while (isActive) {
+                try {
+                    val snapshot = playbackStateHolder.stablePlayerState.value
+                    val song = snapshot.currentSong
+                    val videoId = song?.youtubeId
+                    if (song != null && !videoId.isNullOrBlank()) {
+                        listenTogetherManager.publishHostState(
+                            videoId = videoId,
+                            title = song.title,
+                            artist = song.artist,
+                            artworkUrl = song.albumArtUriString.orEmpty(),
+                            isPlaying = snapshot.isPlaying,
+                            positionMs = playbackStateHolder.currentPosition.value
+                        )
+                    }
+                } catch (t: Throwable) {
+                    if (t is CancellationException) throw t
+                    Timber.w(t, "ListenTogether host sync tick failed")
+                }
+                delay(1_000)
+            }
+        }
+    }
+
+    // ----------------------------------------------------------- guest sync
+
+    /** Mirrors the host: track, play/pause and position, with drift correction. */
+    private fun startGuestSync() {
+        stopSessionSync()
+        lastGuestVideoId = null
+        guestSyncJob = viewModelScope.launch {
+            // Fast path: react to host snapshots the moment they arrive.
+            launch {
+                listenTogetherManager.remoteState.collect { applyRemoteTrackSnapshot(it) }
+            }
+            // Session ended (or errored) mid-sync: surface it and stop.
+            launch {
+                listenTogetherManager.uiState.collect { state ->
+                    when (state) {
+                        is ListenTogetherUiState.Error -> {
+                            sendToast(state.message)
+                            stopSessionSync()
+                        }
+                        is ListenTogetherUiState.Idle -> stopSessionSync()
+                        else -> Unit
+                    }
+                }
+            }
+            // Slow path: enforce convergence (heals local interference,
+            // e.g. notification or media-button presses while guesting).
+            while (isActive) {
+                delay(3_000)
+                enforceGuestConvergence()
+            }
+        }
+    }
+
+    private suspend fun applyRemoteTrackSnapshot(remote: SessionTrack?) {
+        if (remote == null || !listenTogetherManager.isGuestActive()) return
+        val localVideoId = playbackStateHolder.stablePlayerState.value.currentSong?.youtubeId
+        if (remote.videoId == localVideoId || remote.videoId == lastGuestVideoId) {
+            enforceGuestConvergence(remote)
+            return
+        }
+        lastGuestVideoId = remote.videoId
+        val song = com.saurav.pixelmusic.data.model.youtube.Song(
+            youtubeId = remote.videoId,
+            title = remote.title.ifBlank { "Unknown title" },
+            artist = remote.artist,
+            thumbnailHref = remote.artworkUrl
+        ).toNativeSong()
+        sessionSyncBypass = true
+        try {
+            playSongs(listOf(song), song, "Listen Together")
+        } finally {
+            sessionSyncBypass = false
+        }
+        // Watchdog: the host's track may not be playable on this device
+        // (region block, deleted video...).
+        guestLoadWatchdog?.cancel()
+        guestLoadWatchdog = viewModelScope.launch {
+            delay(10_000)
+            if (listenTogetherManager.isGuestActive() &&
+                playbackStateHolder.stablePlayerState.value.currentSong?.youtubeId != remote.videoId
+            ) {
+                sendToast(context.getString(R.string.listen_together_track_unavailable))
+            }
+        }
+        enforceGuestConvergence(remote)
+    }
+
+    private fun enforceGuestConvergence(remote: SessionTrack? = null) {
+        if (!listenTogetherManager.isGuestActive() || sessionSyncBypass) return
+        val snap = remote ?: listenTogetherManager.remoteState.value ?: return
+        if (playbackStateHolder.stablePlayerState.value.currentSong?.youtubeId != snap.videoId) {
+            return // track switch still in flight
+        }
+        // Transport calls below go through the guest lock, so bypass it while
+        // the sync itself drives playback.
+        sessionSyncBypass = true
+        try {
+            if (playbackStateHolder.stablePlayerState.value.isPlaying != snap.isPlaying) {
+                // A single toggle always converges: the state is boolean.
+                playPause()
+                return
+            }
+            val expected = if (snap.isPlaying) {
+                snap.positionMs + (System.currentTimeMillis() - snap.updatedAtMs)
+            } else {
+                snap.positionMs
+            }.coerceAtLeast(0L)
+            val drift = abs(expected - playbackStateHolder.currentPosition.value)
+            if (drift > 3_000) {
+                seekTo(expected)
+            }
+        } finally {
+            sessionSyncBypass = false
+        }
+    }
 
     // MediaStore write-permission request (needed for metadata editing without MANAGE_EXTERNAL_STORAGE)
     private val _writePermissionRequest = MutableSharedFlow<android.content.IntentSender>(
@@ -4239,6 +4449,7 @@ class PlayerViewModel @Inject constructor(
 
     // rebuildPlayerQueue functionality moved to PlaybackStateHolder (simplified)
     fun playSongs(songsToPlay: List<Song>, startSong: Song, queueName: String = "None", playlistId: String? = null) {
+        if (blockTransportForGuest()) return
         cancelPendingFullQueuePlayback()
         val requestToken = beginDirectPlaybackRequest()
         directPlaybackJob = viewModelScope.launch {
@@ -5394,6 +5605,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun playPause() {
+        if (blockTransportForGuest()) return
         val castSession = castStateHolder.castSession.value
         if (castSession != null && castSession.remoteMediaClient != null) {
             val remoteMediaClient = castSession.remoteMediaClient!!
@@ -5488,6 +5700,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun seekTo(position: Long) {
+        if (blockTransportForGuest()) return
         if (mediaController == null || mediaController?.isConnected != true) {
             checkAndReconnectMediaController { seekTo(position) }
         }
@@ -5495,6 +5708,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun nextSong() {
+        if (blockTransportForGuest()) return
         if (mediaController == null || mediaController?.isConnected != true) {
             checkAndReconnectMediaController { nextSong() }
         }
@@ -5502,6 +5716,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun previousSong() {
+        if (blockTransportForGuest()) return
         if (mediaController == null || mediaController?.isConnected != true) {
             checkAndReconnectMediaController { previousSong() }
         }

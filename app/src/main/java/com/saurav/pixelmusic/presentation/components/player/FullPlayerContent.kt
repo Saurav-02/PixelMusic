@@ -126,6 +126,7 @@ import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.HorizontalDivider
 import com.saurav.pixelmusic.presentation.components.TimerOptionsBottomSheet
@@ -968,6 +969,33 @@ fun FullPlayerContent(
                                         }
                                     }
                                 }
+                            }
+
+                            // Listen Together button
+                            val ltUiState by playerViewModel.listenTogetherUiState.collectAsStateWithLifecycle()
+                            val ltActive = ltUiState is com.saurav.pixelmusic.data.session.ListenTogetherUiState.Hosting ||
+                                ltUiState is com.saurav.pixelmusic.data.session.ListenTogetherUiState.Guest
+                            Box(
+                                modifier = Modifier
+                                    .size(height = 42.dp, width = 50.dp)
+                                    .clip(
+                                        RoundedCornerShape(
+                                            topStart = 6.dp,
+                                            topEnd = 50.dp,
+                                            bottomStart = 6.dp,
+                                            bottomEnd = 50.dp
+                                        )
+                                    )
+                                    .background(topBarButtonBg)
+                                    .clickable { playerViewModel.openListenTogetherSheet() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Group,
+                                    contentDescription = stringResource(R.string.listen_together),
+                                    tint = if (ltActive) LocalMaterialTheme.current.primary
+                                    else topBarIconColor
+                                )
                             }
 
                             // Queue Button

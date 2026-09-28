@@ -122,6 +122,9 @@ override fun onCreate() {
     // 1. Init the logger sink FIRST (before anything else may log)
     PixelLogger.init(this)
 
+    // 1b. Listen Together: manual Firebase init (no google-services.json needed).
+    com.saurav.pixelmusic.data.session.ListenTogetherFirebase.init(this)
+
 // 2. Observe the verbose-logging toggle and drive PixelLogger
 startupScope.launch {
     try {

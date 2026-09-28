@@ -292,6 +292,12 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.google.play.services.cast.framework)
 
+    // Firebase — Listen Together group sessions (Realtime Database + anonymous auth)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
+
     // UI Utilities & Extra
     implementation(libs.timber)
     implementation(libs.smooth.corner.rect.android.compose)

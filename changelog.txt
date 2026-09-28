@@ -1,5 +1,6 @@
 **Sub release 4.5.0**
 
+* 🎧 **Listen Together:** Start a listening session from the player and share the 6-letter room code — friends join from anywhere and hear exactly what the host plays, in perfect sync.
 * ⚡ **Instagram Story Video Share Fix:** Fixed an issue where sharing song cards as a video to Instagram Story resulted in a blank story canvas; video assets are now properly assigned using `setDataAndType` for background media handling in Instagram Stories instead of being treated as sticker assets.
 
 * ⚫ **Black & White Theme:** Added a new monochrome "Black and White" palette (Theme ++) with pure black, pure white, and neutral greys, plus a grayscale color filter applied to all thumbnails in this mode.
