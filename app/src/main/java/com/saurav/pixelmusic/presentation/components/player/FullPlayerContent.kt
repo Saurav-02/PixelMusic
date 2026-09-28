@@ -134,6 +134,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import android.widget.Toast
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.runtime.CompositionLocalProvider
@@ -1293,10 +1294,12 @@ fun FullPlayerContent(
     // Player Options Menu Bottom Sheet
     if (showSongInfoBottomSheet) {
         val songInfoViewModel: SongInfoBottomSheetViewModel = hiltViewModel()
+        val songOptionsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
         val sheetShape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
         ModalBottomSheet(
             onDismissRequest = { showSongInfoBottomSheet = false },
+            sheetState = songOptionsSheetState,
             dragHandle = null,
             containerColor = LocalMaterialTheme.current.surfaceContainerHigh,
             shape = sheetShape,
@@ -1314,14 +1317,14 @@ fun FullPlayerContent(
                             .clip(sheetShape)
                             .background(LocalMaterialTheme.current.surfaceContainerHigh)
                             .navigationBarsPadding()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 12.dp)
                     ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             // Custom Drag Handle inside the Column
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 16.dp, bottom = 8.dp),
+                                    .padding(top = 12.dp, bottom = 4.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Box(
@@ -1333,26 +1336,43 @@ fun FullPlayerContent(
                                 )
                             }
                             
-                            // Header: Cover + Metadata
+                            val resolvedAlbumIdStr = song.albumBrowseId?.takeIf { it.isNotBlank() }
+                                ?: if (song.albumId > 0) song.albumId.toString() else null
+
+                            val navigateToOrigin = {
+                                showSongInfoBottomSheet = false
+                                if (resolvedAlbumIdStr != null) {
+                                    playerViewModel.triggerAlbumNavigationFromPlayer(resolvedAlbumIdStr)
+                                } else {
+                                    onSongMetadataArtistClick()
+                                }
+                            }
+
+                            // Header: Cover + Metadata (Tapping redirects to Origin / Album / Artist)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .clickable { navigateToOrigin() }
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .shadow(8.dp, RoundedCornerShape(16.dp))
-                                        .background(LocalMaterialTheme.current.surfaceVariant, RoundedCornerShape(16.dp))
+                                        .shadow(6.dp, RoundedCornerShape(14.dp))
+                                        .background(LocalMaterialTheme.current.surfaceVariant, RoundedCornerShape(14.dp))
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .clickable { navigateToOrigin() }
                                 ) {
                                     SmartImage(
                                         model = song.albumArtUriString,
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
-                                            .size(72.dp)
-                                            .clip(RoundedCornerShape(16.dp))
+                                            .size(62.dp)
+                                            .clip(RoundedCornerShape(14.dp))
                                     )
                                 }
                                 Column(modifier = Modifier.weight(1f)) {
@@ -1360,7 +1380,7 @@ fun FullPlayerContent(
                                         text = song.title,
                                         fontFamily = GoogleSansRounded,
                                         fontWeight = FontWeight.Bold,
-                                        style = MaterialTheme.typography.titleLarge,
+                                        style = MaterialTheme.typography.titleMedium,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         color = LocalMaterialTheme.current.onSurface
@@ -1373,14 +1393,37 @@ fun FullPlayerContent(
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = LocalMaterialTheme.current.onSurfaceVariant,
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.clickable {
+                                            showSongInfoBottomSheet = false
+                                            onSongMetadataArtistClick()
+                                        }
                                     )
+                                    if (song.album.isNotBlank() && song.album != song.title) {
+                                        Spacer(modifier = Modifier.height(1.dp))
+                                        Text(
+                                            text = song.album,
+                                            fontFamily = GoogleSansRounded,
+                                            fontWeight = FontWeight.Normal,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = LocalMaterialTheme.current.primary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
+                                Icon(
+                                    imageVector = Icons.Rounded.ChevronRight,
+                                    contentDescription = null,
+                                    tint = LocalMaterialTheme.current.onSurfaceVariant.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(22.dp)
+                                )
                             }
 
                             HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp),
-                                color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.25f)
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                                color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.85f),
+                                thickness = 1.dp
                             )
 
                             // FLAGSHIP OPTION: Start Mix from this
@@ -1398,7 +1441,7 @@ fun FullPlayerContent(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                                        .padding(horizontal = 16.dp, vertical = 13.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
@@ -1475,7 +1518,8 @@ fun FullPlayerContent(
 
                                     HorizontalDivider(
                                         modifier = Modifier.padding(start = 68.dp, end = 16.dp),
-                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.18f)
+                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.75f),
+                                        thickness = 1.dp
                                     )
 
                                     // Row 2: Download
@@ -1518,7 +1562,8 @@ fun FullPlayerContent(
 
                                     HorizontalDivider(
                                         modifier = Modifier.padding(start = 68.dp, end = 16.dp),
-                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.18f)
+                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.75f),
+                                        thickness = 1.dp
                                     )
 
                                     // Row 3: Share to Stories
@@ -1533,7 +1578,8 @@ fun FullPlayerContent(
 
                                     HorizontalDivider(
                                         modifier = Modifier.padding(start = 68.dp, end = 16.dp),
-                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.18f)
+                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.75f),
+                                        thickness = 1.dp
                                     )
 
                                     // Row 4: Sleep Timer
@@ -1572,7 +1618,8 @@ fun FullPlayerContent(
 
                                     HorizontalDivider(
                                         modifier = Modifier.padding(start = 68.dp, end = 16.dp),
-                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.18f)
+                                        color = LocalMaterialTheme.current.outlineVariant.copy(alpha = 0.75f),
+                                        thickness = 1.dp
                                     )
 
                                     // Row 5: Equalizer Shortcut
