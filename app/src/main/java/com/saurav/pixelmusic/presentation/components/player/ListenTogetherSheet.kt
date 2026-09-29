@@ -588,7 +588,7 @@ private fun MemberRow(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            AnimatedVisibility(
+            androidx.compose.animation.AnimatedVisibility(
                 visible = isMyMessage,
                 enter = fadeIn(animationSpec = tween(220)) + scaleIn(initialScale = 0.85f),
                 exit = fadeOut(animationSpec = tween(180)) + scaleOut(targetScale = 0.85f),

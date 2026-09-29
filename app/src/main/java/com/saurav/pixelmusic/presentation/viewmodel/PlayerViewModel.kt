@@ -893,7 +893,9 @@ class PlayerViewModel @Inject constructor(
         savedGuestQueueName = null
         viewModelScope.launch {
             playSongs(prevQueue, prevSong, prevQueueName)
-            pause()
+            if (playbackStateHolder.stablePlayerState.value.isPlaying) {
+                playPause()
+            }
         }
     }
 
