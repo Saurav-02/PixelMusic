@@ -822,9 +822,13 @@ class MainActivity : ComponentActivity() {
                 "update_download"
             )
         }
-        val shouldHideNavigationBar by remember(currentRoute, isSearchBarActive) {
+        val showListenTogetherSheet by playerViewModel.showListenTogetherSheet.collectAsStateWithLifecycle()
+        val shouldHideNavigationBar by remember(currentRoute, isSearchBarActive, showListenTogetherSheet) {
             derivedStateOf {
-                if (currentRoute == Screen.Search.route && isSearchBarActive) {
+                if (showListenTogetherSheet) {
+                    // Listen Together sheet is an app-wide overlay: tuck the nav pill away.
+                    true
+                } else if (currentRoute == Screen.Search.route && isSearchBarActive) {
                     true
                 } else {
                     currentRoute?.let { route ->
