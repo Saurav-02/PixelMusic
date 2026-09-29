@@ -25,7 +25,7 @@ data class GithubRelease(
 )
 
 data class GithubAsset(
-    @SerializedName("browser_download_url") val downloadUrl: String,
+    @SerializedName("download_url") val downloadUrl: String,
     @SerializedName("name") val name: String
 )
 
@@ -46,7 +46,10 @@ sealed class UpdateState {
 object InAppUpdater {
     private val client = OkHttpClient()
     private val gson = Gson()
-    private const val REPO_URL = "https://api.github.com/repos/Saurav-02/PixelMusic/releases/latest"
+    // Update middleman (Cloudflare Worker): the app never talks to GitHub
+    // directly, so a decompiled APK reveals no repo and no token.
+    // Test builds get "?channel=test" appended by the Test.yaml workflow.
+    private const val UPDATE_CHECK_URL = "https://pixelmusic-updater.atappu805.workers.dev/updater/check"
 
     fun isNewerVersion(latest: String?, current: String?): Boolean {
         if (latest.isNullOrBlank() || current.isNullOrBlank()) return false
@@ -78,7 +81,7 @@ object InAppUpdater {
 
     suspend fun checkForUpdate(currentVersion: String): UpdateState = withContext(Dispatchers.IO) {
         try {
-            val request = Request.Builder().url(REPO_URL).build()
+            val request = Request.Builder().url(UPDATE_CHECK_URL).build()
             val response = client.newCall(request).execute()
             
             if (response.isSuccessful) {
