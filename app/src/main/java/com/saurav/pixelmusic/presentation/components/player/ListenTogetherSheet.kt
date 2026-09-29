@@ -82,6 +82,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringArrayResource
