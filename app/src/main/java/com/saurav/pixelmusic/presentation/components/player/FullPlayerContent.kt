@@ -978,14 +978,7 @@ fun FullPlayerContent(
                             Box(
                                 modifier = Modifier
                                     .size(height = 42.dp, width = 50.dp)
-                                    .clip(
-                                        RoundedCornerShape(
-                                            topStart = 6.dp,
-                                            topEnd = 50.dp,
-                                            bottomStart = 6.dp,
-                                            bottomEnd = 50.dp
-                                        )
-                                    )
+                                    .clip(RoundedCornerShape(14.dp))
                                     .background(topBarButtonBg)
                                     .clickable { playerViewModel.openListenTogetherSheet() },
                                 contentAlignment = Alignment.Center
@@ -1002,14 +995,7 @@ fun FullPlayerContent(
                             Box(
                                 modifier = Modifier
                                     .size(height = 42.dp, width = 50.dp)
-                                    .clip(
-                                        RoundedCornerShape(
-                                            topStart = 6.dp,
-                                            topEnd = 50.dp,
-                                            bottomStart = 6.dp,
-                                            bottomEnd = 50.dp
-                                        )
-                                    )
+                                    .clip(RoundedCornerShape(14.dp))
                                     .background(topBarButtonBg)
                                     .clickable {
                                         onShowQueueClicked()
