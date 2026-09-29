@@ -605,9 +605,8 @@ fun UnifiedPlayerSheetV2(
             }
         }
     }
-    if (!actuallyShowSheetContent) return
-
-    val playerSheetSemanticsDescription = remember(
+    if (actuallyShowSheetContent) {
+        val playerSheetSemanticsDescription = remember(
         currentSheetContentState,
         infrequentPlayerState.currentSong?.title
     ) {
@@ -775,6 +774,7 @@ fun UnifiedPlayerSheetV2(
                 onNavigateToGenre = sheetActionHandlers.onNavigateToGenre
             )
         }
+    }
     }
 
     UnifiedPlayerCastLayer(

@@ -118,14 +118,12 @@ fun ListenTogetherSheet(
     }
 
     // Custom overlay sheet: the scrim fades while the sheet slides up from
-    // the bottom edge (700ms) and back down on dismiss (500ms). Material3's
-    // sheet API no longer accepts a custom animation spec, so the sheet
-    // drives its own animation instead of using ModalBottomSheet.
+    // the bottom edge and back down on dismiss.
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = visible,
-            enter = fadeIn(animationSpec = tween(400)),
-            exit = fadeOut(animationSpec = tween(400)),
+            enter = fadeIn(animationSpec = tween(200)),
+            exit = fadeOut(animationSpec = tween(180)),
             label = "listenTogetherScrim"
         ) {
             Box(
@@ -143,11 +141,11 @@ fun ListenTogetherSheet(
             visible = visible,
             enter = slideInVertically(
                 initialOffsetY = { it },
-                animationSpec = tween(700, easing = FastOutSlowInEasing)
+                animationSpec = tween(280, easing = FastOutSlowInEasing)
             ),
             exit = slideOutVertically(
                 targetOffsetY = { it },
-                animationSpec = tween(500, easing = FastOutSlowInEasing)
+                animationSpec = tween(240, easing = FastOutSlowInEasing)
             ),
             label = "listenTogetherSheet"
         ) {

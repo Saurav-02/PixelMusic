@@ -17,6 +17,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -320,9 +321,12 @@ fun HomeShuffleFab(
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(CircleShape)
-                                .combinedClickable(
-                                    onClick = { onListenTogetherClick?.invoke() },
-                                    role = Role.Button
+                                .clickable(
+                                    role = Role.Button,
+                                    onClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        onListenTogetherClick?.invoke()
+                                    }
                                 ),
                             contentAlignment = Alignment.Center
                         ) {

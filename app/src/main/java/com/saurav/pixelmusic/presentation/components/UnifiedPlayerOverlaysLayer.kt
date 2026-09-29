@@ -502,7 +502,7 @@ internal fun UnifiedPlayerListenTogetherLayer(
     playerViewModel: PlayerViewModel
 ) {
     val showSheet by playerViewModel.showListenTogetherSheet.collectAsStateWithLifecycle()
-    // The sheet drives its own slow native slide-up/slide-down animation
+    // The sheet drives its own slide-up/slide-down animation
     // (see ListenTogetherSheet), so no wrapper animation is needed here.
     CompositionLocalProvider(
         LocalMaterialTheme provides albumColorScheme
