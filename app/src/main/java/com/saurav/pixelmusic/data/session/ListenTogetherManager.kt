@@ -75,10 +75,10 @@ class ListenTogetherManager @Inject constructor(
         private const val HEARTBEAT_INTERVAL_MS = 5_000L
         /** A member counts as live while its heartbeat is fresher than this. */
         private const val MEMBER_LIVE_WINDOW_MS = 12_000L
-        /** Per-user cooldown between emoji reactions. */
-        private const val REACTION_COOLDOWN_MS = 10_000L
-        /** Per-user cooldown between preset messages. */
-        private const val MESSAGE_COOLDOWN_MS = 30_000L
+        /** Minimal debounce between emoji reactions (prevents network socket floods). */
+        private const val REACTION_DEBOUNCE_MS = 250L
+        /** Minimal debounce between preset messages. */
+        private const val MESSAGE_DEBOUNCE_MS = 250L
         /** Reactions/messages older than this are pruned everywhere. */
         private const val SOCIAL_TTL_MS = 60_000L
     }
@@ -358,8 +358,8 @@ class ListenTogetherManager @Inject constructor(
                 delay(HEARTBEAT_INTERVAL_MS)
                 refreshMemberList()
                 val cutoff = System.currentTimeMillis() - SOCIAL_TTL_MS
-                _reactionEvents.value = _reactionEvents.value.filter { it.ts >= cutoff }
-                _chatMessages.value = _chatMessages.value.filter { it.ts >= cutoff }
+                _reactionEvents.value = _reactionEvents.value.filter { it.ts == 0L || it.ts >= cutoff }
+                _chatMessages.value = _chatMessages.value.filter { it.ts == 0L || it.ts >= cutoff }
             }
         }
     }
@@ -437,7 +437,7 @@ class ListenTogetherManager @Inject constructor(
      */
     fun sendReaction(emoji: String): Boolean {
         val now = System.currentTimeMillis()
-        if (now - lastReactionTs < REACTION_COOLDOWN_MS) return false
+        if (now - lastReactionTs < REACTION_DEBOUNCE_MS) return false
         lastReactionTs = now
         pushSocial("reactions", mapOf("emoji" to emoji))
         return true
@@ -445,12 +445,12 @@ class ListenTogetherManager @Inject constructor(
 
     /**
      * Sends the "loved this" reaction, once per song.
-     * Returns false when already sent for this song or the cooldown blocks it.
+     * Returns false when already sent for this song or the debounce blocks it.
      */
     fun sendLovedReaction(videoId: String): Boolean {
         if (videoId.isBlank() || !lovedVideoIds.add(videoId)) return false
         val now = System.currentTimeMillis()
-        if (now - lastReactionTs < REACTION_COOLDOWN_MS) {
+        if (now - lastReactionTs < REACTION_DEBOUNCE_MS) {
             lovedVideoIds.remove(videoId)
             return false
         }
@@ -461,13 +461,13 @@ class ListenTogetherManager @Inject constructor(
 
     /**
      * Sends a preset message to the room.
-     * Returns false when the per-user cooldown blocks it.
+     * Returns false when the debounce blocks it.
      */
     fun sendPresetMessage(text: String): Boolean {
         val clean = text.trim().take(48)
         if (clean.isEmpty()) return false
         val now = System.currentTimeMillis()
-        if (now - lastMessageTs < MESSAGE_COOLDOWN_MS) return false
+        if (now - lastMessageTs < MESSAGE_DEBOUNCE_MS) return false
         lastMessageTs = now
         pushSocial("messages", mapOf("text" to clean))
         return true
@@ -526,7 +526,7 @@ class ListenTogetherManager @Inject constructor(
         val key = s.key ?: return
         val map = s.value as? Map<String, Any?> ?: return
         val ts = (map["ts"] as? Number)?.toLong() ?: 0L
-        if (System.currentTimeMillis() - ts > SOCIAL_TTL_MS) {
+        if (ts > 0L && System.currentTimeMillis() - ts > SOCIAL_TTL_MS) {
             // Anyone who sees a stale entry prunes it; keeps the nodes small.
             s.ref.removeValue()
             return

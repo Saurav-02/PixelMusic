@@ -5,18 +5,24 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import kotlinx.coroutines.coroutineScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -603,7 +609,7 @@ private fun MiniEqualizer(color: Color) {
         }
     }
 }
-/** Emoji reaction bar + preset message chips + recent message bubbles. */
+/** Emoji reaction bar + preset message chips + active message bubble. */
 @Composable
 private fun SocialSection(
     messages: List<com.saurav.pixelmusic.data.session.ChatMessage>,
@@ -613,12 +619,52 @@ private fun SocialSection(
     colors: ColorScheme
 ) {
     val presets = stringArrayResource(R.array.listen_together_preset_messages)
+    val latestMessage = messages.lastOrNull()
+    var activeMessage by remember { mutableStateOf<com.saurav.pixelmusic.data.session.ChatMessage?>(null) }
+
+    LaunchedEffect(latestMessage?.key) {
+        val msg = latestMessage ?: return@LaunchedEffect
+        // Only display if the message is fresh (sent within the last 10 seconds)
+        val isFresh = msg.ts == 0L || System.currentTimeMillis() - msg.ts < 10_000L
+        if (isFresh) {
+            activeMessage = msg
+            delay(9_500L)
+            activeMessage = null
+        }
+    }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        messages.takeLast(3).forEach { msg ->
-            key(msg.key) { MessageBubble(msg = msg, colors = colors) }
+        AnimatedVisibility(
+            visible = activeMessage != null,
+            enter = fadeIn(animationSpec = tween(220)) + expandVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            ),
+            exit = fadeOut(animationSpec = tween(180)) + shrinkVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            ),
+            label = "chatBubbleVisibility"
+        ) {
+            AnimatedContent(
+                targetState = activeMessage,
+                transitionSpec = {
+                    (fadeIn(animationSpec = tween(220)) + slideInVertically { it / 3 })
+                        .togetherWith(fadeOut(animationSpec = tween(180)) + slideOutVertically { -it / 3 })
+                },
+                label = "activeChatBubble"
+            ) { currentMsg ->
+                if (currentMsg != null) {
+                    MessageBubble(msg = currentMsg, colors = colors)
+                }
+            }
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -683,40 +729,28 @@ private fun LovedButton(onClick: () -> Unit) {
     }
 }
 
-/** A preset message bubble; fades away after a few seconds. */
+/** A preset message bubble. */
 @Composable
 private fun MessageBubble(
     msg: com.saurav.pixelmusic.data.session.ChatMessage,
     colors: ColorScheme
 ) {
-    var visible by remember(msg.key) { mutableStateOf(true) }
-    LaunchedEffect(msg.key) {
-        delay(8_000)
-        visible = false
-    }
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn() + slideInVertically { it / 2 },
-        exit = fadeOut(),
-        label = "chatBubble"
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        tonalElevation = 2.dp,
+        color = colors.surfaceContainerHigh
     ) {
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            tonalElevation = 2.dp,
-            color = colors.surfaceContainerHigh
-        ) {
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(msg.from)
-                    }
-                    append("  " + msg.text)
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.onSurface,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-            )
-        }
+        Text(
+            text = buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(msg.from)
+                }
+                append("  " + msg.text)
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurface,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        )
     }
 }
 
@@ -729,9 +763,13 @@ private fun FloatingReactionsOverlay(
     val shownKeys = remember { mutableSetOf<String>() }
     val floating = remember { mutableStateListOf<com.saurav.pixelmusic.data.session.ReactionEvent>() }
     LaunchedEffect(events) {
+        val now = System.currentTimeMillis()
         events.forEach { event ->
             if (shownKeys.add(event.key)) {
-                floating.add(event)
+                // Only float reactions created recently (within last 4 seconds) to avoid bursts on sheet open
+                if (event.ts == 0L || now - event.ts < 4000L) {
+                    floating.add(event)
+                }
             }
         }
     }
@@ -757,17 +795,19 @@ private fun FloatingEmoji(
 ) {
     val rise = remember { Animatable(0f) }
     val alpha = remember { Animatable(1f) }
-    val xDrift = remember { (-70..70).random().toFloat() }
+    val xDrift = remember(event.key) { (-70..70).random().toFloat() }
     LaunchedEffect(event.key) {
-        launch {
-            rise.animateTo(
-                targetValue = -420f,
-                animationSpec = tween(durationMillis = 2400, easing = FastOutSlowInEasing)
-            )
-        }
-        launch {
-            delay(1200)
-            alpha.animateTo(0f, tween(1200))
+        coroutineScope {
+            launch {
+                rise.animateTo(
+                    targetValue = -420f,
+                    animationSpec = tween(durationMillis = 2400, easing = FastOutSlowInEasing)
+                )
+            }
+            launch {
+                delay(1200)
+                alpha.animateTo(0f, tween(1200))
+            }
         }
         onDone()
     }

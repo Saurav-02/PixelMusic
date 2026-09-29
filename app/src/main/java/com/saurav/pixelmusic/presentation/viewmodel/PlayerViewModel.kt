@@ -831,12 +831,10 @@ class PlayerViewModel @Inject constructor(
     val listenTogetherReactions: StateFlow<List<ReactionEvent>> = listenTogetherManager.reactionEvents
     val listenTogetherMessages: StateFlow<List<ChatMessage>> = listenTogetherManager.chatMessages
 
-    /** Sends an emoji reaction to the room (cooldown enforced). */
+    /** Sends an emoji reaction to the room. */
     fun sendListenTogetherReaction(emoji: String) {
         viewModelScope.launch {
-            if (!listenTogetherManager.sendReaction(emoji)) {
-                sendToast(context.getString(R.string.listen_together_slow_down))
-            }
+            listenTogetherManager.sendReaction(emoji)
         }
     }
 
@@ -844,18 +842,14 @@ class PlayerViewModel @Inject constructor(
     fun sendLovedReaction() {
         val videoId = currentSessionVideoId() ?: return
         viewModelScope.launch {
-            if (!listenTogetherManager.sendLovedReaction(videoId)) {
-                sendToast(context.getString(R.string.listen_together_slow_down))
-            }
+            listenTogetherManager.sendLovedReaction(videoId)
         }
     }
 
-    /** Sends a preset message to the room (cooldown enforced). */
+    /** Sends a preset message to the room. */
     fun sendListenTogetherMessage(text: String) {
         viewModelScope.launch {
-            if (!listenTogetherManager.sendPresetMessage(text)) {
-                sendToast(context.getString(R.string.listen_together_slow_down))
-            }
+            listenTogetherManager.sendPresetMessage(text)
         }
     }
 
