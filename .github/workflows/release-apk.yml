@@ -1,0 +1,51 @@
+name: 📦 Release APK (signed)
+
+# Manual workflow: builds ALL signed release APKs (arm64-v8a, armeabi-v7a,
+# universal), zips them, and uploads the zip as a run artifact.
+# Nothing else — no version bump, no distribution, no uploads anywhere.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build signed APKs and zip
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Create Keystore properties
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > keystore.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> keystore.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> keystore.properties
+
+      - name: Build signed release APKs
+        run: ./gradlew :app:assembleRelease
+
+      - name: Zip all APKs
+        run: |
+          cd app/build/outputs/apk/release
+          zip -j "$GITHUB_WORKSPACE/PixelMusic-signed-apks.zip" *.apk
+          unzip -l "$GITHUB_WORKSPACE/PixelMusic-signed-apks.zip"
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PixelMusic-signed-apks
+          path: PixelMusic-signed-apks.zip
