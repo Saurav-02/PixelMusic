@@ -84,3 +84,20 @@ data class SessionTrack(
         "updatedAtMs" to updatedAtMs
     )
 }
+
+/** An emoji reaction someone sent to the room. */
+data class ReactionEvent(
+    val key: String,
+    val emoji: String,
+    val from: String,
+    val ts: Long,
+    val isLoved: Boolean = false
+)
+
+/** A preset message someone sent to the room. */
+data class ChatMessage(
+    val key: String,
+    val text: String,
+    val from: String,
+    val ts: Long
+)
