@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LinearScale
+import com.saurav.pixelmusic.utils.AndroidVersionCompat
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material.icons.rounded.LinearScale
@@ -239,87 +240,89 @@ fun ExperimentalSettingsScreen(
                                 enter = fadeIn() + expandVertically(),
                                 exit = fadeOut() + shrinkVertically()
                             ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    SwitchSettingItem(
-                                        title = stringResource(R.string.presentation_batch_f_exp_lyric_blur_title),
-                                        subtitle = stringResource(R.string.presentation_batch_f_exp_lyric_blur_subtitle),
-                                        checked = uiState.animatedLyricsBlurEnabled,
-                                        onCheckedChange = settingsViewModel::setAnimatedLyricsBlurEnabled,
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Rounded.BlurOn,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.secondary
-                                            )
-                                        }
-                                    )
+                                if (AndroidVersionCompat.supportsHardwareBlur) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        SwitchSettingItem(
+                                            title = stringResource(R.string.presentation_batch_f_exp_lyric_blur_title),
+                                            subtitle = stringResource(R.string.presentation_batch_f_exp_lyric_blur_subtitle),
+                                            checked = uiState.animatedLyricsBlurEnabled,
+                                            onCheckedChange = settingsViewModel::setAnimatedLyricsBlurEnabled,
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.BlurOn,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.secondary
+                                                )
+                                            }
+                                        )
 
-                                    AnimatedVisibility(
-                                        visible = uiState.animatedLyricsBlurEnabled,
-                                        enter = fadeIn() + expandVertically(),
-                                        exit = fadeOut() + shrinkVertically()
-                                    ) {
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.surfaceContainer,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(10.dp))
+                                        AnimatedVisibility(
+                                            visible = uiState.animatedLyricsBlurEnabled,
+                                            enter = fadeIn() + expandVertically(),
+                                            exit = fadeOut() + shrinkVertically()
                                         ) {
-                                            Column(
+                                            Surface(
+                                                color = MaterialTheme.colorScheme.surfaceContainer,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(16.dp),
-                                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                                                    .clip(RoundedCornerShape(10.dp))
                                             ) {
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                                Column(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(16.dp),
+                                                    verticalArrangement = Arrangement.spacedBy(12.dp)
                                                 ) {
-                                                    Icon(
-                                                        imageVector = Icons.Outlined.LinearScale,
-                                                        contentDescription = null,
-                                                        tint = MaterialTheme.colorScheme.secondary
-                                                    )
-
-                                                    Column(modifier = Modifier.weight(1f)) {
-                                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                                            Text(
-                                                                text = stringResource(R.string.presentation_batch_f_exp_blur_strength),
-                                                                style = MaterialTheme.typography.titleMedium,
-                                                                color = MaterialTheme.colorScheme.onSurface,
-                                                                modifier = Modifier.padding(end = 8.dp)
-                                                            )
-                                                            Surface(
-                                                                color = MaterialTheme.colorScheme.secondaryContainer,
-                                                                shape = RoundedCornerShape(16.dp),
-                                                                modifier = Modifier.height(24.dp)
-                                                            ) {
-                                                                val strengthText = stringResource(
-                                                                    R.string.presentation_batch_f_exp_blur_strength_value,
-                                                                    uiState.animatedLyricsBlurStrength
-                                                                )
-                                                                Text(
-                                                                    text = strengthText,
-                                                                    style = MaterialTheme.typography.labelSmall,
-                                                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                                                )
-                                                            }
-                                                        }
-                                                        Text(
-                                                            text = stringResource(R.string.presentation_batch_f_exp_blur_strength_subtitle),
-                                                            style = MaterialTheme.typography.bodyMedium,
-                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Outlined.LinearScale,
+                                                            contentDescription = null,
+                                                            tint = MaterialTheme.colorScheme.secondary
                                                         )
-                                                    }
-                                                }
 
-                                                Slider(
-                                                    value = uiState.animatedLyricsBlurStrength,
-                                                    onValueChange = { settingsViewModel.setAnimatedLyricsBlurStrength(it) },
-                                                    valueRange = 0.1f..2.0f,
-                                                    steps = 10
-                                                )
+                                                        Column(modifier = Modifier.weight(1f)) {
+                                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                                Text(
+                                                                    text = stringResource(R.string.presentation_batch_f_exp_blur_strength),
+                                                                    style = MaterialTheme.typography.titleMedium,
+                                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                                    modifier = Modifier.padding(end = 8.dp)
+                                                                )
+                                                                Surface(
+                                                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                                                    shape = RoundedCornerShape(16.dp),
+                                                                    modifier = Modifier.height(24.dp)
+                                                                ) {
+                                                                    val strengthText = stringResource(
+                                                                        R.string.presentation_batch_f_exp_blur_strength_value,
+                                                                        uiState.animatedLyricsBlurStrength
+                                                                    )
+                                                                    Text(
+                                                                        text = strengthText,
+                                                                        style = MaterialTheme.typography.labelSmall,
+                                                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                                    )
+                                                                }
+                                                            }
+                                                            Text(
+                                                                text = stringResource(R.string.presentation_batch_f_exp_blur_strength_subtitle),
+                                                                style = MaterialTheme.typography.bodyMedium,
+                                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                            )
+                                                        }
+                                                    }
+
+                                                    Slider(
+                                                        value = uiState.animatedLyricsBlurStrength,
+                                                        onValueChange = { settingsViewModel.setAnimatedLyricsBlurStrength(it) },
+                                                        valueRange = 0.1f..2.0f,
+                                                        steps = 10
+                                                    )
+                                                }
                                             }
                                         }
                                     }

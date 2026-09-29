@@ -228,11 +228,20 @@ object SettingsSearchCatalog {
         if (q.isEmpty()) return emptyList()
         return entries
             .asSequence()
+            .filter { isSupportedOnCurrentDevice(it) }
             .map { entry -> entry to score(entry, q) }
             .filter { it.second > 0 }
             .sortedByDescending { it.second }
             .map { it.first }
             .toList()
+    }
+
+    private fun isSupportedOnCurrentDevice(entry: SearchableSetting): Boolean {
+        return when (entry.title) {
+            "Motion Blur" -> com.saurav.pixelmusic.utils.AndroidVersionCompat.supportsMotionBlur
+            "Dynamic Island" -> com.saurav.pixelmusic.utils.AndroidVersionCompat.supportsLiveNotificationOrIsland()
+            else -> true
+        }
     }
 
     /**

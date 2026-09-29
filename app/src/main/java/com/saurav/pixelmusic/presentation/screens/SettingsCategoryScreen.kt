@@ -196,6 +196,7 @@ import com.saurav.pixelmusic.presentation.viewmodel.PlayerViewModel
 import com.saurav.pixelmusic.presentation.viewmodel.SettingsViewModel
 import com.saurav.pixelmusic.ui.theme.GoogleSansRounded
 import com.saurav.pixelmusic.ui.modifiers.scrollMotionBlur
+import com.saurav.pixelmusic.utils.AndroidVersionCompat
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -820,16 +821,19 @@ fun SettingsCategoryScreen(
                                 val currentBgOpacity = uiState.appBackgroundOpacity
 
                                 SettingsSubsection(title = "App Background") {
+                                    val bgOptions = buildMap {
+                                        put(com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT.name, "Default (Solid Color)")
+                                        put(com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.MUSIC_NOTES.name, "Music Notes (Auto Dark/Light)")
+                                        if (AndroidVersionCompat.supportsHardwareBlur) {
+                                            put(com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.LIVE_BLUR.name, "Live Blur (Now Playing Art)")
+                                        }
+                                        put(com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM.name, "Custom Image from Gallery")
+                                    }
                                     ThemeSelectorItem(
                                         label = "Background Wallpaper",
                                         showBetaBadge = true,
                                         description = "Choose a custom background to show behind the app interface",
-                                        options = mapOf(
-                                            com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.DEFAULT.name to "Default (Solid Color)",
-                                            com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.MUSIC_NOTES.name to "Music Notes (Auto Dark/Light)",
-                                            com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.LIVE_BLUR.name to "Live Blur (Now Playing Art)",
-                                            com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.CUSTOM.name to "Custom Image from Gallery"
-                                        ),
+                                        options = bgOptions,
                                         selectedKey = currentBgStyle.name,
                                         onSelectionChanged = { key ->
                                             val selectedStyle = com.saurav.pixelmusic.data.preferences.AppBackgroundStyle.valueOf(key)
@@ -856,14 +860,16 @@ fun SettingsCategoryScreen(
                                             onValueChange = { settingsViewModel.setAppBackgroundOpacity(it) },
                                             valueText = { "${(it * 100).toInt()}%" }
                                         )
-                                        SliderSettingsItem(
-                                            label = "Wallpaper Blur",
-                                            value = uiState.appBackgroundBlur,
-                                            valueRange = 0f..100f,
-                                            steps = 20,
-                                            onValueChange = { settingsViewModel.setAppBackgroundBlur(it) },
-                                            valueText = { "${it.toInt()}%" }
-                                        )
+                                        if (AndroidVersionCompat.supportsHardwareBlur) {
+                                            SliderSettingsItem(
+                                                label = "Wallpaper Blur",
+                                                value = uiState.appBackgroundBlur,
+                                                valueRange = 0f..100f,
+                                                steps = 20,
+                                                onValueChange = { settingsViewModel.setAppBackgroundBlur(it) },
+                                                valueText = { "${it.toInt()}%" }
+                                            )
+                                        }
                                     }
                                 }
 
@@ -917,19 +923,22 @@ fun SettingsCategoryScreen(
                                             Icon(Icons.Outlined.Style, null, tint = MaterialTheme.colorScheme.secondary)
                                         }
                                     )
+                                    val colorPaletteOptions = buildMap {
+                                        if (AndroidVersionCompat.supportsDynamicColor) {
+                                            put("DYNAMIC", stringResource(R.string.setcat_color_palette_dynamic))
+                                        }
+                                        put("ALBUM_ART", stringResource(R.string.setcat_color_palette_album_art))
+                                        put("BLACK_AND_WHITE", stringResource(R.string.setcat_color_palette_bw))
+                                        put("SAGE", stringResource(R.string.setcat_color_palette_sage))
+                                        put("PURPLE", stringResource(R.string.setcat_color_palette_purple))
+                                        put("BLUE", stringResource(R.string.setcat_color_palette_blue))
+                                        put("ORANGE", stringResource(R.string.setcat_color_palette_orange))
+                                        put("YELLOW", "Monochrome Yellow")
+                                    }
                                     ThemeSelectorItem(
                                         label = stringResource(R.string.setcat_app_color_palette_label),
                                         description = stringResource(R.string.setcat_app_color_palette_desc),
-                                        options = mapOf(
-                                            "DYNAMIC" to stringResource(R.string.setcat_color_palette_dynamic),
-                                            "ALBUM_ART" to stringResource(R.string.setcat_color_palette_album_art),
-                                            "BLACK_AND_WHITE" to stringResource(R.string.setcat_color_palette_bw),
-                                            "SAGE" to stringResource(R.string.setcat_color_palette_sage),
-                                            "PURPLE" to stringResource(R.string.setcat_color_palette_purple),
-                                            "BLUE" to stringResource(R.string.setcat_color_palette_blue),
-                                            "ORANGE" to stringResource(R.string.setcat_color_palette_orange),
-                                            "YELLOW" to "Monochrome Yellow"
-                                        ),
+                                        options = colorPaletteOptions,
                                         selectedKey = uiState.colorPalette,
                                         onSelectionChanged = { settingsViewModel.setColorPalette(it) },
                                         leadingIcon = {
@@ -948,13 +957,16 @@ fun SettingsCategoryScreen(
                                 }
 
                                 SettingsSubsection(title = stringResource(R.string.setcat_now_playing)) {
+                                    val playerThemeOptions = buildMap {
+                                        put(ThemePreference.ALBUM_ART, stringResource(R.string.setcat_player_theme_album_art))
+                                        if (AndroidVersionCompat.supportsDynamicColor) {
+                                            put(ThemePreference.DYNAMIC, stringResource(R.string.setcat_player_theme_dynamic))
+                                        }
+                                    }
                                     ThemeSelectorItem(
                                         label = stringResource(R.string.setcat_player_theme_label),
                                         description = stringResource(R.string.setcat_player_theme_desc),
-                                        options = mapOf(
-                                            ThemePreference.ALBUM_ART to stringResource(R.string.setcat_player_theme_album_art),
-                                            ThemePreference.DYNAMIC to stringResource(R.string.setcat_player_theme_dynamic)
-                                        ),
+                                        options = playerThemeOptions,
                                         selectedKey = uiState.playerThemePreference,
                                         onSelectionChanged = { settingsViewModel.setPlayerThemePreference(it) },
                                         leadingIcon = {
@@ -991,18 +1003,21 @@ fun SettingsCategoryScreen(
                                         enter = expandVertically() + fadeIn(),
                                         exit = shrinkVertically() + fadeOut()
                                     ) {
+                                        val lyricsDisplayOptions = buildMap {
+                                            put(com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.HIDDEN.name, "Hidden")
+                                            put(com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.KARAOKE.name, "Karaoke Style")
+                                            put(com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.WORD_BY_WORD.name, "Word by Word")
+                                            put(com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.SINGLE_WORD.name, "Single Word Pop")
+                                            if (AndroidVersionCompat.supportsHardwareBlur) {
+                                                put(com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.BLUR_FOCUS.name, "Blur Focus")
+                                            }
+                                            put(com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.GRADIENT_SWEEP.name, "Gradient Sweep")
+                                            put(com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.SLIDE_FADE.name, "Slide & Fade")
+                                        }
                                         ThemeSelectorItem(
                                             label = "Immersive Lyrics Display",
                                             description = "Choose lyrics display style inside the immersive player",
-                                            options = mapOf(
-                                                com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.HIDDEN.name to "Hidden",
-                                                com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.KARAOKE.name to "Karaoke Style",
-                                                com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.WORD_BY_WORD.name to "Word by Word",
-                                                com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.SINGLE_WORD.name to "Single Word Pop",
-                                                com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.BLUR_FOCUS.name to "Blur Focus",
-                                                com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.GRADIENT_SWEEP.name to "Gradient Sweep",
-                                                com.saurav.pixelmusic.data.preferences.NowPlayingLyricsStyle.SLIDE_FADE.name to "Slide & Fade"
-                                            ),
+                                            options = lyricsDisplayOptions,
                                             selectedKey = nowPlayingLyricsStyle.name,
                                             onSelectionChanged = { key ->
                                                 coroutineScope.launch {
@@ -1140,15 +1155,17 @@ fun SettingsCategoryScreen(
                                             Icon(painterResource(R.drawable.rounded_library_music_24), null, tint = MaterialTheme.colorScheme.secondary)
                                         }
                                     )
-                                    SwitchSettingItem(
-                                        title = "Motion Blur",
-                                        subtitle = "Applies a cinematic directional blur when scrolling lists.",
-                                        checked = uiState.isUiMotionBlurEnabled,
-                                        onCheckedChange = { settingsViewModel.setUiMotionBlurEnabled(it) },
-                                        leadingIcon = {
-                                            Icon(Icons.Outlined.AutoAwesome, null, tint = MaterialTheme.colorScheme.secondary)
-                                        }
-                                    )
+                                    if (AndroidVersionCompat.supportsMotionBlur) {
+                                        SwitchSettingItem(
+                                            title = "Motion Blur",
+                                            subtitle = "Applies a cinematic directional blur when scrolling lists.",
+                                            checked = uiState.isUiMotionBlurEnabled,
+                                            onCheckedChange = { settingsViewModel.setUiMotionBlurEnabled(it) },
+                                            leadingIcon = {
+                                                Icon(Icons.Outlined.AutoAwesome, null, tint = MaterialTheme.colorScheme.secondary)
+                                            }
+                                        )
+                                    }
                                 }
 
                                 SettingsSubsection(title = "Performance & Battery") {
@@ -1184,50 +1201,52 @@ fun SettingsCategoryScreen(
                                             Icon(Icons.Outlined.PlayCircle, null, tint = MaterialTheme.colorScheme.secondary)
                                         }
                                     )
-                                    val isDynamicIslandEnabled by playerViewModel.userPreferencesRepository.dynamicIslandEnabledFlow
-                                        .collectAsStateWithLifecycle(initialValue = true)
-                                    val dynamicIslandStyle by playerViewModel.userPreferencesRepository.dynamicIslandStyleFlow
-                                        .collectAsStateWithLifecycle(initialValue = com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.ANIMATED_NOTES)
+                                    if (AndroidVersionCompat.supportsLiveNotificationOrIsland()) {
+                                        val isDynamicIslandEnabled by playerViewModel.userPreferencesRepository.dynamicIslandEnabledFlow
+                                            .collectAsStateWithLifecycle(initialValue = true)
+                                        val dynamicIslandStyle by playerViewModel.userPreferencesRepository.dynamicIslandStyleFlow
+                                            .collectAsStateWithLifecycle(initialValue = com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.ANIMATED_NOTES)
 
-                                    SwitchSettingItem(
-                                        title = "Dynamic Island (Origin OS special)",
-                                        subtitle = "Displays real-time track progress and controls in the status bar pill. Turn off to save battery.",
-                                        checked = isDynamicIslandEnabled,
-                                        onCheckedChange = { enabled ->
-                                            coroutineScope.launch {
-                                                playerViewModel.userPreferencesRepository.setDynamicIslandEnabled(enabled)
-                                            }
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.Outlined.AutoAwesome, null, tint = MaterialTheme.colorScheme.secondary)
-                                        }
-                                    )
-
-                                    AnimatedVisibility(
-                                        visible = isDynamicIslandEnabled,
-                                        enter = expandVertically() + fadeIn(),
-                                        exit = shrinkVertically() + fadeOut()
-                                    ) {
-                                        ThemeSelectorItem(
-                                            label = "Island Visualizer Style",
-                                            description = "Choose what appears in the dynamic island pill",
-                                            options = mapOf(
-                                                com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.ANIMATED_NOTES.name to "Animated Notes",
-                                                com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.PROGRESS_TIME.name to "Progress Time",
-                                                com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.STATIC_ICON.name to "Static Icon"
-                                            ),
-                                            selectedKey = dynamicIslandStyle.name,
-                                            onSelectionChanged = { key ->
+                                        SwitchSettingItem(
+                                            title = if (Build.VERSION.SDK_INT >= 36) "Live Activity / Dynamic Island" else "Dynamic Island (Origin OS special)",
+                                            subtitle = "Displays real-time track progress and controls in the status bar pill. Turn off to save battery.",
+                                            checked = isDynamicIslandEnabled,
+                                            onCheckedChange = { enabled ->
                                                 coroutineScope.launch {
-                                                    playerViewModel.userPreferencesRepository.setDynamicIslandStyle(
-                                                        com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.valueOf(key)
-                                                    )
+                                                    playerViewModel.userPreferencesRepository.setDynamicIslandEnabled(enabled)
                                                 }
                                             },
                                             leadingIcon = {
-                                                Icon(Icons.Rounded.MusicNote, null, tint = MaterialTheme.colorScheme.secondary)
+                                                Icon(Icons.Outlined.AutoAwesome, null, tint = MaterialTheme.colorScheme.secondary)
                                             }
                                         )
+
+                                        AnimatedVisibility(
+                                            visible = isDynamicIslandEnabled,
+                                            enter = expandVertically() + fadeIn(),
+                                            exit = shrinkVertically() + fadeOut()
+                                        ) {
+                                            ThemeSelectorItem(
+                                                label = "Island Visualizer Style",
+                                                description = "Choose what appears in the dynamic island pill",
+                                                options = mapOf(
+                                                    com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.ANIMATED_NOTES.name to "Animated Notes",
+                                                    com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.PROGRESS_TIME.name to "Progress Time",
+                                                    com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.STATIC_ICON.name to "Static Icon"
+                                                ),
+                                                selectedKey = dynamicIslandStyle.name,
+                                                onSelectionChanged = { key ->
+                                                    coroutineScope.launch {
+                                                        playerViewModel.userPreferencesRepository.setDynamicIslandStyle(
+                                                            com.saurav.pixelmusic.data.preferences.DynamicIslandStyle.valueOf(key)
+                                                        )
+                                                    }
+                                                },
+                                                leadingIcon = {
+                                                    Icon(Icons.Rounded.MusicNote, null, tint = MaterialTheme.colorScheme.secondary)
+                                                }
+                                            )
+                                        }
                                     }
 
                                     SwitchSettingItem(

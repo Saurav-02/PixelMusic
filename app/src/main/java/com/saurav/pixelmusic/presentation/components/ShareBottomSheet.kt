@@ -353,7 +353,7 @@ fun ShareBottomSheet(
                 }
 
                 // Share Format Switcher (Photo / 30s Video)
-                if (isVideoEngineEnabled) {
+                if (isVideoEngineEnabled && com.saurav.pixelmusic.utils.AndroidVersionCompat.supportsVideoSharing()) {
                     Row(
                         modifier = Modifier
                             .padding(horizontal = 20.dp)

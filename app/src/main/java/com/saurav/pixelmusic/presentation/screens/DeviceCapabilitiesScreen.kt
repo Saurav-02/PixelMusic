@@ -270,11 +270,13 @@ private fun DeviceCapabilitiesContent(
             }
         }
 
-        item {
-            VideoSharingEngineCard(
-                isEnabled = isVideoEngineEnabled,
-                onToggle = onToggleVideoEngine
-            )
+        if (com.saurav.pixelmusic.utils.AndroidVersionCompat.supportsVideoSharing()) {
+            item {
+                VideoSharingEngineCard(
+                    isEnabled = isVideoEngineEnabled,
+                    onToggle = onToggleVideoEngine
+                )
+            }
         }
 
         item {
