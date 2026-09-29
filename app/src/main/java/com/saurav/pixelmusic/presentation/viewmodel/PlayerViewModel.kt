@@ -803,6 +803,9 @@ class PlayerViewModel @Inject constructor(
     private var guestSyncJob: Job? = null
     private var guestLoadWatchdog: Job? = null
     private var lastGuestVideoId: String? = null
+    private var savedGuestQueue: List<Song>? = null
+    private var savedGuestStartSong: Song? = null
+    private var savedGuestQueueName: String? = null
 
     fun openListenTogetherSheet() { _showListenTogetherSheet.value = true }
     fun closeListenTogetherSheet() { _showListenTogetherSheet.value = false }
@@ -865,15 +868,38 @@ class PlayerViewModel @Inject constructor(
     /** Joins a session by room code, then starts mirroring the host. */
     fun joinListenTogetherSession(code: String, guestName: String) {
         viewModelScope.launch {
+            if (savedGuestQueue == null) {
+                savedGuestQueue = _playerUiState.value.currentPlaybackQueue.toList()
+                savedGuestStartSong = playbackStateHolder.stablePlayerState.value.currentSong
+                savedGuestQueueName = _playerUiState.value.currentQueueSourceName
+            }
             val photoUrl = youtubeDatastoreRepository.ytAvatarUrl.first().ifBlank { null }
             if (listenTogetherManager.joinSession(code, guestName, photoUrl)) {
                 startGuestSync()
+            } else {
+                savedGuestQueue = null
+                savedGuestStartSong = null
+                savedGuestQueueName = null
             }
+        }
+    }
+
+    private fun restoreSavedGuestQueue() {
+        val prevQueue = savedGuestQueue ?: return
+        val prevSong = savedGuestStartSong ?: return
+        val prevQueueName = savedGuestQueueName ?: "None"
+        savedGuestQueue = null
+        savedGuestStartSong = null
+        savedGuestQueueName = null
+        viewModelScope.launch {
+            playSongs(prevQueue, prevSong, prevQueueName)
+            pause()
         }
     }
 
     /** Leaves the current session (hosts also delete the room). */
     fun leaveListenTogetherSession() {
+        restoreSavedGuestQueue()
         stopSessionSync()
         listenTogetherManager.leaveSession()
         closeListenTogetherSheet()
@@ -888,6 +914,7 @@ class PlayerViewModel @Inject constructor(
         guestLoadWatchdog = null
         lastGuestVideoId = null
         sessionSyncBypass = false
+        com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.isPaused = false
     }
 
     // ------------------------------------------------------------ host sync
@@ -926,6 +953,8 @@ class PlayerViewModel @Inject constructor(
     private fun startGuestSync() {
         stopSessionSync()
         lastGuestVideoId = null
+        com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.isPaused = true
+        com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.reset()
         guestSyncJob = viewModelScope.launch {
             // Fast path: react to host snapshots the moment they arrive.
             launch {
@@ -937,9 +966,13 @@ class PlayerViewModel @Inject constructor(
                     when (state) {
                         is ListenTogetherUiState.Error -> {
                             sendToast(state.message)
+                            restoreSavedGuestQueue()
                             stopSessionSync()
                         }
-                        is ListenTogetherUiState.Idle -> stopSessionSync()
+                        is ListenTogetherUiState.Idle -> {
+                            restoreSavedGuestQueue()
+                            stopSessionSync()
+                        }
                         else -> Unit
                     }
                 }
@@ -4280,7 +4313,7 @@ class PlayerViewModel @Inject constructor(
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                if (isRemoteSessionControllingPlayback()) return
+                if (isRemoteSessionControllingPlayback() || (listenTogetherManager.isGuestActive() && !sessionSyncBypass)) return
                 playbackStateHolder.onPlaybackOccurrenceTransition(mediaItem?.mediaId)
                 preparePlaybackAudioMetadataForMedia(mediaItem?.mediaId)
                 transitionSchedulerJob?.cancel()
@@ -4390,6 +4423,12 @@ class PlayerViewModel @Inject constructor(
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (isRemoteSessionControllingPlayback()) return
+                if (listenTogetherManager.isGuestActive() && !sessionSyncBypass) {
+                    if (playbackState == Player.STATE_ENDED) {
+                        playerCtrl.pause()
+                        return
+                    }
+                }
                 refreshPlaybackAudioMetadata(playerCtrl)
                 syncDisplayedMediaItemIfChanged(playerCtrl)
 
@@ -4822,7 +4861,9 @@ class PlayerViewModel @Inject constructor(
             } else {
                 playSongsAction()
             }
-            com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.forceRefill(forceRefresh = true)
+            if (!listenTogetherManager.isGuestActive()) {
+                com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.forceRefill(forceRefresh = true)
+            }
         }
     }
 

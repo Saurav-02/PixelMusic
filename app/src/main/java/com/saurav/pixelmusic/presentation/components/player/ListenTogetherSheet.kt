@@ -18,6 +18,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -117,6 +119,19 @@ fun ListenTogetherSheet(
     var name by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
     var guestName by remember { mutableStateOf("") }
+
+    val latestMessage = chatMessages.lastOrNull()
+    var activeMessage by remember { mutableStateOf<com.saurav.pixelmusic.data.session.ChatMessage?>(null) }
+
+    LaunchedEffect(latestMessage?.key) {
+        val msg = latestMessage ?: return@LaunchedEffect
+        val isFresh = msg.ts == 0L || System.currentTimeMillis() - msg.ts < 10_000L
+        if (isFresh) {
+            activeMessage = msg
+            delay(9_500L)
+            activeMessage = null
+        }
+    }
 
     // Back press dismisses with the slow slide-down.
     if (visible) {
@@ -413,10 +428,9 @@ fun ListenTogetherSheet(
                                                 }
                                             }
                                             s.members.forEach { member ->
-                                                MemberRow(member = member, colors = colors)
+                                                MemberRow(member = member, activeMessage = activeMessage, colors = colors)
                                             }
                                             SocialSection(
-                                                messages = chatMessages,
                                                 onReaction = { viewModel.sendListenTogetherReaction(it) },
                                                 onLoved = { viewModel.sendLovedReaction() },
                                                 onMessage = { viewModel.sendListenTogetherMessage(it) },
@@ -463,10 +477,9 @@ fun ListenTogetherSheet(
                                         color = colors.onSurfaceVariant
                                     )
                                     s.members.forEach { member ->
-                                        MemberRow(member = member, colors = colors)
+                                        MemberRow(member = member, activeMessage = activeMessage, colors = colors)
                                     }
                                     SocialSection(
-                                        messages = chatMessages,
                                         onReaction = { viewModel.sendListenTogetherReaction(it) },
                                         onLoved = { viewModel.sendLovedReaction() },
                                         onMessage = { viewModel.sendListenTogetherMessage(it) },
@@ -509,12 +522,15 @@ private fun avatarColorFor(name: String): Color {
     return avatarPalette[index]
 }
 
-/** One guest card: avatar, name, liveness caption and equalizer. */
+/** One guest card: avatar, name, liveness caption, active message in middle, and equalizer. */
 @Composable
 private fun MemberRow(
     member: com.saurav.pixelmusic.data.session.SessionMember,
+    activeMessage: com.saurav.pixelmusic.data.session.ChatMessage?,
     colors: ColorScheme
 ) {
+    val isMyMessage = activeMessage != null && activeMessage.from.equals(member.name, ignoreCase = true)
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -545,7 +561,7 @@ private fun MemberRow(
             }
         }
         Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
+        Column {
             Text(
                 text = member.name,
                 style = MaterialTheme.typography.bodyMedium,
@@ -564,6 +580,42 @@ private fun MemberRow(
                 color = colors.onSurfaceVariant
             )
         }
+
+        Spacer(Modifier.width(8.dp))
+
+        // Active message appears in the middle (person - status - "message" - Equaliser)
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            AnimatedVisibility(
+                visible = isMyMessage,
+                enter = fadeIn(animationSpec = tween(220)) + scaleIn(initialScale = 0.85f),
+                exit = fadeOut(animationSpec = tween(180)) + scaleOut(targetScale = 0.85f),
+                label = "memberMessageBubble"
+            ) {
+                if (activeMessage != null) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        tonalElevation = 2.dp,
+                        color = colors.surfaceContainerHigh
+                    ) {
+                        Text(
+                            text = activeMessage.text,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Medium,
+                            color = colors.onSurface,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.width(8.dp))
+
         if (member.isLive) {
             MiniEqualizer(color = colors.primary)
         } else {
@@ -609,63 +661,20 @@ private fun MiniEqualizer(color: Color) {
         }
     }
 }
-/** Emoji reaction bar + preset message chips + active message bubble. */
+
+/** Emoji reaction bar + preset message chips. */
 @Composable
 private fun SocialSection(
-    messages: List<com.saurav.pixelmusic.data.session.ChatMessage>,
     onReaction: (String) -> Unit,
     onLoved: () -> Unit,
     onMessage: (String) -> Unit,
     colors: ColorScheme
 ) {
     val presets = stringArrayResource(R.array.listen_together_preset_messages)
-    val latestMessage = messages.lastOrNull()
-    var activeMessage by remember { mutableStateOf<com.saurav.pixelmusic.data.session.ChatMessage?>(null) }
-
-    LaunchedEffect(latestMessage?.key) {
-        val msg = latestMessage ?: return@LaunchedEffect
-        // Only display if the message is fresh (sent within the last 10 seconds)
-        val isFresh = msg.ts == 0L || System.currentTimeMillis() - msg.ts < 10_000L
-        if (isFresh) {
-            activeMessage = msg
-            delay(9_500L)
-            activeMessage = null
-        }
-    }
-
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        AnimatedVisibility(
-            visible = activeMessage != null,
-            enter = fadeIn(animationSpec = tween(220)) + expandVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
-            ),
-            exit = fadeOut(animationSpec = tween(180)) + shrinkVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
-            ),
-            label = "chatBubbleVisibility"
-        ) {
-            AnimatedContent(
-                targetState = activeMessage,
-                transitionSpec = {
-                    (fadeIn(animationSpec = tween(220)) + slideInVertically { it / 3 })
-                        .togetherWith(fadeOut(animationSpec = tween(180)) + slideOutVertically { -it / 3 })
-                },
-                label = "activeChatBubble"
-            ) { currentMsg ->
-                if (currentMsg != null) {
-                    MessageBubble(msg = currentMsg, colors = colors)
-                }
-            }
-        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -729,30 +738,7 @@ private fun LovedButton(onClick: () -> Unit) {
     }
 }
 
-/** A preset message bubble. */
-@Composable
-private fun MessageBubble(
-    msg: com.saurav.pixelmusic.data.session.ChatMessage,
-    colors: ColorScheme
-) {
-    Surface(
-        shape = RoundedCornerShape(14.dp),
-        tonalElevation = 2.dp,
-        color = colors.surfaceContainerHigh
-    ) {
-        Text(
-            text = buildAnnotatedString {
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                    append(msg.from)
-                }
-                append("  " + msg.text)
-            },
-            style = MaterialTheme.typography.bodySmall,
-            color = colors.onSurface,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-        )
-    }
-}
+
 
 /** Floats received reactions upward, Instagram-live style. */
 @Composable

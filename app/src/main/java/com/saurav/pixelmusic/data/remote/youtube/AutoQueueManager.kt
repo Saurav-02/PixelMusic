@@ -48,6 +48,9 @@ object AutoQueueManager {
     private var currentWatchEndpoint: WatchEndpoint? = null
     private val addedVideoIds = mutableSetOf<String>()
 
+    @Volatile
+    var isPaused: Boolean = false
+
     // Memory cache mapping local/offline song IDs to matched YouTube video IDs
     private val localToYoutubeIdMap = mutableMapOf<String, String>()
 
@@ -335,10 +338,12 @@ object AutoQueueManager {
 
 
     private fun checkAndRefillQueue() {
+        if (isPaused) return
         forceRefill(forceRefresh = false)
     }
 
     fun forceRefill(forceRefresh: Boolean) {
+        if (isPaused) return
         val currentScope = scope ?: return
         val player = playerRef ?: return
 
