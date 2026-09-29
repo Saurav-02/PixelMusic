@@ -1,7 +1,11 @@
 package com.saurav.pixelmusic.presentation.components
 
 import androidx.annotation.OptIn
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -70,6 +74,9 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
     onQueueRelease: (Float, Float) -> Unit,
     onShowCastClicked: () -> Unit
 ) {
+    // The Listen Together sheet is an app-wide overlay: fade the mini player
+    // out while it's open so the two don't stack.
+    val isListenTogetherSheetOpen by playerViewModel.showListenTogetherSheet.collectAsStateWithLifecycle()
     currentSong?.let { currentSongNonNull ->
         miniPlayerScheme?.let { readyScheme ->
             CompositionLocalProvider(
@@ -80,9 +87,15 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
                         if (playerContentExpansionFraction.value < 0.5f) 1f else 0f
                     }
                 }
+                AnimatedVisibility(
+                    visible = !isListenTogetherSheetOpen,
+                    enter = fadeIn(animationSpec = tween(200)),
+                    exit = fadeOut(animationSpec = tween(200)),
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    label = "miniPlayerVsLtSheet"
+                ) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopCenter)
                         .graphicsLayer {
                             // Compute miniAlpha in the draw phase from the Animatable,
                             // avoiding per-frame recomposition during gestures.
@@ -108,6 +121,7 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
                         onNext = { playerViewModel.nextSong() },
                         modifier = Modifier.fillMaxSize()
                     )
+                }
                 }
             }
         }
