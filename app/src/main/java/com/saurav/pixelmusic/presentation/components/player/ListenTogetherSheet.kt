@@ -3,6 +3,8 @@ package com.saurav.pixelmusic.presentation.components.player
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,8 +31,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.rememberSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,18 +60,38 @@ import com.saurav.pixelmusic.presentation.viewmodel.PlayerViewModel
 @Composable
 fun ListenTogetherSheet(
     viewModel: PlayerViewModel,
+    visible: Boolean,
     onDismiss: () -> Unit
 ) {
     val uiState by viewModel.listenTogetherUiState.collectAsStateWithLifecycle()
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
-    val sheetState = rememberBottomSheetState(
-        initialValue = SheetValue.Expanded,
-        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    // Slow native slide: the sheet starts hidden and slides up on show(),
+    // then slides back down on hide(), instead of appearing in one frame.
+    val sheetState = rememberSheetState(
+        skipPartiallyExpanded = true,
+        initialValue = SheetValue.Hidden,
+        animationSpec = tween(
+            durationMillis = 700,
+            easing = FastOutSlowInEasing
+        )
     )
 
     var name by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
+
+    // Keep the dialog in composition until the slow hide animation finishes.
+    var dialogVisible by remember { mutableStateOf(visible) }
+    LaunchedEffect(visible) {
+        if (visible) {
+            dialogVisible = true
+            sheetState.show()
+        } else {
+            sheetState.hide()
+            dialogVisible = false
+        }
+    }
+    if (!dialogVisible) return
 
     ModalBottomSheet(
         sheetState = sheetState,

@@ -3,18 +3,8 @@ package com.saurav.pixelmusic.presentation.components
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.OptIn
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -505,50 +495,28 @@ internal fun UnifiedPlayerCastLayer(
     }
 }
 
-@OptIn(UnstableApi::class, ExperimentalAnimationApi::class)
+@OptIn(UnstableApi::class)
 @Composable
 internal fun UnifiedPlayerListenTogetherLayer(
     albumColorScheme: ColorScheme,
     playerViewModel: PlayerViewModel
 ) {
     val showSheet by playerViewModel.showListenTogetherSheet.collectAsStateWithLifecycle()
-    // Slow pop in/out: fade + scale + a short slide, so the sheet never
-    // appears or vanishes in a single frame.
-    AnimatedVisibility(
-        visible = showSheet,
-        enter = fadeIn(animationSpec = tween(500)) +
-            scaleIn(
-                initialScale = 0.92f,
-                animationSpec = tween(500, easing = FastOutSlowInEasing)
-            ) +
-            slideInVertically(
-                initialOffsetY = { it / 5 },
-                animationSpec = tween(500, easing = FastOutSlowInEasing)
-            ),
-        exit = fadeOut(animationSpec = tween(350)) +
-            scaleOut(
-                targetScale = 0.94f,
-                animationSpec = tween(350, easing = FastOutSlowInEasing)
-            ) +
-            slideOutVertically(
-                targetOffsetY = { it / 5 },
-                animationSpec = tween(350, easing = FastOutSlowInEasing)
-            ),
-        label = "listenTogetherSheet"
+    // The sheet drives its own slow native slide-up/slide-down animation
+    // (see ListenTogetherSheet), so no wrapper animation is needed here.
+    CompositionLocalProvider(
+        LocalMaterialTheme provides albumColorScheme
     ) {
-        CompositionLocalProvider(
-            LocalMaterialTheme provides albumColorScheme
+        MaterialTheme(
+            colorScheme = LocalMaterialTheme.current,
+            typography = MaterialTheme.typography,
+            shapes = MaterialTheme.shapes
         ) {
-            MaterialTheme(
-                colorScheme = LocalMaterialTheme.current,
-                typography = MaterialTheme.typography,
-                shapes = MaterialTheme.shapes
-            ) {
-                ListenTogetherSheet(
-                    viewModel = playerViewModel,
-                    onDismiss = { playerViewModel.closeListenTogetherSheet() }
-                )
-            }
+            ListenTogetherSheet(
+                viewModel = playerViewModel,
+                visible = showSheet,
+                onDismiss = { playerViewModel.closeListenTogetherSheet() }
+            )
         }
     }
 }
