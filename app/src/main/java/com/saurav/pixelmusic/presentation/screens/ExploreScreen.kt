@@ -728,6 +728,7 @@ fun ExploreScreen(
             isExploreMode = true,
             onLongClick = { showRecognitionDialog = true },
             onSwipeUp = { showRecognitionDialog = true },
+            onListenTogetherClick = { playerViewModel.openListenTogetherSheet() },
             modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
