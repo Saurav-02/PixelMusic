@@ -71,11 +71,19 @@ object AndroidVersionCompat {
      * or OEM-supported dynamic status capsule (OriginOS, HyperOS, ColorOS/OxygenOS).
      */
     fun supportsLiveNotificationOrIsland(): Boolean {
+        // Android 16+ (API 36) has native system Live Notifications (Promoted Ongoing)
         if (Build.VERSION.SDK_INT >= 36) return true
-        val manufacturer = Build.MANUFACTURER.lowercase()
-        val brand = Build.BRAND.lowercase()
-        val oemMatches = listOf("vivo", "iqoo", "xiaomi", "redmi", "oppo", "oneplus", "realme")
-        return oemMatches.any { manufacturer.contains(it) || brand.contains(it) }
+
+        // OEM Dynamic Island capsules (OriginOS, HyperOS, ColorOS/OxygenOS, Realme UI)
+        // were only introduced in Android 14+ (API 34)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val manufacturer = Build.MANUFACTURER.lowercase()
+            val brand = Build.BRAND.lowercase()
+            val oemMatches = listOf("vivo", "iqoo", "xiaomi", "redmi", "oppo", "oneplus", "realme")
+            return oemMatches.any { manufacturer.contains(it) || brand.contains(it) }
+        }
+
+        return false
     }
 
     /**
@@ -134,11 +142,11 @@ object AndroidVersionCompat {
                 id = "live_island",
                 name = "Live Activity & Dynamic Island",
                 category = "System & Notifications",
-                requiredVersionLabel = "Android 16+ (API 36) or OriginOS/ColorOS/HyperOS",
-                minApi = 36,
+                requiredVersionLabel = "Android 16+ (API 36) or Android 14+ (OriginOS/ColorOS/HyperOS)",
+                minApi = 34,
                 isSupported = supportsLiveNotificationOrIsland(),
                 description = "Displays live playback controls and animated notes in the status bar capsule or dynamic island.",
-                limitationNote = "Requires Android 16 promoted ongoing notifications or supported OEM status bar capsules (OriginOS, HyperOS, ColorOS, OxygenOS, Realme UI)."
+                limitationNote = "Requires Android 16 (API 36+) for native live notifications, or Android 14+ (API 34+) on supported OEM skins (OriginOS 4+, HyperOS, ColorOS 14+)."
             ),
             FeatureCompatibilityItem(
                 id = "video_sharing",

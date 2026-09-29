@@ -161,7 +161,7 @@ class MusicService : MediaLibraryService() {
     private var lastAppliedReplayGainVolume: Float? = null
     // MediaId for which lastAppliedReplayGainVolume was computed.
     private var lastReplayGainMediaId: String? = null
-    private var isDynamicIslandEnabled = true
+    private var isDynamicIslandEnabled = com.saurav.pixelmusic.utils.AndroidVersionCompat.supportsLiveNotificationOrIsland()
     private var dynamicIslandStyle = "ANIMATED_NOTES"
     
 
@@ -518,8 +518,8 @@ class MusicService : MediaLibraryService() {
 
         serviceScope.launch {
             userPreferencesRepository.dynamicIslandEnabledFlow.collect { enabled ->
-                isDynamicIslandEnabled = enabled
-                if (!enabled) {
+                isDynamicIslandEnabled = enabled && com.saurav.pixelmusic.utils.AndroidVersionCompat.supportsLiveNotificationOrIsland()
+                if (!isDynamicIslandEnabled) {
                     stopLiveProgressTracker()
                 } else if (engine.masterPlayer.isPlaying) {
                     startLiveProgressTracker()
