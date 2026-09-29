@@ -77,7 +77,7 @@ class ListenTogetherManager @Inject constructor(
      * Creates a session and registers the host as its first member.
      * Returns true on success (state becomes [ListenTogetherUiState.Hosting]).
      */
-    suspend fun startHosting(hostName: String): Boolean {
+    suspend fun startHosting(hostName: String, photoUrl: String? = null): Boolean {
         val cleanName = hostName.trim().ifBlank { "Host" }.take(24)
         if (!ListenTogetherFirebase.isReady()) {
             _uiState.value = ListenTogetherUiState.Error("Listen Together isn't available right now.")
@@ -111,7 +111,7 @@ class ListenTogetherManager @Inject constructor(
                 )
             ).await()
             memberRef = sessionRef!!.child("members").push().also { ref ->
-                ref.setValue(memberPayload(cleanName)).await()
+                ref.setValue(memberPayload(cleanName, photoUrl)).await()
                 ref.onDisconnect().removeValue()
             }
             startHeartbeat()
@@ -144,7 +144,7 @@ class ListenTogetherManager @Inject constructor(
      * Joins the session with the given room code.
      * Returns true on success (state becomes [ListenTogetherUiState.Guest]).
      */
-    suspend fun joinSession(code: String, guestName: String): Boolean {
+    suspend fun joinSession(code: String, guestName: String, photoUrl: String? = null): Boolean {
         val cleanCode = code.trim().uppercase().filter { it in 'A'..'Z' }
         if (cleanCode.length != 6) {
             _uiState.value = ListenTogetherUiState.Error("That code doesn't look right — it should be 6 letters.")
@@ -172,7 +172,7 @@ class ListenTogetherManager @Inject constructor(
 
             sessionRef = db.getReference("sessions/$cleanCode")
             memberRef = sessionRef!!.child("members").push().also { ref ->
-                ref.setValue(memberPayload(cleanName)).await()
+                ref.setValue(memberPayload(cleanName, photoUrl)).await()
                 ref.onDisconnect().removeValue()
             }
             startHeartbeat()
@@ -180,6 +180,7 @@ class ListenTogetherManager @Inject constructor(
             sessionCode = cleanCode
             isHost = false
             attachGuestListeners()
+            attachMembersListener()
             _uiState.value = ListenTogetherUiState.Guest(hostName)
             Timber.d("ListenTogether: joined session %s", cleanCode)
             true
@@ -311,17 +312,17 @@ class ListenTogetherManager @Inject constructor(
         membersListener = object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 parseMember(snapshot)?.let { memberMap[snapshot.key ?: return] = it }
-                refreshHostingMembers()
+                refreshMemberList()
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 parseMember(snapshot)?.let { memberMap[snapshot.key ?: return] = it }
-                refreshHostingMembers()
+                refreshMemberList()
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
                 memberMap.remove(snapshot.key)
-                refreshHostingMembers()
+                refreshMemberList()
             }
 
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) = Unit
@@ -335,7 +336,7 @@ class ListenTogetherManager @Inject constructor(
         livenessJob = appScope.launch {
             while (isActive) {
                 delay(HEARTBEAT_INTERVAL_MS)
-                refreshHostingMembers()
+                refreshMemberList()
             }
         }
     }
@@ -348,9 +349,13 @@ class ListenTogetherManager @Inject constructor(
         livenessJob = null
     }
 
-    /** Member payload: name plus a presence heartbeat timestamp. */
-    private fun memberPayload(name: String): Map<String, Any> =
-        mapOf("name" to name, "lastSeen" to ServerValue.TIMESTAMP)
+    /** Member payload: name, photo and a presence heartbeat timestamp. */
+    private fun memberPayload(name: String, photoUrl: String?): Map<String, Any> =
+        buildMap {
+            put("name", name)
+            put("lastSeen", ServerValue.TIMESTAMP)
+            if (!photoUrl.isNullOrBlank()) put("photoUrl", photoUrl)
+        }
 
     /** Keeps our own member entry fresh so the host sees us as live. */
     private fun startHeartbeat() {
@@ -370,23 +375,34 @@ class ListenTogetherManager @Inject constructor(
             is Map<*, *> -> {
                 val name = raw["name"] as? String ?: return null
                 val lastSeen = (raw["lastSeen"] as? Number)?.toLong() ?: 0L
-                SessionMember(name = name, lastSeenMs = lastSeen)
+                val photoUrl = raw["photoUrl"] as? String
+                SessionMember(name = name, lastSeenMs = lastSeen, photoUrl = photoUrl)
             }
-            is String -> SessionMember(name = raw, lastSeenMs = 0L)
+            // Older app versions wrote a plain name string with no heartbeat.
+            is String -> SessionMember(name = raw, lastSeenMs = 0L, isLegacy = true)
             else -> null
         }
     }
 
-    /** Re-emits Hosting with fresh liveness flags when anything changed. */
-    private fun refreshHostingMembers() {
+    /** Re-emits the session state with fresh member liveness when anything changed. */
+    private fun refreshMemberList() {
         val code = sessionCode ?: return
-        val current = _uiState.value as? ListenTogetherUiState.Hosting ?: return
         val now = System.currentTimeMillis()
         val members = memberMap.values.map {
-            it.copy(isLive = now - it.lastSeenMs < MEMBER_LIVE_WINDOW_MS)
+            // Legacy entries have no heartbeat; their presence alone means
+            // they're connected (onDisconnect removes them when they drop).
+            it.copy(isLive = it.isLegacy || now - it.lastSeenMs < MEMBER_LIVE_WINDOW_MS)
         }
-        if (members != current.members) {
-            _uiState.value = ListenTogetherUiState.Hosting(code, members)
+        when (val current = _uiState.value) {
+            is ListenTogetherUiState.Hosting ->
+                if (members != current.members) {
+                    _uiState.value = ListenTogetherUiState.Hosting(code, members)
+                }
+            is ListenTogetherUiState.Guest ->
+                if (members != current.members) {
+                    _uiState.value = current.copy(members = members)
+                }
+            else -> Unit
         }
     }
 

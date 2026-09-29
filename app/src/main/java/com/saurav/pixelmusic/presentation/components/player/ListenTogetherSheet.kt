@@ -35,6 +35,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -423,6 +425,20 @@ fun ListenTogetherSheet(
                                     color = colors.onSurfaceVariant,
                                     textAlign = TextAlign.Center
                                 )
+                                if (s.members.isNotEmpty()) {
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(
+                                        text = context.getString(
+                                            R.string.listen_together_listeners,
+                                            s.members.size
+                                        ),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                    s.members.forEach { member ->
+                                        MemberRow(member = member, colors = colors)
+                                    }
+                                }
                                 Spacer(Modifier.height(4.dp))
                                 OutlinedButton(
                                     onClick = { viewModel.leaveListenTogetherSession() },
@@ -472,12 +488,23 @@ private fun MemberRow(
                 .background(avatarColorFor(member.name)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = member.name.firstOrNull()?.uppercase() ?: "?",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
+            if (!member.photoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = member.photoUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                )
+            } else {
+                Text(
+                    text = member.name.firstOrNull()?.uppercase() ?: "?",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            }
         }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {

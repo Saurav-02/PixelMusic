@@ -817,7 +817,8 @@ class PlayerViewModel @Inject constructor(
     /** Starts hosting a session, then begins publishing playback state. */
     fun startHostingSession(hostName: String) {
         viewModelScope.launch {
-            if (listenTogetherManager.startHosting(hostName)) {
+            val photoUrl = youtubeDatastoreRepository.ytAvatarUrl.first().ifBlank { null }
+            if (listenTogetherManager.startHosting(hostName, photoUrl)) {
                 startHostSync()
                 sendToast(context.getString(R.string.listen_together_share_code))
             }
@@ -827,7 +828,8 @@ class PlayerViewModel @Inject constructor(
     /** Joins a session by room code, then starts mirroring the host. */
     fun joinListenTogetherSession(code: String, guestName: String) {
         viewModelScope.launch {
-            if (listenTogetherManager.joinSession(code, guestName)) {
+            val photoUrl = youtubeDatastoreRepository.ytAvatarUrl.first().ifBlank { null }
+            if (listenTogetherManager.joinSession(code, guestName, photoUrl)) {
                 startGuestSync()
             }
         }

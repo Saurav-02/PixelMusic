@@ -21,8 +21,15 @@ sealed interface ListenTogetherUiState {
         val members: List<SessionMember> = emptyList()
     ) : ListenTogetherUiState
 
-    /** Guest in someone else's session. @param hostName display name of the host. */
-    data class Guest(val hostName: String) : ListenTogetherUiState
+    /**
+     * Guest in someone else's session.
+     * @param hostName display name of the host.
+     * @param members everyone in the room, host first, with liveness.
+     */
+    data class Guest(
+        val hostName: String,
+        val members: List<SessionMember> = emptyList()
+    ) : ListenTogetherUiState
 
     /** Something went wrong; [message] is user-facing. */
     data class Error(val message: String) : ListenTogetherUiState
@@ -35,7 +42,10 @@ sealed interface ListenTogetherUiState {
 data class SessionMember(
     val name: String,
     val lastSeenMs: Long,
-    val isLive: Boolean = true
+    val isLive: Boolean = true,
+    /** True for entries written by older app versions (plain name, no heartbeat). */
+    val isLegacy: Boolean = false,
+    val photoUrl: String? = null
 )
 
 /**
