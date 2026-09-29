@@ -14,12 +14,22 @@ sealed interface ListenTogetherUiState {
     /**
      * Hosting a session.
      * @param code the 6-letter room code guests enter to join.
-     * @param members display names of everyone in the room, host first.
+     * @param members everyone in the room, host first, with liveness.
      */
     data class Hosting(
         val code: String,
-        val members: List<String> = emptyList()
+        val members: List<SessionMember> = emptyList()
     ) : ListenTogetherUiState
+
+/**
+ * A session participant. [isLive] is heartbeat-driven: true while the
+ * member's last heartbeat is fresh, false when it goes stale.
+ */
+data class SessionMember(
+    val name: String,
+    val lastSeenMs: Long,
+    val isLive: Boolean = true
+)
 
     /** Guest in someone else's session. @param hostName display name of the host. */
     data class Guest(val hostName: String) : ListenTogetherUiState

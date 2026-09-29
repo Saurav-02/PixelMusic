@@ -11,7 +11,10 @@ import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import com.saurav.pixelmusic.di.AppScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -53,6 +56,16 @@ class ListenTogetherManager @Inject constructor(
     private var isHost = false
     private var hasReceivedState = false
     private var lastPublishedSignature: String? = null
+    private val memberMap = LinkedHashMap<String, SessionMember>()
+    private var heartbeatJob: Job? = null
+    private var livenessJob: Job? = null
+
+    companion object {
+        /** How often each member refreshes its presence heartbeat. */
+        private const val HEARTBEAT_INTERVAL_MS = 5_000L
+        /** A member counts as live while its heartbeat is fresher than this. */
+        private const val MEMBER_LIVE_WINDOW_MS = 12_000L
+    }
 
     fun isHostActive(): Boolean = _uiState.value is ListenTogetherUiState.Hosting
     fun isGuestActive(): Boolean = _uiState.value is ListenTogetherUiState.Guest
@@ -98,9 +111,10 @@ class ListenTogetherManager @Inject constructor(
                 )
             ).await()
             memberRef = sessionRef!!.child("members").push().also { ref ->
-                ref.setValue(cleanName).await()
+                ref.setValue(memberPayload(cleanName)).await()
                 ref.onDisconnect().removeValue()
             }
+            startHeartbeat()
             // Guests watch `meta`: when it vanishes (host disconnect),
             // their watchdog ends the session for them.
             sessionRef!!.child("meta").onDisconnect().removeValue()
@@ -110,7 +124,10 @@ class ListenTogetherManager @Inject constructor(
             lastPublishedSignature = null
             _remoteState.value = null
             attachMembersListener()
-            _uiState.value = ListenTogetherUiState.Hosting(code, listOf(cleanName))
+            _uiState.value = ListenTogetherUiState.Hosting(
+                code,
+                listOf(SessionMember(cleanName, System.currentTimeMillis(), isLive = true))
+            )
             Timber.d("ListenTogether: hosting session %s", code)
             true
         } catch (t: Throwable) {
@@ -155,9 +172,10 @@ class ListenTogetherManager @Inject constructor(
 
             sessionRef = db.getReference("sessions/$cleanCode")
             memberRef = sessionRef!!.child("members").push().also { ref ->
-                ref.setValue(cleanName).await()
+                ref.setValue(memberPayload(cleanName)).await()
                 ref.onDisconnect().removeValue()
             }
+            startHeartbeat()
 
             sessionCode = cleanCode
             isHost = false
@@ -177,6 +195,10 @@ class ListenTogetherManager @Inject constructor(
 
     /** Leaves the session. Hosts also delete the room so guests are released. */
     fun leaveSession() {
+        // Stop the heartbeat first so it can't recreate our member node
+        // after we've removed it.
+        heartbeatJob?.cancel()
+        heartbeatJob = null
         appScope.launch {
             runCatching {
                 memberRef?.onDisconnect()?.cancel()
@@ -281,43 +303,99 @@ class ListenTogetherManager @Inject constructor(
         metaListener = null
     }
 
-    /** Host listener: keeps the member list live. */
+    /** Host listener: keeps the member list live, with liveness from heartbeats. */
     private fun attachMembersListener() {
         val ref = sessionRef?.child("members") ?: return
         detachMembersListener()
-        val code = sessionCode ?: return
+        memberMap.clear()
         membersListener = object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val name = snapshot.getValue(String::class.java) ?: return
-                val updated = (_uiState.value as? ListenTogetherUiState.Hosting)?.members.orEmpty()
-                if (name !in updated) {
-                    _uiState.value = ListenTogetherUiState.Hosting(code, updated + name)
-                }
+                parseMember(snapshot)?.let { memberMap[snapshot.key ?: return] = it }
+                refreshHostingMembers()
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                parseMember(snapshot)?.let { memberMap[snapshot.key ?: return] = it }
+                refreshHostingMembers()
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
-                val name = snapshot.getValue(String::class.java) ?: return
-                val updated = (_uiState.value as? ListenTogetherUiState.Hosting)?.members.orEmpty()
-                _uiState.value = ListenTogetherUiState.Hosting(code, updated - name)
+                memberMap.remove(snapshot.key)
+                refreshHostingMembers()
             }
 
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) = Unit
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) = Unit
             override fun onCancelled(error: DatabaseError) {
                 Timber.w("ListenTogether: members listener cancelled: %s", error.message)
             }
         }.also { ref.addChildEventListener(it) }
+        // Recompute liveness periodically so a missed heartbeat flips a
+        // member to "reconnecting" even when no child event fires.
+        livenessJob?.cancel()
+        livenessJob = appScope.launch {
+            while (isActive) {
+                delay(HEARTBEAT_INTERVAL_MS)
+                refreshHostingMembers()
+            }
+        }
     }
 
     private fun detachMembersListener() {
         val ref = sessionRef?.child("members")
         membersListener?.let { ref?.removeEventListener(it) }
         membersListener = null
+        livenessJob?.cancel()
+        livenessJob = null
+    }
+
+    /** Member payload: name plus a presence heartbeat timestamp. */
+    private fun memberPayload(name: String): Map<String, Any> =
+        mapOf("name" to name, "lastSeen" to ServerValue.TIMESTAMP)
+
+    /** Keeps our own member entry fresh so the host sees us as live. */
+    private fun startHeartbeat() {
+        heartbeatJob?.cancel()
+        heartbeatJob = appScope.launch {
+            while (isActive) {
+                delay(HEARTBEAT_INTERVAL_MS)
+                runCatching {
+                    memberRef?.child("lastSeen")?.setValue(ServerValue.TIMESTAMP)?.await()
+                }
+            }
+        }
+    }
+
+    private fun parseMember(snapshot: DataSnapshot): SessionMember? {
+        return when (val raw = snapshot.value) {
+            is Map<*, *> -> {
+                val name = raw["name"] as? String ?: return null
+                val lastSeen = (raw["lastSeen"] as? Number)?.toLong() ?: 0L
+                SessionMember(name = name, lastSeenMs = lastSeen)
+            }
+            is String -> SessionMember(name = raw, lastSeenMs = 0L)
+            else -> null
+        }
+    }
+
+    /** Re-emits Hosting with fresh liveness flags when anything changed. */
+    private fun refreshHostingMembers() {
+        val code = sessionCode ?: return
+        val current = _uiState.value as? ListenTogetherUiState.Hosting ?: return
+        val now = System.currentTimeMillis()
+        val members = memberMap.values.map {
+            it.copy(isLive = now - it.lastSeenMs < MEMBER_LIVE_WINDOW_MS)
+        }
+        if (members != current.members) {
+            _uiState.value = ListenTogetherUiState.Hosting(code, members)
+        }
     }
 
     private fun cleanupRefs() {
         detachGuestListeners()
         detachMembersListener()
+        heartbeatJob?.cancel()
+        heartbeatJob = null
+        memberMap.clear()
         sessionRef = null
         memberRef = null
         sessionCode = null

@@ -281,5 +281,8 @@
     <string name="listen_together_listening_with">Listening with %1$s</string>
     <string name="listen_together_guest_note">Sit back, the host controls the music</string>
     <string name="listen_together_leave">Leave</string>
+    <string name="listen_together_live">Live</string>
+    <string name="listen_together_listening">Listening</string>
+    <string name="listen_together_reconnecting">Reconnecting\u2026</string>
     <string name="listen_together_track_unavailable">That track isn\'t available for you, staying in sync with the host</string>
 </resources>
