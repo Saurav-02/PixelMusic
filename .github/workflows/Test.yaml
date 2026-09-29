@@ -80,7 +80,7 @@ jobs:
           tag_name: test-build-${{ env.NEXT_NUM }}
           name: Test Build ${{ env.NEXT_NUM }}
           body_path: changelog.txt
-          files: app/build/outputs/apk/release/*arm64-v8a*.apk
+          files: app/build/outputs/apk/release/*.apk
 
       - name: 🧹 Clean Up Older Releases (Keep Last 3)
         env:
@@ -123,18 +123,28 @@ jobs:
           
           CAPTION=$(cat caption.txt)
           
-          # Locate the arm64-v8a APK
-          APK_FILE=$(find app/build/outputs/apk/release -name "*arm64-v8a*.apk" | head -n 1)
-          
-          if [ -z "$APK_FILE" ]; then
-            echo "Error: No APK file found to send."
+          # Locate all APKs (universal, arm64-v8a, armeabi-v7a)
+          APK_COUNT=$(find app/build/outputs/apk/release -name "*.apk" | wc -l)
+
+          if [ "$APK_COUNT" -eq 0 ]; then
+            echo "Error: No APK files found to send."
             exit 1
           fi
 
-          echo "Uploading $APK_FILE to Telegram..."
-          
-          # Send the APK and caption directly to the chat
-          curl -s -F "chat_id=${CHAT_ID}" \
-               -F "document=@${APK_FILE}" \
-               -F "caption=${CAPTION}" \
-               https://api.telegram.org/bot${BOT_TOKEN}/sendDocument
+          # Send every APK; the caption goes on the first one only
+          FIRST=true
+          for APK_FILE in app/build/outputs/apk/release/*.apk; do
+            echo "Uploading $APK_FILE to Telegram..."
+
+            if [ "$FIRST" = true ]; then
+              curl -s -F "chat_id=${CHAT_ID}" \
+                   -F "document=@${APK_FILE}" \
+                   -F "caption=${CAPTION}" \
+                   https://api.telegram.org/bot${BOT_TOKEN}/sendDocument
+              FIRST=false
+            else
+              curl -s -F "chat_id=${CHAT_ID}" \
+                   -F "document=@${APK_FILE}" \
+                   https://api.telegram.org/bot${BOT_TOKEN}/sendDocument
+            fi
+          done
