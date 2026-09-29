@@ -284,5 +284,12 @@
     <string name="listen_together_live">Live</string>
     <string name="listen_together_listening">Listening</string>
     <string name="listen_together_reconnecting">Reconnecting\u2026</string>
+    <string name="listen_together_slow_down">Slow down a little</string>
+    <string-array name="listen_together_preset_messages">
+        <item>This slaps 🔥</item>
+        <item>Replay? 🔁</item>
+        <item>Chill one next 🎧</item>
+        <item>Turn it up 🔊</item>
+    </string-array>
     <string name="listen_together_track_unavailable">That track isn\'t available for you, staying in sync with the host</string>
 </resources>
