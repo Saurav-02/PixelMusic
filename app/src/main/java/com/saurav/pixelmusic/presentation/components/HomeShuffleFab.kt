@@ -3,6 +3,9 @@ package com.saurav.pixelmusic.presentation.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -14,7 +17,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -245,30 +247,31 @@ fun HomeShuffleFab(
             }
         }
 
-        // ── FAB: dual pill when idle, single circle when playing ─────────────────────
-        Crossfade(
-            targetState = showDualFab,
-            animationSpec = tween(220),
-            label = "fabForm",
-            modifier = Modifier.offset { IntOffset(0, animatedOffsetY.roundToInt()) }
-        ) { dual ->
-            if (dual) {
-                DualFabPill(
-                    containerColor = animatedContainerColor,
-                    contentColor = animatedContentColor,
-                    dragModifier = fabDragModifier,
-                    onShuffleClick = onClick,
-                    onShuffleLongClick = onLongClick,
-                    onListenTogetherClick = onListenTogetherClick,
-                    isExploreMode = isExploreMode,
-                    isThresholdReached = isThresholdReached
-                )
-            } else {
+        // ── FAB: one pill that morphs between dual (idle) and single (playing) ────────
+        // The Listen Together half is a pure button with NO drag detector above it,
+        // so its taps can never be swallowed by the recognize drag gesture (which now
+        // lives only on the shuffle half). The form change is a smooth width morph,
+        // not a crossfade pop.
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(0, animatedOffsetY.roundToInt()) }
+                .height(64.dp)
+                .clip(CircleShape)
+                .background(animatedContainerColor)
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Shuffle half: tap / long-press / drag-up-to-recognize.
                 Box(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(animatedContainerColor)
                         .then(fabDragModifier)
                         .combinedClickable(
                             onClick = onClick,
@@ -287,6 +290,50 @@ fun HomeShuffleFab(
                         isExploreMode = isExploreMode,
                         tint = animatedContentColor
                     )
+                }
+                // Listen Together half: expands/collapses with a spring — no pop.
+                AnimatedVisibility(
+                    visible = showDualFab,
+                    enter = fadeIn(animationSpec = tween(220)) + expandHorizontally(
+                        expandFrom = Alignment.Start,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        )
+                    ),
+                    exit = fadeOut(animationSpec = tween(180)) + shrinkHorizontally(
+                        shrinkTowards = Alignment.Start,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        )
+                    ),
+                    label = "ltHalf"
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        VerticalDivider(
+                            modifier = Modifier.height(32.dp),
+                            thickness = 1.dp,
+                            color = animatedContentColor.copy(alpha = 0.35f)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .combinedClickable(
+                                    onClick = { onListenTogetherClick?.invoke() },
+                                    role = Role.Button
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Group,
+                                contentDescription = stringResource(R.string.listen_together),
+                                tint = animatedContentColor,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -326,78 +373,6 @@ private fun ShuffleFabIcon(
                 tint = tint,
                 modifier = Modifier.size(32.dp)
             )
-        }
-    }
-}
-
-/** The idle dual pill: shuffle on the left, Listen Together on the right. */
-@Composable
-private fun DualFabPill(
-    containerColor: Color,
-    contentColor: Color,
-    dragModifier: Modifier,
-    onShuffleClick: () -> Unit,
-    onShuffleLongClick: (() -> Unit)?,
-    onListenTogetherClick: (() -> Unit)?,
-    isExploreMode: Boolean,
-    isThresholdReached: Boolean,
-) {
-    val hapticFeedback = LocalHapticFeedback.current
-    Box(
-        modifier = Modifier
-            .height(64.dp)
-            .clip(CircleShape)
-            .background(containerColor)
-            .then(dragModifier),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .combinedClickable(
-                        onClick = onShuffleClick,
-                        onLongClick = onShuffleLongClick?.let { longClick ->
-                            {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                longClick.invoke()
-                            }
-                        },
-                        role = Role.Button
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                ShuffleFabIcon(
-                    isThresholdReached = isThresholdReached,
-                    isExploreMode = isExploreMode,
-                    tint = contentColor
-                )
-            }
-            VerticalDivider(
-                modifier = Modifier.height(32.dp),
-                thickness = 1.dp,
-                color = contentColor.copy(alpha = 0.35f)
-            )
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .clickable(
-                        onClick = { onListenTogetherClick?.invoke() },
-                        role = Role.Button
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Group,
-                    contentDescription = stringResource(R.string.listen_together),
-                    tint = contentColor,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
         }
     }
 }
