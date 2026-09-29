@@ -206,6 +206,9 @@ object SettingsSearchCatalog {
         SearchableSetting("Device Capabilities", "Hardware and audio capabilities",
             listOf("device", "capabilities", "hardware", "audio", "specs"),
             SettingsCategory.DEVICE_CAPABILITIES, Screen.DeviceCapabilities.route),
+        SearchableSetting("Feature Compatibility", "OS and platform feature support matrix",
+            listOf("compatibility", "features", "incompatible", "unsupported", "blur", "agsl", "android"),
+            SettingsCategory.DEVICE_CAPABILITIES, Screen.FeatureCompatibility.route),
 
         // ─── Developer / Experimental ───────────────────────────────────────────────
         SearchableSetting("Experimental Features", "Full player tweaks & more",

@@ -33,6 +33,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Videocam
+import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material.icons.rounded.ChevronRight
+import com.saurav.pixelmusic.presentation.navigation.Screen
+import com.saurav.pixelmusic.presentation.navigation.navigateSafely
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.rounded.ErrorOutline
@@ -193,6 +197,9 @@ fun DeviceCapabilitiesScreen(
                         playerViewModel.userPreferencesRepository.setVideoSharingEngineEnabled(enabled)
                     }
                 },
+                onNavigateToFeatureCompatibility = {
+                    navController.navigateSafely(Screen.FeatureCompatibility.route)
+                },
                 modifier = Modifier.fillMaxSize()
                 .scrollMotionBlur(lazyListState, enabled = isMotionBlurEnabled)
             )
@@ -217,6 +224,7 @@ private fun DeviceCapabilitiesContent(
     topPadding: Dp,
     isVideoEngineEnabled: Boolean = false,
     onToggleVideoEngine: (Boolean) -> Unit = {},
+    onNavigateToFeatureCompatibility: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -236,6 +244,12 @@ private fun DeviceCapabilitiesContent(
                 audioCapabilities = state.audioCapabilities,
                 storageSummary = state.storageSummary,
                 playbackCompatibility = state.playbackCompatibility
+            )
+        }
+
+        item {
+            FeatureCompatibilitySummaryCard(
+                onNavigateToDetails = onNavigateToFeatureCompatibility
             )
         }
 
@@ -909,6 +923,108 @@ private fun DeviceInfoPanel(
             }
             if (index != rows.lastIndex) {
                 Spacer(Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeatureCompatibilitySummaryCard(
+    onNavigateToDetails: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val items = remember { com.saurav.pixelmusic.utils.AndroidVersionCompat.getCompatibilityItems() }
+    val incompatibleItems = remember(items) { items.filter { !it.isSupported } }
+    val isFullyCompatible = incompatibleItems.isEmpty()
+
+    CapabilityCard(
+        title = "OS & Feature Compatibility",
+        icon = Icons.Rounded.Shield,
+        modifier = modifier
+    ) {
+        Text(
+            text = "Platform compatibility breakdown for Android API-dependent features (blurs, AGSL animations, theming, dynamic island, and video sharing).",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        val bannerColor = if (isFullyCompatible) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.tertiaryContainer
+        }
+        val bannerTextColor = if (isFullyCompatible) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onTertiaryContainer
+        }
+
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = bannerColor,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(
+                    imageVector = if (isFullyCompatible) Icons.Rounded.CheckCircle else Icons.Rounded.Warning,
+                    contentDescription = null,
+                    tint = bannerTextColor,
+                    modifier = Modifier.size(24.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (isFullyCompatible) {
+                            "All features supported on Android ${android.os.Build.VERSION.RELEASE}"
+                        } else {
+                            "${incompatibleItems.size} feature${if (incompatibleItems.size == 1) "" else "s"} hidden on Android ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})"
+                        },
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = bannerTextColor
+                    )
+                    if (!isFullyCompatible) {
+                        Text(
+                            text = "Hidden: " + incompatibleItems.joinToString(", ") { it.name },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = bannerTextColor.copy(alpha = 0.85f)
+                        )
+                    }
+                }
+            }
+        }
+
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable { onNavigateToDetails() }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "View All Platform Features & Status",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Icon(
+                    imageVector = Icons.Rounded.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

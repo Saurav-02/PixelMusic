@@ -638,6 +638,20 @@ fun AppNavigation(
             }
 
             composable(
+                Screen.FeatureCompatibility.route,
+                enterTransition = { enterTransition() },
+                exitTransition = { exitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
+            ) {
+                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
+                    com.saurav.pixelmusic.presentation.screens.FeatureCompatibilityScreen(
+                        navController = navController
+                    )
+                }
+            }
+
+            composable(
                 route = Screen.YoutubeAuth.route,
                 arguments = listOf(navArgument("addAccount") {
                     type = NavType.BoolType

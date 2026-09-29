@@ -816,6 +816,7 @@ class MainActivity : ComponentActivity() {
                 Screen.PaletteStyle.route,
                 Screen.RecentlyPlayed.route,
                 Screen.DeviceCapabilities.route,
+                Screen.FeatureCompatibility.route,
                 Screen.EasterEgg.route,
                 Screen.WordDelimiterConfig.route,
                 "update_download"

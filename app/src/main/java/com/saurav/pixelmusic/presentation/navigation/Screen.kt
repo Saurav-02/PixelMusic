@@ -65,6 +65,7 @@ sealed class Screen(val route: String) {
     object DelimiterConfig : Screen("delimiter_config")
     object WordDelimiterConfig : Screen("word_delimiter_config")
     object DeviceCapabilities : Screen("device_capabilities")
+    object FeatureCompatibility : Screen("feature_compatibility")
     object YoutubeAuth : Screen("youtube_auth?addAccount={addAccount}") {
         fun createRoute(addAccount: Boolean = false) = "youtube_auth?addAccount=$addAccount"
     }

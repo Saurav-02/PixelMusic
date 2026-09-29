@@ -1,5 +1,6 @@
 **Sub release 4.5.0**
 
+* 📋 **Feature Compatibility Screen & Summary:** Added a dedicated System Feature Compatibility screen with detailed requirement cards, filter chips, and a summary card in Device Capabilities showing all Android API-dependent features.
 * 🛡️ **Android Version-Aware Feature Gating:** Features requiring newer Android APIs (motion blur on < Android 13, hardware blurs & dynamic theming on < Android 12, dynamic island / live activities on non-supported OS/ROMs, and video sharing engine when unsupported) are now smartly hidden on older, unsupported Android versions instead of presenting non-functional options.
 * 🎧 **Listen Together:** Start a listening session from the player and share the 6-letter room code — friends join from anywhere and hear exactly what the host plays, in perfect sync.
 * ⚡ **Instagram Story Video Share Fix:** Fixed an issue where sharing song cards as a video to Instagram Story resulted in a blank story canvas; video assets are now properly assigned using `setDataAndType` for background media handling in Instagram Stories instead of being treated as sticker assets.
