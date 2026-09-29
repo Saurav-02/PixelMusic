@@ -21,6 +21,13 @@ sealed interface ListenTogetherUiState {
         val members: List<SessionMember> = emptyList()
     ) : ListenTogetherUiState
 
+    /** Guest in someone else's session. @param hostName display name of the host. */
+    data class Guest(val hostName: String) : ListenTogetherUiState
+
+    /** Something went wrong; [message] is user-facing. */
+    data class Error(val message: String) : ListenTogetherUiState
+}
+
 /**
  * A session participant. [isLive] is heartbeat-driven: true while the
  * member's last heartbeat is fresh, false when it goes stale.
@@ -30,13 +37,6 @@ data class SessionMember(
     val lastSeenMs: Long,
     val isLive: Boolean = true
 )
-
-    /** Guest in someone else's session. @param hostName display name of the host. */
-    data class Guest(val hostName: String) : ListenTogetherUiState
-
-    /** Something went wrong; [message] is user-facing. */
-    data class Error(val message: String) : ListenTogetherUiState
-}
 
 /**
  * A host playback snapshot, mirrored through Firebase Realtime Database.
