@@ -41,6 +41,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -79,6 +80,7 @@ fun ListenTogetherSheet(
     val context = LocalContext.current
     var name by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
+    var guestName by remember { mutableStateOf("") }
 
     // Back press dismisses with the slow slide-down.
     if (visible) {
@@ -187,6 +189,11 @@ fun ListenTogetherSheet(
                                     keyboardOptions = KeyboardOptions(
                                         capitalization = KeyboardCapitalization.Words
                                     ),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        unfocusedBorderColor = colors.onSurfaceVariant,
+                                        focusedBorderColor = colors.primary
+                                    ),
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 Button(
@@ -206,10 +213,30 @@ fun ListenTogetherSheet(
                                     keyboardOptions = KeyboardOptions(
                                         capitalization = KeyboardCapitalization.Characters
                                     ),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        unfocusedBorderColor = colors.onSurfaceVariant,
+                                        focusedBorderColor = colors.primary
+                                    ),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                OutlinedTextField(
+                                    value = guestName,
+                                    onValueChange = { guestName = it },
+                                    label = { Text(stringResource(R.string.listen_together_guest_name)) },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(
+                                        capitalization = KeyboardCapitalization.Words
+                                    ),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        unfocusedBorderColor = colors.onSurfaceVariant,
+                                        focusedBorderColor = colors.primary
+                                    ),
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 OutlinedButton(
-                                    onClick = { viewModel.joinListenTogetherSession(code, name) },
+                                    onClick = { viewModel.joinListenTogetherSession(code, guestName) },
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Text(stringResource(R.string.listen_together_join))

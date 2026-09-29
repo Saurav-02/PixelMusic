@@ -270,6 +270,7 @@
     <string name="listen_together_start">Start a session</string>
     <string name="listen_together_join">Join a session</string>
     <string name="listen_together_room_code">Room code</string>
+    <string name="listen_together_guest_name">Guest name (optional)</string>
     <string name="listen_together_creating">Creating session\u2026</string>
     <string name="listen_together_joining">Joining\u2026</string>
     <string name="listen_together_share_code">Share this code with friends</string>

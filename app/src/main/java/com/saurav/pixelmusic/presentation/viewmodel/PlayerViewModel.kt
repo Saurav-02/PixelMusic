@@ -818,7 +818,6 @@ class PlayerViewModel @Inject constructor(
     fun startHostingSession(hostName: String) {
         viewModelScope.launch {
             if (listenTogetherManager.startHosting(hostName)) {
-                closeListenTogetherSheet()
                 startHostSync()
                 sendToast(context.getString(R.string.listen_together_share_code))
             }
@@ -829,7 +828,6 @@ class PlayerViewModel @Inject constructor(
     fun joinListenTogetherSession(code: String, guestName: String) {
         viewModelScope.launch {
             if (listenTogetherManager.joinSession(code, guestName)) {
-                closeListenTogetherSheet()
                 startGuestSync()
             }
         }
