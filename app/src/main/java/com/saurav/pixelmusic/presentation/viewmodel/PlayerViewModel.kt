@@ -19,6 +19,7 @@ import com.saurav.pixelmusic.data.database.SourceType
 import com.saurav.pixelmusic.data.database.serializeArtistRefs
 import com.saurav.pixelmusic.data.database.MusicDao
 import saurav.shru.pixelmusic.innertube.models.SongItem
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import android.media.MediaMetadataRetriever
 import kotlin.math.abs
@@ -89,8 +90,10 @@ import com.saurav.pixelmusic.data.service.MusicService
 import com.saurav.pixelmusic.data.service.player.CastPlayer
 import com.saurav.pixelmusic.data.service.http.MediaFileHttpServerService
 import com.saurav.pixelmusic.data.service.player.DualPlayerEngine
+import com.saurav.pixelmusic.data.session.ChatMessage
 import com.saurav.pixelmusic.data.session.ListenTogetherManager
 import com.saurav.pixelmusic.data.session.ListenTogetherUiState
+import com.saurav.pixelmusic.data.session.ReactionEvent
 import com.saurav.pixelmusic.data.session.SessionTrack
 import com.saurav.pixelmusic.data.worker.SyncManager
 import com.saurav.pixelmusic.data.worker.YouTubeLibrarySyncManager
@@ -822,6 +825,47 @@ class PlayerViewModel @Inject constructor(
                 startHostSync()
                 sendToast(context.getString(R.string.listen_together_share_code))
             }
+        }
+    }
+
+    /** The room's live reaction + message feeds. */
+    val listenTogetherReactions: StateFlow<List<ReactionEvent>> = listenTogetherManager.reactionEvents
+    val listenTogetherMessages: StateFlow<List<ChatMessage>> = listenTogetherManager.chatMessages
+
+    /** Sends an emoji reaction to the room (cooldown enforced). */
+    fun sendListenTogetherReaction(emoji: String) {
+        viewModelScope.launch {
+            if (!listenTogetherManager.sendReaction(emoji)) {
+                sendToast(context.getString(R.string.listen_together_slow_down))
+            }
+        }
+    }
+
+    /** Sends the once-per-song "loved this" reaction. */
+    fun sendLovedReaction() {
+        val videoId = currentSessionVideoId() ?: return
+        viewModelScope.launch {
+            if (!listenTogetherManager.sendLovedReaction(videoId)) {
+                sendToast(context.getString(R.string.listen_together_slow_down))
+            }
+        }
+    }
+
+    /** Sends a preset message to the room (cooldown enforced). */
+    fun sendListenTogetherMessage(text: String) {
+        viewModelScope.launch {
+            if (!listenTogetherManager.sendPresetMessage(text)) {
+                sendToast(context.getString(R.string.listen_together_slow_down))
+            }
+        }
+    }
+
+    /** The videoId of whatever the room is playing right now. */
+    private fun currentSessionVideoId(): String? {
+        return if (listenTogetherManager.isHostActive()) {
+            playbackStateHolder.stablePlayerState.value.currentSong?.youtubeId?.ifBlank { null }
+        } else {
+            listenTogetherManager.remoteState.value?.videoId?.ifBlank { null }
         }
     }
 
