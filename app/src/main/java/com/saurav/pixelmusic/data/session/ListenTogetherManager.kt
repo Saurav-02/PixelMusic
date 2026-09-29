@@ -59,12 +59,28 @@ class ListenTogetherManager @Inject constructor(
     private val memberMap = LinkedHashMap<String, SessionMember>()
     private var heartbeatJob: Job? = null
     private var livenessJob: Job? = null
+    private var reactionsListener: ChildEventListener? = null
+    private var messagesListener: ChildEventListener? = null
+    private val _reactionEvents = MutableStateFlow<List<ReactionEvent>>(emptyList())
+    val reactionEvents: StateFlow<List<ReactionEvent>> = _reactionEvents.asStateFlow()
+    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages.asStateFlow()
+    private var myName: String = ""
+    private var lastReactionTs: Long = 0L
+    private var lastMessageTs: Long = 0L
+    private val lovedVideoIds = mutableSetOf<String>()
 
     companion object {
         /** How often each member refreshes its presence heartbeat. */
         private const val HEARTBEAT_INTERVAL_MS = 5_000L
         /** A member counts as live while its heartbeat is fresher than this. */
         private const val MEMBER_LIVE_WINDOW_MS = 12_000L
+        /** Per-user cooldown between emoji reactions. */
+        private const val REACTION_COOLDOWN_MS = 10_000L
+        /** Per-user cooldown between preset messages. */
+        private const val MESSAGE_COOLDOWN_MS = 30_000L
+        /** Reactions/messages older than this are pruned everywhere. */
+        private const val SOCIAL_TTL_MS = 60_000L
     }
 
     fun isHostActive(): Boolean = _uiState.value is ListenTogetherUiState.Hosting
@@ -121,9 +137,11 @@ class ListenTogetherManager @Inject constructor(
 
             sessionCode = code
             isHost = true
+            myName = cleanName
             lastPublishedSignature = null
             _remoteState.value = null
             attachMembersListener()
+            attachSocialListeners()
             _uiState.value = ListenTogetherUiState.Hosting(
                 code,
                 listOf(SessionMember(cleanName, System.currentTimeMillis(), isLive = true))
@@ -179,8 +197,10 @@ class ListenTogetherManager @Inject constructor(
 
             sessionCode = cleanCode
             isHost = false
+            myName = cleanName
             attachGuestListeners()
             attachMembersListener()
+            attachSocialListeners()
             _uiState.value = ListenTogetherUiState.Guest(hostName)
             Timber.d("ListenTogether: joined session %s", cleanCode)
             true
@@ -337,6 +357,9 @@ class ListenTogetherManager @Inject constructor(
             while (isActive) {
                 delay(HEARTBEAT_INTERVAL_MS)
                 refreshMemberList()
+                val cutoff = System.currentTimeMillis() - SOCIAL_TTL_MS
+                _reactionEvents.value = _reactionEvents.value.filter { it.ts >= cutoff }
+                _chatMessages.value = _chatMessages.value.filter { it.ts >= cutoff }
             }
         }
     }
@@ -406,9 +429,135 @@ class ListenTogetherManager @Inject constructor(
         }
     }
 
+    // ------------------------------------------------------------ social
+
+    /**
+     * Sends an emoji reaction to the room.
+     * Returns false when the per-user cooldown blocks it.
+     */
+    fun sendReaction(emoji: String): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - lastReactionTs < REACTION_COOLDOWN_MS) return false
+        lastReactionTs = now
+        pushSocial("reactions", mapOf("emoji" to emoji))
+        return true
+    }
+
+    /**
+     * Sends the "loved this" reaction, once per song.
+     * Returns false when already sent for this song or the cooldown blocks it.
+     */
+    fun sendLovedReaction(videoId: String): Boolean {
+        if (videoId.isBlank() || !lovedVideoIds.add(videoId)) return false
+        val now = System.currentTimeMillis()
+        if (now - lastReactionTs < REACTION_COOLDOWN_MS) {
+            lovedVideoIds.remove(videoId)
+            return false
+        }
+        lastReactionTs = now
+        pushSocial("reactions", mapOf("emoji" to "\uD83D\uDC9C", "loved" to true))
+        return true
+    }
+
+    /**
+     * Sends a preset message to the room.
+     * Returns false when the per-user cooldown blocks it.
+     */
+    fun sendPresetMessage(text: String): Boolean {
+        val clean = text.trim().take(48)
+        if (clean.isEmpty()) return false
+        val now = System.currentTimeMillis()
+        if (now - lastMessageTs < MESSAGE_COOLDOWN_MS) return false
+        lastMessageTs = now
+        pushSocial("messages", mapOf("text" to clean))
+        return true
+    }
+
+    private fun pushSocial(node: String, fields: Map<String, Any>) {
+        val ref = sessionRef?.child(node)?.push() ?: return
+        val payload = HashMap<String, Any>(fields).apply {
+            put("from", myName.ifBlank { "?" })
+            put("ts", ServerValue.TIMESTAMP)
+        }
+        ref.setValue(payload)
+        // Best-effort expiry so these nodes don't grow while nobody watches.
+        ref.onDisconnect().removeValue()
+    }
+
+    /** Subscribes to reactions + preset messages (host and guests alike). */
+    private fun attachSocialListeners() {
+        val ref = sessionRef ?: return
+        detachSocialListeners()
+        reactionsListener = object : ChildEventListener {
+            override fun onChildAdded(s: DataSnapshot, p: String?) =
+                handleSocialChild(s, isReaction = true)
+            override fun onChildChanged(s: DataSnapshot, p: String?) = Unit
+            override fun onChildRemoved(s: DataSnapshot) {
+                val key = s.key ?: return
+                _reactionEvents.value = _reactionEvents.value.filterNot { it.key == key }
+            }
+            override fun onChildMoved(s: DataSnapshot, p: String?) = Unit
+            override fun onCancelled(e: DatabaseError) =
+                Timber.w("ListenTogether: reactions listener cancelled: %s", e.message)
+        }.also { ref.child("reactions").addChildEventListener(it) }
+        messagesListener = object : ChildEventListener {
+            override fun onChildAdded(s: DataSnapshot, p: String?) =
+                handleSocialChild(s, isReaction = false)
+            override fun onChildChanged(s: DataSnapshot, p: String?) = Unit
+            override fun onChildRemoved(s: DataSnapshot) {
+                val key = s.key ?: return
+                _chatMessages.value = _chatMessages.value.filterNot { it.key == key }
+            }
+            override fun onChildMoved(s: DataSnapshot, p: String?) = Unit
+            override fun onCancelled(e: DatabaseError) =
+                Timber.w("ListenTogether: messages listener cancelled: %s", e.message)
+        }.also { ref.child("messages").addChildEventListener(it) }
+    }
+
+    private fun detachSocialListeners() {
+        val ref = sessionRef
+        reactionsListener?.let { ref?.child("reactions")?.removeEventListener(it) }
+        reactionsListener = null
+        messagesListener?.let { ref?.child("messages")?.removeEventListener(it) }
+        messagesListener = null
+    }
+
+    private fun handleSocialChild(s: DataSnapshot, isReaction: Boolean) {
+        val key = s.key ?: return
+        val map = s.value as? Map<String, Any?> ?: return
+        val ts = (map["ts"] as? Number)?.toLong() ?: 0L
+        if (System.currentTimeMillis() - ts > SOCIAL_TTL_MS) {
+            // Anyone who sees a stale entry prunes it; keeps the nodes small.
+            s.ref.removeValue()
+            return
+        }
+        val from = map["from"] as? String ?: "?"
+        if (isReaction) {
+            val emoji = map["emoji"] as? String ?: return
+            val loved = map["loved"] as? Boolean ?: false
+            val cur = _reactionEvents.value
+            if (cur.none { it.key == key }) {
+                _reactionEvents.value = (cur + ReactionEvent(key, emoji, from, ts, loved)).takeLast(20)
+            }
+        } else {
+            val text = map["text"] as? String ?: return
+            val cur = _chatMessages.value
+            if (cur.none { it.key == key }) {
+                _chatMessages.value = (cur + ChatMessage(key, text, from, ts)).takeLast(20)
+            }
+        }
+    }
+
     private fun cleanupRefs() {
         detachGuestListeners()
         detachMembersListener()
+        detachSocialListeners()
+        myName = ""
+        lovedVideoIds.clear()
+        lastReactionTs = 0L
+        lastMessageTs = 0L
+        _reactionEvents.value = emptyList()
+        _chatMessages.value = emptyList()
         heartbeatJob?.cancel()
         heartbeatJob = null
         memberMap.clear()
