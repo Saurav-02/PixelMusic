@@ -14,6 +14,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -29,11 +31,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -72,6 +77,7 @@ fun HomeShuffleFab(
     isExploreMode: Boolean = false,
     onLongClick: (() -> Unit)? = null,
     onSwipeUp: (() -> Unit)? = null,
+    onListenTogetherClick: (() -> Unit)? = null,
 ) {
     val systemNavBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -150,6 +156,52 @@ fun HomeShuffleFab(
         label = "fabDragOffset"
     )
 
+    // Idle + Listen Together action available: the FAB becomes a dual pill
+    // (shuffle on the left, Listen Together on the right).
+    val showDualFab = onListenTogetherClick != null && !isPlayerActiveDelayed
+
+    // Swipe-up-to-recognize gesture, shared by both FAB forms.
+    val fabDragModifier = if (onSwipeUp != null) {
+        Modifier.pointerInput(Unit) {
+            detectVerticalDragGestures(
+                onDragStart = {
+                    isDragging = true
+                    dragOffsetY = 0f
+                    isThresholdReached = false
+                },
+                onDragEnd = {
+                    if (isThresholdReached) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onSwipeUp.invoke()
+                    }
+                    isDragging = false
+                    isThresholdReached = false
+                },
+                onDragCancel = {
+                    isDragging = false
+                    isThresholdReached = false
+                },
+                onVerticalDrag = { change, dragAmount ->
+                    change.consume()
+
+                    // Clamp so the FAB stops after pull
+                    val newValue = (dragOffsetY + dragAmount).coerceIn(-maxPullPx, 0f)
+                    dragOffsetY = newValue
+
+                    val reached = newValue <= -swipeThresholdPx
+                    if (reached != isThresholdReached) {
+                        isThresholdReached = reached
+                        if (reached) {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        }
+                    }
+                }
+            )
+        }
+    } else {
+        Modifier
+    }
+
     Box(
         modifier = modifier
             .padding(bottom = animatedBottomOffset.coerceAtLeast(0.dp), end = dynamicEndPadding),
@@ -193,92 +245,158 @@ fun HomeShuffleFab(
             }
         }
 
-        // ── Floating Action Button ───────────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .offset { IntOffset(0, animatedOffsetY.roundToInt()) }
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(animatedContainerColor)
-                .then(
-                    if (onSwipeUp != null) {
-                        Modifier.pointerInput(Unit) {
-                            detectVerticalDragGestures(
-                                onDragStart = {
-                                    isDragging = true
-                                    dragOffsetY = 0f
-                                    isThresholdReached = false
-                                },
-                                onDragEnd = {
-                                    if (isThresholdReached) {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onSwipeUp.invoke()
-                                    }
-                                    isDragging = false
-                                    isThresholdReached = false
-                                },
-                                onDragCancel = {
-                                    isDragging = false
-                                    isThresholdReached = false
-                                },
-                                onVerticalDrag = { change, dragAmount ->
-                                    change.consume()
-
-                                    // Clamp so the FAB stops after pull
-                                    val newValue = (dragOffsetY + dragAmount).coerceIn(-maxPullPx, 0f)
-                                    dragOffsetY = newValue
-
-                                    val reached = newValue <= -swipeThresholdPx
-                                    if (reached != isThresholdReached) {
-                                        isThresholdReached = reached
-                                        if (reached) {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    } else Modifier
+        // ── FAB: dual pill when idle, single circle when playing ─────────────────────
+        Crossfade(
+            targetState = showDualFab,
+            animationSpec = tween(220),
+            label = "fabForm",
+            modifier = Modifier.offset { IntOffset(0, animatedOffsetY.roundToInt()) }
+        ) { dual ->
+            if (dual) {
+                DualFabPill(
+                    containerColor = animatedContainerColor,
+                    contentColor = animatedContentColor,
+                    dragModifier = fabDragModifier,
+                    onShuffleClick = onClick,
+                    onShuffleLongClick = onLongClick,
+                    onListenTogetherClick = onListenTogetherClick,
+                    isExploreMode = isExploreMode,
+                    isThresholdReached = isThresholdReached
                 )
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = onLongClick?.let { longClick ->
-                        {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            longClick.invoke()
-                        }
-                    },
-                    role = Role.Button
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Crossfade(
-                targetState = isThresholdReached,
-                animationSpec = tween(150),
-                label = "fabIcon"
-            ) { reached ->
-                if (reached) {
-                    Icon(
-                        imageVector = Icons.Rounded.GraphicEq,
-                        contentDescription = "Recognize Music",
-                        tint = animatedContentColor,
-                        modifier = Modifier.size(32.dp)
-                    )
-                } else if (isExploreMode) {
-                    Icon(
-                        imageVector = Icons.Rounded.AutoAwesome,
-                        contentDescription = "Smart Mix",
-                        tint = animatedContentColor,
-                        modifier = Modifier.size(32.dp)
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(R.drawable.rounded_shuffle_24),
-                        contentDescription = stringResource(R.string.cd_shuffle_play),
-                        tint = animatedContentColor,
-                        modifier = Modifier.size(32.dp)
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(animatedContainerColor)
+                        .then(fabDragModifier)
+                        .combinedClickable(
+                            onClick = onClick,
+                            onLongClick = onLongClick?.let { longClick ->
+                                {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    longClick.invoke()
+                                }
+                            },
+                            role = Role.Button
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ShuffleFabIcon(
+                        isThresholdReached = isThresholdReached,
+                        isExploreMode = isExploreMode,
+                        tint = animatedContentColor
                     )
                 }
+            }
+        }
+    }
+}
+
+/** The shuffle / Smart Mix / recognize icon, shared by both FAB forms. */
+@Composable
+private fun ShuffleFabIcon(
+    isThresholdReached: Boolean,
+    isExploreMode: Boolean,
+    tint: Color,
+) {
+    Crossfade(
+        targetState = isThresholdReached,
+        animationSpec = tween(150),
+        label = "fabIcon"
+    ) { reached ->
+        if (reached) {
+            Icon(
+                imageVector = Icons.Rounded.GraphicEq,
+                contentDescription = "Recognize Music",
+                tint = tint,
+                modifier = Modifier.size(32.dp)
+            )
+        } else if (isExploreMode) {
+            Icon(
+                imageVector = Icons.Rounded.AutoAwesome,
+                contentDescription = "Smart Mix",
+                tint = tint,
+                modifier = Modifier.size(32.dp)
+            )
+        } else {
+            Icon(
+                painter = painterResource(R.drawable.rounded_shuffle_24),
+                contentDescription = stringResource(R.string.cd_shuffle_play),
+                tint = tint,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
+}
+
+/** The idle dual pill: shuffle on the left, Listen Together on the right. */
+@Composable
+private fun DualFabPill(
+    containerColor: Color,
+    contentColor: Color,
+    dragModifier: Modifier,
+    onShuffleClick: () -> Unit,
+    onShuffleLongClick: (() -> Unit)?,
+    onListenTogetherClick: (() -> Unit)?,
+    isExploreMode: Boolean,
+    isThresholdReached: Boolean,
+) {
+    val hapticFeedback = LocalHapticFeedback.current
+    Box(
+        modifier = Modifier
+            .height(64.dp)
+            .clip(CircleShape)
+            .background(containerColor)
+            .then(dragModifier),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .combinedClickable(
+                        onClick = onShuffleClick,
+                        onLongClick = onShuffleLongClick?.let { longClick ->
+                            {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                longClick.invoke()
+                            }
+                        },
+                        role = Role.Button
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                ShuffleFabIcon(
+                    isThresholdReached = isThresholdReached,
+                    isExploreMode = isExploreMode,
+                    tint = contentColor
+                )
+            }
+            VerticalDivider(
+                modifier = Modifier.height(32.dp),
+                thickness = 1.dp,
+                color = contentColor.copy(alpha = 0.35f)
+            )
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .clickable(
+                        onClick = { onListenTogetherClick?.invoke() },
+                        role = Role.Button
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Group,
+                    contentDescription = stringResource(R.string.listen_together),
+                    tint = contentColor,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     }
