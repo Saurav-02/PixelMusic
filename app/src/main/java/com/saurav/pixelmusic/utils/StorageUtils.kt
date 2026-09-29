@@ -1,6 +1,7 @@
 package com.saurav.pixelmusic.utils
 
 import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
@@ -74,21 +75,28 @@ object StorageUtils {
     }
 
     /**
-     * Get the file path for a StorageVolume
+     * Get the file path for a StorageVolume.
+     *
+     * StorageVolume.getDirectory() only exists on API 30+. On older versions the
+     * hidden getPath() is used via reflection. Note: calling getDirectory() on
+     * API 29 throws NoSuchMethodError, which is an Error (not an Exception), so
+     * a try/catch(Exception) around the direct call could never catch it — the
+     * SDK_INT check below is what actually protects old devices.
      */
     private fun getVolumePath(volume: StorageVolume): File? {
-        return try {
-            // Use directory property (API 30+)
-            volume.directory
-        } catch (e: Exception) {
-            // Fallback for older approach
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
-                val getPath = volume.javaClass.getMethod("getPath")
-                val path = getPath.invoke(volume) as? String
-                path?.let { File(it) }
+                return volume.directory
             } catch (e: Exception) {
-                null
+                // Fall through to the reflection fallback
             }
+        }
+        return try {
+            val getPath = volume.javaClass.getMethod("getPath")
+            val path = getPath.invoke(volume) as? String
+            path?.let { File(it) }
+        } catch (e: Exception) {
+            null
         }
     }
 
