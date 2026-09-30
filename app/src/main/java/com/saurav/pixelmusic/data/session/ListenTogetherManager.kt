@@ -7,7 +7,9 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.MutableData
 import com.google.firebase.database.ServerValue
+import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
 import com.saurav.pixelmusic.di.AppScope
 import kotlinx.coroutines.CoroutineScope
@@ -28,10 +30,15 @@ import javax.inject.Singleton
  *
  * One session = one node under `sessions/<CODE>` in Firebase Realtime
  * Database:
- * - `meta`: host name + creation time (removed when the host leaves, which
- *   also deletes the whole session).
+ * - `meta`: hostName + hostKey + createdAt. On unexpected host disconnect
+ *   the host stamps `hostGoneAt` instead of deleting the room; after a
+ *   grace period a guest claims it (host transfer) via transaction.
+ *   Vanishes only when the host intentionally ends the session.
  * - `members`: one child per participant, auto-removed on disconnect.
- * - `state`: the host's latest [SessionTrack] snapshot.
+ * - `state`: the host's latest [SessionTrack] snapshot, with a monotonic
+ *   `revision` (guests ignore snapshots that don't advance it).
+ * - `ready`: per-guest buffering-ready flags, used during coordinated
+ *   track starts.
  *
  * Each device streams its own audio; only the "what / playing / where" is
  * synced. Anonymous Firebase Auth keeps the database rules simple.
@@ -56,6 +63,23 @@ class ListenTogetherManager @Inject constructor(
     private var isHost = false
     private var hasReceivedState = false
     private var lastPublishedSignature: String? = null
+    private var publishRevision = 0L
+    private var lastPublishedVideoId: String? = null
+    private var lastSeenRevision = -1L
+    private var lastHostPositionMs = 0L
+    private var lastHostTitle = ""
+    private var lastHostArtist = ""
+    private var lastHostArtworkUrl = ""
+    private var bufferRoundActive = false
+    private var bufferVideoId = ""
+    private var bufferDeadlineMs = 0L
+    private val readyKeys = mutableSetOf<String>()
+    private var readyListener: ChildEventListener? = null
+    private var hostMetaListener: ValueEventListener? = null
+    private var lastMetaHostGoneAt = 0L
+    private var lastMetaHostName = ""
+    private var lastClaimAttemptMs = 0L
+    private var lastReadyVideoId: String? = null
     private val memberMap = LinkedHashMap<String, SessionMember>()
     private var heartbeatJob: Job? = null
     private var livenessJob: Job? = null
@@ -81,6 +105,16 @@ class ListenTogetherManager @Inject constructor(
         private const val MESSAGE_DEBOUNCE_MS = 250L
         /** Reactions/messages older than this are pruned everywhere. */
         private const val SOCIAL_TTL_MS = 60_000L
+        /** Sync protocol version written into member entries (buffering needs >= 2). */
+        private const val SYNC_PROTO_VERSION = 2
+        /** Grace period after the host drops before a guest may claim the room. */
+        private const val HOST_GRACE_MS = 20_000L
+        /** Minimum gap between host-claim attempts. */
+        private const val CLAIM_RETRY_MS = 10_000L
+        /** Give up on a room when the host has been gone this long with no takeover. */
+        private const val HOST_ABANDON_MS = 300_000L
+        /** Max wait for guests to report buffered before starting anyway. */
+        private const val BUFFER_TIMEOUT_MS = 12_000L
     }
 
     fun isHostActive(): Boolean = _uiState.value is ListenTogetherUiState.Hosting
@@ -120,25 +154,38 @@ class ListenTogetherManager @Inject constructor(
             }
 
             sessionRef = db.getReference("sessions/$code")
-            sessionRef!!.child("meta").setValue(
-                mapOf(
-                    "hostName" to cleanName,
-                    "createdAt" to ServerValue.TIMESTAMP
-                )
-            ).await()
             memberRef = sessionRef!!.child("members").push().also { ref ->
                 ref.setValue(memberPayload(cleanName, photoUrl)).await()
                 ref.onDisconnect().removeValue()
             }
+            sessionRef!!.child("meta").setValue(
+                mapOf(
+                    "hostName" to cleanName,
+                    "hostKey" to (memberRef?.key ?: ""),
+                    "createdAt" to ServerValue.TIMESTAMP
+                )
+            ).await()
             startHeartbeat()
-            // Guests watch `meta`: when it vanishes (host disconnect),
-            // their watchdog ends the session for them.
-            sessionRef!!.child("meta").onDisconnect().removeValue()
+            // On unexpected disconnect the host marks itself gone instead of
+            // deleting the room: after a grace period a guest claims it (host
+            // transfer) so the party survives a crash. Intentional leaves
+            // cancel this first (see leaveSession).
+            sessionRef!!.child("meta").onDisconnect().updateChildren(
+                mapOf("hostGoneAt" to ServerValue.TIMESTAMP)
+            )
+            attachHostMetaListener()
 
             sessionCode = code
             isHost = true
             myName = cleanName
             lastPublishedSignature = null
+            publishRevision = 0L
+            lastPublishedVideoId = null
+            lastSeenRevision = -1L
+            lastMetaHostGoneAt = 0L
+            lastMetaHostName = ""
+            lastClaimAttemptMs = 0L
+            lastReadyVideoId = null
             _remoteState.value = null
             attachMembersListener()
             attachSocialListeners()
@@ -225,7 +272,15 @@ class ListenTogetherManager @Inject constructor(
             runCatching {
                 memberRef?.onDisconnect()?.cancel()
                 memberRef?.removeValue()?.await()
+                // Drop our buffering-ready flag too (its onDisconnect only
+                // fires on connection loss, not on this explicit leave).
+                memberRef?.key?.let { key ->
+                    sessionRef?.child("ready")?.child(key)?.removeValue()?.await()
+                }
                 if (isHost) {
+                    // Cancel the "host gone" marker: this is an intentional
+                    // end, not a crash — the room really goes away.
+                    sessionRef?.child("meta")?.onDisconnect()?.cancel()
                     sessionRef?.removeValue()?.await()
                 }
             }
@@ -248,6 +303,10 @@ class ListenTogetherManager @Inject constructor(
      * Publishes the host's playback snapshot. Called ~1/sec; writes are
      * throttled to real changes (new track, play/pause flip, or >= 2s of
      * position movement) to stay far under the free-tier limits.
+     *
+     * On a track change with an audience, a coordinated-buffering round
+     * runs instead: guests preload the track and report ready, then the
+     * go-signal starts everyone together.
      */
     fun publishHostState(
         videoId: String,
@@ -259,20 +318,172 @@ class ListenTogetherManager @Inject constructor(
     ) {
         val ref = sessionRef ?: return
         if (!isHostActive()) return
+        lastHostPositionMs = positionMs
+        lastHostTitle = title
+        lastHostArtist = artist
+        lastHostArtworkUrl = artworkUrl
+        if (bufferRoundActive && videoId != bufferVideoId) {
+            // Skipped again mid-round: restart the round for the new track,
+            // or drop back to plain publishing when nobody can buffer.
+            if (hasBufferCapableGuests()) {
+                startBufferRound(ref, videoId, title, artist, artworkUrl)
+                return
+            }
+            bufferRoundActive = false
+            detachReadyListener()
+        }
+        if (!bufferRoundActive && videoId != lastPublishedVideoId && hasBufferCapableGuests()) {
+            startBufferRound(ref, videoId, title, artist, artworkUrl)
+            return
+        }
+        val pubIsPlaying = !bufferRoundActive && isPlaying
         val roundedPosition = (positionMs / 2000) * 2000
-        val signature = "$videoId|$isPlaying|$roundedPosition"
+        val signature = "$videoId|$pubIsPlaying|$roundedPosition|$bufferRoundActive"
         if (signature == lastPublishedSignature) return
         lastPublishedSignature = signature
-        val track = SessionTrack(
-            videoId = videoId,
-            title = title,
-            artist = artist,
-            artworkUrl = artworkUrl,
-            isPlaying = isPlaying,
-            positionMs = positionMs,
-            updatedAtMs = System.currentTimeMillis()
+        writeState(
+            ref,
+            SessionTrack(
+                videoId = videoId,
+                title = title,
+                artist = artist,
+                artworkUrl = artworkUrl,
+                isPlaying = pubIsPlaying,
+                positionMs = if (bufferRoundActive) 0L else positionMs,
+                updatedAtMs = System.currentTimeMillis(),
+                buffering = bufferRoundActive
+            )
         )
-        ref.child("state").setValue(track.toMap())
+    }
+
+    /** Writes one snapshot, bumping the revision so guests can order them. */
+    private fun writeState(ref: DatabaseReference, track: SessionTrack) {
+        publishRevision++
+        lastPublishedVideoId = track.videoId
+        ref.child("state").setValue(track.copy(revision = publishRevision).toMap())
+    }
+
+    /** Guests call this once they've preloaded the buffering track. */
+    fun markBufferReady() {
+        if (!isGuestActive()) return
+        val videoId = _remoteState.value?.videoId
+        if (videoId.isNullOrBlank() || videoId == lastReadyVideoId) return
+        val key = memberRef?.key ?: return
+        lastReadyVideoId = videoId
+        val flag = sessionRef?.child("ready")?.child(key) ?: return
+        flag.setValue(true)
+        flag.onDisconnect().removeValue()
+    }
+
+    // ------------------------------------------ coordinated buffering
+
+    private fun hasBufferCapableGuests(): Boolean {
+        val myKey = memberRef?.key
+        return memberMap.any { (key, member) ->
+            key != myKey && member.proto >= SYNC_PROTO_VERSION && isMemberLive(member)
+        }
+    }
+
+    private fun startBufferRound(
+        ref: DatabaseReference,
+        videoId: String,
+        title: String,
+        artist: String,
+        artworkUrl: String
+    ) {
+        stopBufferRound()
+        bufferRoundActive = true
+        bufferVideoId = videoId
+        bufferDeadlineMs = System.currentTimeMillis() + BUFFER_TIMEOUT_MS
+        readyKeys.clear()
+        runCatching { ref.child("ready").removeValue() }
+        attachReadyListener(ref)
+        // Force the buffering snapshot through the throttle.
+        lastPublishedSignature = null
+        writeState(
+            ref,
+            SessionTrack(
+                videoId = videoId,
+                title = title,
+                artist = artist,
+                artworkUrl = artworkUrl,
+                isPlaying = false,
+                positionMs = 0L,
+                updatedAtMs = System.currentTimeMillis(),
+                buffering = true
+            )
+        )
+        Timber.d("ListenTogether: buffering round started for %s", videoId)
+    }
+
+    /** The go-signal: everyone starts from the host's live position at once. */
+    private fun finishBufferRound() {
+        if (!bufferRoundActive) return
+        bufferRoundActive = false
+        detachReadyListener()
+        val ref = sessionRef ?: return
+        runCatching { ref.child("ready").removeValue() }
+        lastPublishedSignature = null
+        writeState(
+            ref,
+            SessionTrack(
+                videoId = bufferVideoId,
+                title = lastHostTitle,
+                artist = lastHostArtist,
+                artworkUrl = lastHostArtworkUrl,
+                isPlaying = true,
+                positionMs = lastHostPositionMs,
+                updatedAtMs = System.currentTimeMillis(),
+                buffering = false
+            )
+        )
+        Timber.d("ListenTogether: buffering round done, go at %d", lastHostPositionMs)
+    }
+
+    private fun stopBufferRound() {
+        bufferRoundActive = false
+        detachReadyListener()
+    }
+
+    private fun attachReadyListener(ref: DatabaseReference) {
+        detachReadyListener()
+        readyListener = object : ChildEventListener {
+            override fun onChildAdded(s: DataSnapshot, p: String?) {
+                s.key?.let { readyKeys.add(it) }
+                checkBufferReady()
+            }
+
+            override fun onChildChanged(s: DataSnapshot, p: String?) = Unit
+            override fun onChildRemoved(s: DataSnapshot) {
+                s.key?.let { readyKeys.remove(it) }
+            }
+
+            override fun onChildMoved(s: DataSnapshot, p: String?) = Unit
+            override fun onCancelled(e: DatabaseError) =
+                Timber.w("ListenTogether: ready listener cancelled: %s", e.message)
+        }.also { ref.child("ready").addChildEventListener(it) }
+    }
+
+    private fun detachReadyListener() {
+        val ref = sessionRef?.child("ready")
+        readyListener?.let { ref?.removeEventListener(it) }
+        readyListener = null
+    }
+
+    /** Proceed when every live, buffering-capable guest is ready — or on timeout. */
+    private fun checkBufferReady() {
+        if (!bufferRoundActive) return
+        if (System.currentTimeMillis() >= bufferDeadlineMs) {
+            Timber.d("ListenTogether: buffering timed out, starting anyway")
+            finishBufferRound()
+            return
+        }
+        val myKey = memberRef?.key
+        val waitingFor = memberMap.any { (key, member) ->
+            key != myKey && member.proto >= SYNC_PROTO_VERSION &&
+                isMemberLive(member) && key !in readyKeys
+        }
+        if (!waitingFor) finishBufferRound()
     }
 
     // ----------------------------------------------------------- listeners
@@ -282,6 +493,7 @@ class ListenTogetherManager @Inject constructor(
         val ref = sessionRef ?: return
         detachGuestListeners()
         hasReceivedState = false
+        lastSeenRevision = -1L
         stateListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val map = snapshot.value as? Map<String, Any?>
@@ -293,8 +505,12 @@ class ListenTogetherManager @Inject constructor(
                     }
                     return
                 }
+                val track = SessionTrack.fromMap(map)
+                // Stale or reordered snapshot: the revision didn't advance.
+                if (hasReceivedState && track.revision <= lastSeenRevision) return
                 hasReceivedState = true
-                _remoteState.value = SessionTrack.fromMap(map)
+                lastSeenRevision = track.revision
+                _remoteState.value = track
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -306,7 +522,21 @@ class ListenTogetherManager @Inject constructor(
         // dead session when the host leaves immediately.
         metaListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (!snapshot.exists() && isGuestActive()) {
+                if (!snapshot.exists()) {
+                    if (isGuestActive()) {
+                        _uiState.value = ListenTogetherUiState.Error("The host ended the session.")
+                    }
+                    return
+                }
+                val map = snapshot.value as? Map<String, Any?>
+                lastMetaHostName = map?.get("hostName") as? String ?: lastMetaHostName
+                lastMetaHostGoneAt = (map?.get("hostGoneAt") as? Number)?.toLong() ?: 0L
+                // The host dropped and nobody claimed the room for a long
+                // while (e.g. no guest runs the takeover logic): end it
+                // instead of leaving a zombie session.
+                if (isGuestActive() && lastMetaHostGoneAt > 0L &&
+                    System.currentTimeMillis() - lastMetaHostGoneAt > HOST_ABANDON_MS
+                ) {
                     _uiState.value = ListenTogetherUiState.Error("The host ended the session.")
                 }
             }
@@ -323,6 +553,116 @@ class ListenTogetherManager @Inject constructor(
         stateListener = null
         metaListener?.let { ref?.child("meta")?.removeEventListener(it) }
         metaListener = null
+    }
+
+    // ------------------------------------------------------ host transfer
+
+    /**
+     * Watches `meta/hostKey` while hosting. If another device claimed the
+     * room (we dropped and the grace period passed), step down to guest
+     * instead of fighting it.
+     */
+    private fun attachHostMetaListener() {
+        val ref = sessionRef?.child("meta") ?: return
+        detachHostMetaListener()
+        hostMetaListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!isHost) return
+                val map = snapshot.value as? Map<String, Any?> ?: return
+                val currentKey = map["hostKey"] as? String
+                val myKey = memberRef?.key
+                if (!currentKey.isNullOrBlank() && !myKey.isNullOrBlank() && currentKey != myKey) {
+                    demoteToGuest(map["hostName"] as? String ?: "Host")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Timber.w("ListenTogether: host meta listener cancelled: %s", error.message)
+            }
+        }.also { ref.addValueEventListener(it) }
+    }
+
+    private fun detachHostMetaListener() {
+        val ref = sessionRef?.child("meta")
+        hostMetaListener?.let { ref?.removeEventListener(it) }
+        hostMetaListener = null
+    }
+
+    /** We lost the room to another device; become its guest. */
+    private fun demoteToGuest(newHostName: String) {
+        if (!isHost) return
+        Timber.d("ListenTogether: demoted, new host is %s", newHostName)
+        isHost = false
+        stopBufferRound()
+        detachHostMetaListener()
+        lastReadyVideoId = null
+        attachGuestListeners()
+        _uiState.value = ListenTogetherUiState.Guest(
+            newHostName,
+            sessionCode ?: "",
+            currentMembers()
+        )
+    }
+
+    /**
+     * Called from the liveness tick: once the host has been gone past the
+     * grace period, try to claim the room atomically. Exactly one guest wins
+     * the transaction; losers see the new host and stand down.
+     */
+    private fun maybeClaimHost() {
+        if (!isGuestActive()) return
+        val goneAt = lastMetaHostGoneAt
+        if (goneAt <= 0L) return
+        val now = System.currentTimeMillis()
+        if (now - goneAt < HOST_GRACE_MS) return
+        if (now - lastClaimAttemptMs < CLAIM_RETRY_MS) return
+        val ref = sessionRef?.child("meta") ?: return
+        val myKey = memberRef?.key ?: return
+        lastClaimAttemptMs = now
+        val expectedHostName = lastMetaHostName
+        ref.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(current: MutableData): Transaction.Result {
+                val curGoneAt = (current.child("hostGoneAt").value as? Number)?.toLong() ?: 0L
+                val curHostName = current.child("hostName").value as? String
+                if (curGoneAt <= 0L || curHostName != expectedHostName) return Transaction.abort()
+                if (System.currentTimeMillis() - curGoneAt < HOST_GRACE_MS) return Transaction.abort()
+                current.child("hostName").value = myName
+                current.child("hostKey").value = myKey
+                current.child("hostGoneAt").value = null
+                return Transaction.success(current)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {
+                if (committed) onHostTakeoverWon()
+                else Timber.d("ListenTogether: host claim not committed")
+            }
+        })
+    }
+
+    /** We won the election: seed the revision counter and take over publishing. */
+    private fun onHostTakeoverWon() {
+        val ref = sessionRef ?: return
+        val code = sessionCode ?: return
+        Timber.d("ListenTogether: won host election for %s", code)
+        appScope.launch {
+            // Seed from the freshest snapshot so the revision never goes
+            // backwards for the other guests.
+            val stateRev = runCatching {
+                val snap = ref.child("state").get().await()
+                ((snap.value as? Map<String, Any?>)?.get("revision") as? Number)?.toLong()
+            }.getOrNull() ?: -1L
+            publishRevision = maxOf(stateRev, _remoteState.value?.revision ?: -1L, lastSeenRevision)
+            lastPublishedVideoId = _remoteState.value?.videoId
+            lastPublishedSignature = null
+            lastReadyVideoId = null
+            stopBufferRound()
+            runCatching { ref.child("ready").removeValue() }
+            isHost = true
+            detachGuestListeners()
+            attachHostMetaListener()
+            _uiState.value = ListenTogetherUiState.Hosting(code, myName, currentMembers())
+            refreshMemberList()
+        }
     }
 
     /** Host listener: keeps the member list live, with liveness from heartbeats. */
@@ -373,11 +713,12 @@ class ListenTogetherManager @Inject constructor(
         livenessJob = null
     }
 
-    /** Member payload: name, photo and a presence heartbeat timestamp. */
+    /** Member payload: name, photo, presence heartbeat and sync protocol version. */
     private fun memberPayload(name: String, photoUrl: String?): Map<String, Any> =
         buildMap {
             put("name", name)
             put("lastSeen", ServerValue.TIMESTAMP)
+            put("proto", SYNC_PROTO_VERSION)
             if (!photoUrl.isNullOrBlank()) put("photoUrl", photoUrl)
         }
 
@@ -400,7 +741,8 @@ class ListenTogetherManager @Inject constructor(
                 val name = raw["name"] as? String ?: return null
                 val lastSeen = (raw["lastSeen"] as? Number)?.toLong() ?: 0L
                 val photoUrl = raw["photoUrl"] as? String
-                SessionMember(name = name, lastSeenMs = lastSeen, photoUrl = photoUrl)
+                val proto = (raw["proto"] as? Number)?.toInt() ?: 0
+                SessionMember(name = name, lastSeenMs = lastSeen, photoUrl = photoUrl, proto = proto)
             }
             // Older app versions wrote a plain name string with no heartbeat.
             is String -> SessionMember(name = raw, lastSeenMs = 0L, isLegacy = true)
@@ -408,15 +750,23 @@ class ListenTogetherManager @Inject constructor(
         }
     }
 
+    /** A member counts as live while its heartbeat is fresh (legacy: by presence). */
+    private fun isMemberLive(member: SessionMember): Boolean {
+        val now = System.currentTimeMillis()
+        // Legacy entries have no heartbeat; their presence alone means
+        // they're connected (onDisconnect removes them when they drop).
+        return member.isLegacy || now - member.lastSeenMs < MEMBER_LIVE_WINDOW_MS
+    }
+
+    private fun currentMembers(): List<SessionMember> =
+        memberMap.values.map { it.copy(isLive = isMemberLive(it)) }
+
     /** Re-emits the session state with fresh member liveness when anything changed. */
     private fun refreshMemberList() {
         val code = sessionCode ?: return
-        val now = System.currentTimeMillis()
-        val members = memberMap.values.map {
-            // Legacy entries have no heartbeat; their presence alone means
-            // they're connected (onDisconnect removes them when they drop).
-            it.copy(isLive = it.isLegacy || now - it.lastSeenMs < MEMBER_LIVE_WINDOW_MS)
-        }
+        val members = currentMembers()
+        maybeClaimHost()
+        checkBufferReady()
         when (val current = _uiState.value) {
             is ListenTogetherUiState.Hosting ->
                 if (members != current.members) {
@@ -551,8 +901,23 @@ class ListenTogetherManager @Inject constructor(
 
     private fun cleanupRefs() {
         detachGuestListeners()
+        detachHostMetaListener()
+        detachReadyListener()
         detachMembersListener()
         detachSocialListeners()
+        stopBufferRound()
+        publishRevision = 0L
+        lastPublishedVideoId = null
+        lastPublishedSignature = null
+        lastSeenRevision = -1L
+        lastMetaHostGoneAt = 0L
+        lastMetaHostName = ""
+        lastClaimAttemptMs = 0L
+        lastReadyVideoId = null
+        bufferVideoId = ""
+        bufferDeadlineMs = 0L
+        lastHostPositionMs = 0L
+        readyKeys.clear()
         myName = ""
         lovedVideoIds.clear()
         lastReactionTs = 0L
