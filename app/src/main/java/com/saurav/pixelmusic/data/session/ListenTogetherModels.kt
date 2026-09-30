@@ -49,7 +49,9 @@ data class SessionMember(
     val isLive: Boolean = true,
     /** True for entries written by older app versions (plain name, no heartbeat). */
     val isLegacy: Boolean = false,
-    val photoUrl: String? = null
+    val photoUrl: String? = null,
+    /** Sync protocol version (2 = understands coordinated buffering). */
+    val proto: Int = 0
 )
 
 /**
@@ -63,7 +65,18 @@ data class SessionTrack(
     val artworkUrl: String = "",
     val isPlaying: Boolean = false,
     val positionMs: Long = 0L,
-    val updatedAtMs: Long = 0L
+    val updatedAtMs: Long = 0L,
+    /**
+     * Monotonic revision, bumped by the host on every publish. Guests
+     * ignore snapshots that do not advance it (stale/reordered writes).
+     */
+    val revision: Long = 0L,
+    /**
+     * True while the host runs a coordinated-buffering round: guests
+     * should preload this track, hold it paused and report ready, then
+     * start together when a snapshot arrives with buffering=false.
+     */
+    val buffering: Boolean = false
 ) {
     companion object {
         @Suppress("UNCHECKED_CAST")
@@ -74,7 +87,9 @@ data class SessionTrack(
             artworkUrl = map["artworkUrl"] as? String ?: "",
             isPlaying = map["isPlaying"] as? Boolean ?: false,
             positionMs = (map["positionMs"] as? Number)?.toLong() ?: 0L,
-            updatedAtMs = (map["updatedAtMs"] as? Number)?.toLong() ?: 0L
+            updatedAtMs = (map["updatedAtMs"] as? Number)?.toLong() ?: 0L,
+            revision = (map["revision"] as? Number)?.toLong() ?: 0L,
+            buffering = map["buffering"] as? Boolean ?: false
         )
     }
 
@@ -85,7 +100,9 @@ data class SessionTrack(
         "artworkUrl" to artworkUrl,
         "isPlaying" to isPlaying,
         "positionMs" to positionMs,
-        "updatedAtMs" to updatedAtMs
+        "updatedAtMs" to updatedAtMs,
+        "revision" to revision,
+        "buffering" to buffering
     )
 }
 
