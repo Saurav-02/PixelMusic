@@ -802,6 +802,7 @@ class PlayerViewModel @Inject constructor(
     private var hostSyncJob: Job? = null
     private var guestSyncJob: Job? = null
     private var guestLoadWatchdog: Job? = null
+    private var guestBufferPauseJob: Job? = null
     private var lastGuestVideoId: String? = null
     private var savedGuestQueue: List<Song>? = null
     private var savedGuestStartSong: Song? = null
@@ -914,6 +915,8 @@ class PlayerViewModel @Inject constructor(
         guestSyncJob = null
         guestLoadWatchdog?.cancel()
         guestLoadWatchdog = null
+        guestBufferPauseJob?.cancel()
+        guestBufferPauseJob = null
         lastGuestVideoId = null
         sessionSyncBypass = false
         com.saurav.pixelmusic.data.remote.youtube.AutoQueueManager.isPaused = false
@@ -925,6 +928,24 @@ class PlayerViewModel @Inject constructor(
     private fun startHostSync() {
         stopSessionSync()
         hostSyncJob = viewModelScope.launch {
+            // Role watcher: if the room hands hosting to another device
+            // (we dropped and lost the election), become its guest.
+            launch {
+                listenTogetherManager.uiState.collect { state ->
+                    when (state) {
+                        is ListenTogetherUiState.Guest -> {
+                            viewModelScope.launch {
+                                stopSessionSync()
+                                startGuestSync()
+                            }
+                        }
+                        is ListenTogetherUiState.Idle, is ListenTogetherUiState.Error -> {
+                            viewModelScope.launch { stopSessionSync() }
+                        }
+                        else -> Unit
+                    }
+                }
+            }
             while (isActive) {
                 try {
                     val snapshot = playbackStateHolder.stablePlayerState.value
@@ -975,6 +996,13 @@ class PlayerViewModel @Inject constructor(
                             restoreSavedGuestQueue()
                             stopSessionSync()
                         }
+                        is ListenTogetherUiState.Hosting -> {
+                            // Won the host election: flip to publishing.
+                            viewModelScope.launch {
+                                stopSessionSync()
+                                startHostSync()
+                            }
+                        }
                         else -> Unit
                     }
                 }
@@ -990,6 +1018,12 @@ class PlayerViewModel @Inject constructor(
 
     private suspend fun applyRemoteTrackSnapshot(remote: SessionTrack?) {
         if (remote == null || !listenTogetherManager.isGuestActive()) return
+        // Coordinated buffering: preload the track, hold it paused and
+        // report ready — the go-signal (buffering=false) starts everyone.
+        if (remote.buffering) {
+            handleBufferingSnapshot(remote)
+            return
+        }
         val localVideoId = playbackStateHolder.stablePlayerState.value.currentSong?.youtubeId
         if (remote.videoId == localVideoId || remote.videoId == lastGuestVideoId) {
             enforceGuestConvergence(remote)
@@ -1022,6 +1056,61 @@ class PlayerViewModel @Inject constructor(
         enforceGuestConvergence(remote)
     }
 
+    /**
+     * Preloads the buffering track and holds it paused until the host's
+     * go-signal, then reports ready so the room can start together.
+     */
+    private fun handleBufferingSnapshot(remote: SessionTrack) {
+        if (!listenTogetherManager.isGuestActive()) return
+        lastGuestVideoId = remote.videoId
+        guestBufferPauseJob?.cancel()
+        guestBufferPauseJob = viewModelScope.launch {
+            try {
+                if (playbackStateHolder.stablePlayerState.value.currentSong?.youtubeId != remote.videoId) {
+                    val song = com.saurav.pixelmusic.data.model.youtube.Song(
+                        youtubeId = remote.videoId,
+                        title = remote.title.ifBlank { "Unknown title" },
+                        artist = remote.artist,
+                        thumbnailHref = remote.artworkUrl
+                    ).toNativeSong()
+                    sessionSyncBypass = true
+                    try {
+                        playSongs(listOf(song), song, "Listen Together")
+                    } finally {
+                        sessionSyncBypass = false
+                    }
+                }
+                // Wait for the track to finish loading, then hold it paused.
+                val deadline = System.currentTimeMillis() + 10_000L
+                var loaded = false
+                while (isActive && System.currentTimeMillis() < deadline) {
+                    val st = playbackStateHolder.stablePlayerState.value
+                    if (st.currentSong?.youtubeId == remote.videoId) {
+                        loaded = true
+                        if (st.isPlaying) {
+                            sessionSyncBypass = true
+                            try {
+                                playPause()
+                            } finally {
+                                sessionSyncBypass = false
+                            }
+                        }
+                        break
+                    }
+                    delay(200)
+                }
+                if (loaded) {
+                    listenTogetherManager.markBufferReady()
+                } else if (listenTogetherManager.isGuestActive()) {
+                    sendToast(context.getString(R.string.listen_together_track_unavailable))
+                }
+            } catch (t: Throwable) {
+                if (t is CancellationException) throw t
+                Timber.w(t, "ListenTogether buffering preload failed")
+            }
+        }
+    }
+
     private fun enforceGuestConvergence(remote: SessionTrack? = null) {
         if (!listenTogetherManager.isGuestActive() || sessionSyncBypass) return
         val snap = remote ?: listenTogetherManager.remoteState.value ?: return
@@ -1032,17 +1121,23 @@ class PlayerViewModel @Inject constructor(
         // the sync itself drives playback.
         sessionSyncBypass = true
         try {
-            if (playbackStateHolder.stablePlayerState.value.isPlaying != snap.isPlaying) {
-                // A single toggle always converges: the state is boolean.
-                playPause()
-                return
-            }
             val expected = if (snap.isPlaying) {
                 snap.positionMs + (System.currentTimeMillis() - snap.updatedAtMs)
             } else {
                 snap.positionMs
             }.coerceAtLeast(0L)
             val drift = abs(expected - playbackStateHolder.currentPosition.value)
+            if (playbackStateHolder.stablePlayerState.value.isPlaying != snap.isPlaying) {
+                // Seek first when far off so the toggle lands in sync — this
+                // is what makes the buffering go-signal start everyone
+                // together instead of from 0.
+                if (drift > 3_000) {
+                    seekTo(expected)
+                }
+                // A single toggle always converges: the state is boolean.
+                playPause()
+                return
+            }
             if (drift > 3_000) {
                 seekTo(expected)
             }
