@@ -144,6 +144,7 @@ class ListenTogetherManager @Inject constructor(
             attachSocialListeners()
             _uiState.value = ListenTogetherUiState.Hosting(
                 code,
+                cleanName,
                 listOf(SessionMember(cleanName, System.currentTimeMillis(), isLive = true))
             )
             Timber.d("ListenTogether: hosting session %s", code)
@@ -201,7 +202,7 @@ class ListenTogetherManager @Inject constructor(
             attachGuestListeners()
             attachMembersListener()
             attachSocialListeners()
-            _uiState.value = ListenTogetherUiState.Guest(hostName)
+            _uiState.value = ListenTogetherUiState.Guest(hostName, cleanCode)
             Timber.d("ListenTogether: joined session %s", cleanCode)
             true
         } catch (t: Throwable) {
@@ -419,7 +420,7 @@ class ListenTogetherManager @Inject constructor(
         when (val current = _uiState.value) {
             is ListenTogetherUiState.Hosting ->
                 if (members != current.members) {
-                    _uiState.value = ListenTogetherUiState.Hosting(code, members)
+                    _uiState.value = ListenTogetherUiState.Hosting(code, myName, members)
                 }
             is ListenTogetherUiState.Guest ->
                 if (members != current.members) {

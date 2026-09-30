@@ -14,20 +14,24 @@ sealed interface ListenTogetherUiState {
     /**
      * Hosting a session.
      * @param code the 6-letter room code guests enter to join.
+     * @param hostName display name of the host (the local user).
      * @param members everyone in the room, host first, with liveness.
      */
     data class Hosting(
         val code: String,
+        val hostName: String,
         val members: List<SessionMember> = emptyList()
     ) : ListenTogetherUiState
 
     /**
      * Guest in someone else's session.
      * @param hostName display name of the host.
+     * @param code the 6-letter room code, shown so guests can share it too.
      * @param members everyone in the room, host first, with liveness.
      */
     data class Guest(
         val hostName: String,
+        val code: String,
         val members: List<SessionMember> = emptyList()
     ) : ListenTogetherUiState
 

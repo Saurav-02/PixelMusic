@@ -75,6 +75,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
@@ -201,24 +203,28 @@ fun ListenTogetherSheet(
                                     shape = RoundedCornerShape(2.dp)
                                 )
                         )
-                        Icon(
-                            imageVector = Icons.Rounded.Group,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(44.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.listen_together),
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.listen_together_desc),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colors.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
+                        // The intro header is only for the start/join screen —
+                        // once you're in a session, it's redundant.
+                        if (uiState !is ListenTogetherUiState.Hosting && uiState !is ListenTogetherUiState.Guest) {
+                            Icon(
+                                imageVector = Icons.Rounded.Group,
+                                contentDescription = null,
+                                tint = colors.primary,
+                                modifier = Modifier.size(44.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.listen_together),
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = colors.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.listen_together_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colors.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
             
                         when (val s = uiState) {
                             is ListenTogetherUiState.Idle, is ListenTogetherUiState.Error -> {
@@ -356,7 +362,11 @@ fun ListenTogetherSheet(
                                             )
                                             s.members.forEach { member ->
                                                 Text(
-                                                    text = "\u2022 ${member.name}",
+                                                    text = if (member.name == s.hostName) {
+                                                        "\uD83D\uDC51 \u2022 ${member.name}"
+                                                    } else {
+                                                        "\u2022 ${member.name}"
+                                                    },
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     color = colors.onSurface
                                                 )
@@ -395,40 +405,19 @@ fun ListenTogetherSheet(
                                                     color = colors.onSurfaceVariant
                                                 )
                                                 Spacer(Modifier.weight(1f))
-                                                Surface(
-                                                    shape = RoundedCornerShape(12.dp),
-                                                    color = colors.surfaceContainerHigh,
-                                                    tonalElevation = 2.dp,
-                                                    modifier = Modifier
-                                                        .clip(RoundedCornerShape(12.dp))
-                                                        .clickable(onClick = copyCode)
-                                                ) {
-                                                    Row(
-                                                        modifier = Modifier.padding(
-                                                            horizontal = 12.dp,
-                                                            vertical = 8.dp
-                                                        ),
-                                                        verticalAlignment = Alignment.CenterVertically
-                                                    ) {
-                                                        Text(
-                                                            text = s.code,
-                                                            style = MaterialTheme.typography.titleSmall,
-                                                            fontWeight = FontWeight.Bold,
-                                                            letterSpacing = 2.sp,
-                                                            color = colors.onSurface
-                                                        )
-                                                        Spacer(Modifier.width(6.dp))
-                                                        Icon(
-                                                            imageVector = Icons.Rounded.ContentCopy,
-                                                            contentDescription = stringResource(R.string.listen_together_copy_code),
-                                                            tint = colors.primary,
-                                                            modifier = Modifier.size(16.dp)
-                                                        )
-                                                    }
-                                                }
+                                                RoomCodeChip(
+                                                    code = s.code,
+                                                    onCopy = copyCode,
+                                                    colors = colors
+                                                )
                                             }
                                             s.members.forEach { member ->
-                                                MemberRow(member = member, activeMessage = activeMessage, colors = colors)
+                                                MemberRow(
+                                                    member = member,
+                                                    activeMessage = activeMessage,
+                                                    colors = colors,
+                                                    isHost = member.name == s.hostName
+                                                )
                                             }
                                             SocialSection(
                                                 onReaction = { viewModel.sendListenTogetherReaction(it) },
@@ -453,6 +442,11 @@ fun ListenTogetherSheet(
                             }
 
                             is ListenTogetherUiState.Guest -> {
+                                val copyCode = {
+                                    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    cm.setPrimaryClip(ClipData.newPlainText("room code", s.code))
+                                    viewModel.sendToast(context.getString(R.string.listen_together_code_copied))
+                                }
                                 Text(
                                     text = context.getString(R.string.listen_together_listening_with, s.hostName),
                                     style = MaterialTheme.typography.headlineSmall,
@@ -466,6 +460,17 @@ fun ListenTogetherSheet(
                                     color = colors.onSurfaceVariant,
                                     textAlign = TextAlign.Center
                                 )
+                                Text(
+                                    text = stringResource(R.string.listen_together_share_code),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                RoomCodeChip(
+                                    code = s.code,
+                                    onCopy = copyCode,
+                                    colors = colors
+                                )
                                 if (s.members.isNotEmpty()) {
                                     Spacer(Modifier.height(8.dp))
                                     Text(
@@ -477,7 +482,12 @@ fun ListenTogetherSheet(
                                         color = colors.onSurfaceVariant
                                     )
                                     s.members.forEach { member ->
-                                        MemberRow(member = member, activeMessage = activeMessage, colors = colors)
+                                        MemberRow(
+                                            member = member,
+                                            activeMessage = activeMessage,
+                                            colors = colors,
+                                            isHost = member.name == s.hostName
+                                        )
                                     }
                                     SocialSection(
                                         onReaction = { viewModel.sendListenTogetherReaction(it) },
@@ -522,41 +532,97 @@ private fun avatarColorFor(name: String): Color {
     return avatarPalette[index]
 }
 
+/**
+ * Room code with a copy button, in the same style as the host's live
+ * header chip. Shown to everyone in the room so guests can share the
+ * code and invite new people too.
+ */
+@Composable
+private fun RoomCodeChip(
+    code: String,
+    onCopy: () -> Unit,
+    colors: ColorScheme
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = colors.surfaceContainerHigh,
+        tonalElevation = 2.dp,
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onCopy)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = code,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp,
+                color = colors.onSurface
+            )
+            Spacer(Modifier.width(6.dp))
+            Icon(
+                imageVector = Icons.Rounded.ContentCopy,
+                contentDescription = stringResource(R.string.listen_together_copy_code),
+                tint = colors.primary,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+    }
+}
+
 /** One guest card: avatar, name, liveness caption, active message in middle, and equalizer. */
 @Composable
 private fun MemberRow(
     member: com.saurav.pixelmusic.data.session.SessionMember,
     activeMessage: com.saurav.pixelmusic.data.session.ChatMessage?,
-    colors: ColorScheme
+    colors: ColorScheme,
+    isHost: Boolean = false
 ) {
     val isMyMessage = activeMessage != null && activeMessage.from.equals(member.name, ignoreCase = true)
+    val hostLabel = stringResource(R.string.listen_together_host)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(avatarColorFor(member.name)),
-            contentAlignment = Alignment.Center
-        ) {
-            if (!member.photoUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = member.photoUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                )
-            } else {
+        // Wrapper so the host crown can overlap the top of the avatar.
+        Box {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(avatarColorFor(member.name)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!member.photoUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = member.photoUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Text(
+                        text = member.name.firstOrNull()?.uppercase() ?: "?",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                }
+            }
+            if (isHost) {
                 Text(
-                    text = member.name.firstOrNull()?.uppercase() ?: "?",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    text = "\uD83D\uDC51",
+                    fontSize = 18.sp,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = (-10).dp)
+                        .semantics { contentDescription = hostLabel }
                 )
             }
         }
