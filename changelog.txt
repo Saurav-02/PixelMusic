@@ -1,4 +1,4 @@
-**Sub release 4.5.0**
+**Sub release 4.4.4**
 
 * 🏝️ **Dynamic Island / Live Notification Compatibility Fix:** Corrected the dynamic island compatibility check to require at least Android 14 (API 34) on supported OEM skins or Android 16 (API 36) for native live notifications, properly hiding it on Android 10-13.
 * 📋 **Feature Compatibility Screen & Summary:** Added a dedicated System Feature Compatibility screen with detailed requirement cards, filter chips, and a summary card in Device Capabilities showing all Android API-dependent features.
