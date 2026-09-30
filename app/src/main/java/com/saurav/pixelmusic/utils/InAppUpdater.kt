@@ -19,14 +19,21 @@ import java.io.File
 import java.util.Locale
 
 data class GithubRelease(
-    @SerializedName("tag_name") val tagName: String,
-    @SerializedName("assets") val assets: List<GithubAsset>,
-    @SerializedName("body") val body: String?
+    @SerializedName("tag_name", alternate = ["version", "versionName", "tagName", "tag"])
+    val tagName: String? = null,
+    @SerializedName("assets")
+    val assets: List<GithubAsset>? = null,
+    @SerializedName("body", alternate = ["changelog", "description", "notes"])
+    val body: String? = null,
+    @SerializedName("download_url", alternate = ["browser_download_url", "url"])
+    val downloadUrl: String? = null
 )
 
 data class GithubAsset(
-    @SerializedName("download_url") val downloadUrl: String,
-    @SerializedName("name") val name: String
+    @SerializedName("download_url", alternate = ["browser_download_url", "url"])
+    val downloadUrl: String? = null,
+    @SerializedName("name")
+    val name: String? = null
 )
 
 sealed class UpdateState {
@@ -54,10 +61,17 @@ object InAppUpdater {
     fun isNewerVersion(latest: String?, current: String?): Boolean {
         if (latest.isNullOrBlank() || current.isNullOrBlank()) return false
 
-        if (latest.contains("test-build", ignoreCase = true) && current.contains("test-build", ignoreCase = true)) {
+        val isLatestTest = latest.contains("test-build", ignoreCase = true)
+        val isCurrentTest = current.contains("test-build", ignoreCase = true)
+
+        if (isLatestTest && isCurrentTest) {
             val numLatest = latest.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
             val numCurrent = current.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
             return numLatest > numCurrent
+        }
+
+        if (isLatestTest != isCurrentTest) {
+            return false
         }
 
         val cleanL = latest.replace(Regex("[^0-9.]"), "").trim('.')
@@ -81,29 +95,46 @@ object InAppUpdater {
 
     suspend fun checkForUpdate(currentVersion: String): UpdateState = withContext(Dispatchers.IO) {
         try {
-            val request = Request.Builder().url(UPDATE_CHECK_URL).build()
+            val targetUrl = if (UPDATE_CHECK_URL.contains("?")) {
+                UPDATE_CHECK_URL
+            } else if (currentVersion.contains("test-build", ignoreCase = true)) {
+                "$UPDATE_CHECK_URL?channel=test"
+            } else {
+                UPDATE_CHECK_URL
+            }
+
+            val request = Request.Builder()
+                .url(targetUrl)
+                .header("User-Agent", "PixelMusic/$currentVersion (Android)")
+                .header("Accept", "application/json")
+                .build()
             val response = client.newCall(request).execute()
             
             if (response.isSuccessful) {
-                val body = response.body.string()
-                val release = gson.fromJson(body, GithubRelease::class.java)
-                
-                val isUpdate = isNewerVersion(release.tagName, currentVersion)
-                val apkAssets = release.assets.filter { it.name.endsWith(".apk") }
-                val apkAsset = selectBestApkForDevice(apkAssets)
-                
-                if (isUpdate && apkAsset != null) {
-                    return@withContext UpdateState.Available(
-                        versionName = release.tagName, 
-                        downloadUrl = apkAsset.downloadUrl,
-                        changelog = release.body
-                    )
+                val body = response.body?.string()
+                if (!body.isNullOrBlank()) {
+                    val release = gson.fromJson(body, GithubRelease::class.java)
+                    val tagName = release?.tagName
+                    if (!tagName.isNullOrBlank()) {
+                        val isUpdate = isNewerVersion(tagName, currentVersion)
+                        val apkAssets = release.assets?.filter { it.name?.endsWith(".apk", ignoreCase = true) == true } ?: emptyList()
+                        val apkAsset = selectBestApkForDevice(apkAssets)
+                        val downloadUrl = apkAsset?.downloadUrl ?: release.downloadUrl
+
+                        if (isUpdate && !downloadUrl.isNullOrBlank()) {
+                            return@withContext UpdateState.Available(
+                                versionName = tagName, 
+                                downloadUrl = downloadUrl,
+                                changelog = release.body
+                            )
+                        }
+                        return@withContext UpdateState.UpToDate(
+                            versionName = tagName,
+                            downloadUrl = downloadUrl,
+                            changelog = release.body
+                        )
+                    }
                 }
-                return@withContext UpdateState.UpToDate(
-                    versionName = release.tagName,
-                    downloadUrl = apkAsset?.downloadUrl,
-                    changelog = release.body
-                )
             }
             return@withContext UpdateState.UpToDate(
                 versionName = null,
@@ -121,26 +152,27 @@ object InAppUpdater {
     }
 
     private fun selectBestApkForDevice(assets: List<GithubAsset>): GithubAsset? {
-        if (assets.isEmpty()) return null
-        if (assets.size == 1) return assets.first() 
+        val validAssets = assets.filter { !it.downloadUrl.isNullOrBlank() }
+        if (validAssets.isEmpty()) return null
+        if (validAssets.size == 1) return validAssets.first() 
 
         val deviceAbis = android.os.Build.SUPPORTED_ABIS.map { it.lowercase() }
 
         for (abi in deviceAbis) {
             val abiMatch = when {
-                abi.contains("arm64") -> assets.firstOrNull { it.name.contains("arm64", ignoreCase = true) || it.name.contains("v8a", ignoreCase = true) }
-                abi.contains("v7") -> assets.firstOrNull { it.name.contains("armv7", ignoreCase = true) || it.name.contains("v7a", ignoreCase = true) }
-                abi.contains("x86_64") -> assets.firstOrNull { it.name.contains("x86_64", ignoreCase = true) }
-                abi.contains("x86") -> assets.firstOrNull { it.name.contains("x86", ignoreCase = true) }
+                abi.contains("arm64") -> validAssets.firstOrNull { it.name?.contains("arm64", ignoreCase = true) == true || it.name?.contains("v8a", ignoreCase = true) == true }
+                abi.contains("v7") -> validAssets.firstOrNull { it.name?.contains("armv7", ignoreCase = true) == true || it.name?.contains("v7a", ignoreCase = true) == true }
+                abi.contains("x86_64") -> validAssets.firstOrNull { it.name?.contains("x86_64", ignoreCase = true) == true }
+                abi.contains("x86") -> validAssets.firstOrNull { it.name?.contains("x86", ignoreCase = true) == true }
                 else -> null
             }
             if (abiMatch != null) return abiMatch
         }
 
-        val universalMatch = assets.firstOrNull { it.name.contains("universal", ignoreCase = true) }
+        val universalMatch = validAssets.firstOrNull { it.name?.contains("universal", ignoreCase = true) == true }
         if (universalMatch != null) return universalMatch
 
-        return assets.first()
+        return validAssets.first()
     }
 
     sealed class GlobalDownloadState {
@@ -205,6 +237,10 @@ object InAppUpdater {
     }
 
     fun startOrResumeDownload(context: Context, url: String, versionName: String) {
+        if (url.isBlank()) {
+            downloadState.value = GlobalDownloadState.Error("Invalid download URL")
+            return
+        }
         if (downloadJob?.isActive == true) return
         
         appContext = context.applicationContext
@@ -265,7 +301,9 @@ object InAppUpdater {
 
         downloadJob = updaterScope.launch {
             try {
-                val requestBuilder = Request.Builder().url(url)
+                val requestBuilder = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", "PixelMusic (Android)")
                 
                 if (file.exists() && downloadedBytes > 0) {
                     if (totalBytes > 0 && downloadedBytes >= totalBytes) {
@@ -290,7 +328,10 @@ object InAppUpdater {
                     totalBytes = 0L
                 }
 
-                val body = response.body
+                val body = response.body ?: run {
+                    downloadState.value = GlobalDownloadState.Error("Empty response body from server")
+                    return@launch
+                }
                 if (totalBytes <= 0L) {
                     val len = body.contentLength()
                     if (len > 0) totalBytes = len + downloadedBytes

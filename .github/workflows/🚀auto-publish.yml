@@ -102,6 +102,7 @@ jobs:
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: 🌟 Release ${{ env.TAG_NAME }}
+          make_latest: true
           body: ${{ env.RELEASE_BODY }}
           files: app/build/outputs/apk/release/*.apk
         env:
@@ -114,6 +115,7 @@ jobs:
           token: ${{ secrets.TARGET_REPO_TOKEN }}
           tag_name: ${{ env.TAG_NAME }}
           name: 🌟 Release ${{ env.TAG_NAME }}
+          make_latest: true
           body: ${{ env.RELEASE_BODY }}
           files: app/build/outputs/apk/release/*.apk
 
