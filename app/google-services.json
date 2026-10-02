@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "407682818529",
+    "firebase_url": "https://listen-together-02-default-rtdb.firebaseio.com",
+    "project_id": "listen-together-02",
+    "storage_bucket": "listen-together-02.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:407682818529:android:a797f4b76dbfef416ab2a0",
+        "android_client_info": {
+          "package_name": "com.saurav.pixelmusic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0Z7CTeQSzDWNTZsoSMmm67h02kDBSV4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:407682818529:android:9510bc0f6b83e8536ab2a0",
+        "android_client_info": {
+          "package_name": "com.saurav.pixelmusic.test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0Z7CTeQSzDWNTZsoSMmm67h02kDBSV4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

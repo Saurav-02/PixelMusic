@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PixelMusic" parent="Theme.Material3.DynamicColors.DayNight">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialogTheme</item>
+    </style>
+
+    <style name="CustomBottomSheetDialogTheme" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Splash screen theme can still extend Theme.SplashScreen, but ensure it transitions to the correct base theme -->
+    <!-- For dark mode, postSplashScreenTheme should ideally point to a dark version of Theme.PixelMusic if specific overrides are needed -->
+    <!-- However, since Theme.PixelMusic itself will be resolved from values-night, this setup should work. -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+<!--        <item name="windowSplashScreenBackground">@color/pixel_play_purple_dark</item>-->
+<!--        &lt;!&ndash; icon and animation can be the same or specific for dark theme &ndash;&gt;-->
+<!--        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>-->
+<!--        <item name="postSplashScreenTheme">@style/Theme.PixelMusic</item>-->
+    </style>
+</resources>

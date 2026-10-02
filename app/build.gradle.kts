@@ -1,0 +1,367 @@
+import java.util.Properties
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.baselineprofile)
+    id("kotlin-parcelize")
+}
+
+// Load keystore properties early to avoid unresolved references inside the android block
+val keystoreProperties = Properties().apply {
+    val propFile = rootProject.file("keystore.properties")
+    if (propFile.exists()) {
+        propFile.inputStream().use { load(it) }
+    }
+}
+
+val localProperties = Properties().apply {
+    val propFile = rootProject.file("local.properties")
+    if (propFile.exists()) {
+        propFile.inputStream().use { load(it) }
+    }
+}
+
+val enableAbiSplits = providers.gradleProperty("pixelmusic.enableAbiSplits")
+    .getOrElse("true")
+    .toBoolean()
+
+val enableComposeCompilerReports = providers.gradleProperty("pixelmusic.enableComposeCompilerReports")
+    .getOrElse("false")
+    .toBoolean()
+
+@Suppress("DEPRECATION")
+android {
+    namespace = "com.saurav.pixelmusic"
+    compileSdk = 37
+
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a")
+            isUniversalApk = true
+        }
+    }
+
+    sourceSets {
+        getByName("androidTest") {
+            assets.directories.add(file("$projectDir/schemas").path)
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += listOf(
+                "META-INF/INDEX.LIST",
+                "META-INF/DEPENDENCIES",
+                "/META-INF/io.netty.versions.properties",
+                "META-INF/CONTRIBUTORS.md",
+                "META-INF/NOTICE.txt",
+                "META-INF/NOTICE.md"
+            )
+            pickFirsts += listOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE.txt"
+            )
+        }
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    defaultConfig {
+        applicationId = "com.saurav.pixelmusic"
+        minSdk = 29
+        targetSdk = 37
+        versionCode = (project.findProperty("APP_VERSION_CODE") as? String)?.toInt() ?: 1
+        versionName = (project.findProperty("APP_VERSION_NAME") as? String) ?: "1.0.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val lastfmApiKey = localProperties.getProperty("LASTFM_API_KEY")
+            ?: System.getenv("LASTFM_API_KEY")
+            ?: ""
+        val lastfmSecret = localProperties.getProperty("LASTFM_SECRET")
+            ?: System.getenv("LASTFM_SECRET")
+            ?: ""
+        buildConfigField("String", "LASTFM_API_KEY", "\"$lastfmApiKey\"")
+        buildConfigField("String", "LASTFM_SECRET", "\"$lastfmSecret\"")
+    }
+
+    val keystoreExists = rootProject.file("keystore.properties").exists() && rootProject.file("vz-pixelmusic.jks").exists()
+
+    signingConfigs {
+        if (keystoreExists) {
+            create("release") {
+                storeFile = rootProject.file("vz-pixelmusic.jks")
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+        }
+
+        release {
+            if (keystoreExists) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+
+        create("benchmark") {
+            initWith(getByName("release"))
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+        }
+    }
+
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+        unitTests.all { it.useJUnitPlatform() }
+    }
+
+    lint {
+        checkReleaseBuilds = false
+    }
+
+    bundle {
+        abi.enableSplit = true
+        density.enableSplit = true
+        language.enableSplit = true
+    }
+}
+
+composeCompiler {
+    // StrongSkipping is now enabled by default.
+}
+
+baselineProfile {
+    automaticGenerationDuringBuild = false
+    saveInSrc = true
+    dexLayoutOptimization = true
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.generateKotlin", "true")
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=coil.annotation.ExperimentalCoilApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        )
+
+        if (enableComposeCompilerReports) {
+            val buildDir = project.layout.buildDirectory.get().asFile.absolutePath
+            freeCompilerArgs.addAll(
+                "-P", "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=$buildDir/compose_compiler_reports",
+                "-P", "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=$buildDir/compose_compiler_metrics"
+            )
+        }
+
+        freeCompilerArgs.addAll(
+            "-P", "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=${project.rootDir.absolutePath}/app/compose_stability.conf"
+        )
+    }
+}
+
+dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    // InnerTube dependencies merged
+    implementation(libs.ktor.client.core)
+    implementation("dev.turingcomplete:kotlin-onetimepassword:2.4.1")
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.okhttp.dnsoverhttps)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.json)
+    implementation(libs.ktor.client.encoding)
+    implementation(libs.brotli)
+    implementation(libs.re2j)
+    implementation(libs.innertubex)
+
+
+
+    // Core & Optimization
+    implementation(libs.androidx.profileinstaller)
+    "baselineProfile"(project(":baselineprofile"))
+
+    // AndroidX & Compose
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.lifecycleprocess)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.animation)
+    implementation(libs.androidx.palette.ktx)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.material)
+    implementation(libs.androidx.appcompat)
+    implementation("androidx.webkit:webkit:1.16.0")
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.cio)
+
+
+    // DI & Navigation
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation.runtime.ktx)
+
+    // Storage & Paging
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.paging)
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.paging.common)
+
+    // Media & Files
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.session)
+    implementation(libs.androidx.media3.exoplayer.ffmpeg)
+    implementation(libs.androidx.media3.exoplayer.midi)
+    implementation(libs.androidx.media3.transformer)
+    implementation(libs.androidx.media3.effect)
+    implementation(libs.androidx.mediarouter)
+    implementation(libs.androidx.media)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
+    implementation(libs.taglib)
+    implementation(libs.jaudiotagger)
+    implementation(libs.vorbisjava.core)
+    implementation(libs.wavy.slider)
+
+    // Networking & Serialization
+    implementation(libs.androidx.media3.exoplayer.hls)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+    implementation(libs.gson)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.collections.immutable)
+    implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.26.5")
+    implementation("com.github.TeamNewPipe:nanojson:e9d656ddb49a412a5a0a5d5ef20ca7ef09549996")
+
+    // Identity & Background
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.google.play.services.cast.framework)
+
+    // UI Utilities & Extra
+    implementation(libs.timber)
+    implementation(libs.smooth.corner.rect.android.compose)
+    implementation(libs.reorderables)
+    implementation(libs.androidx.glance)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    implementation(libs.accompanist.drawablepainter)
+    implementation(libs.accompanist.permissions)
+    implementation(libs.capturable) {
+        exclude(group = "androidx.compose.animation")
+        exclude(group = "androidx.compose.foundation")
+        exclude(group = "androidx.compose.material")
+        exclude(group = "androidx.compose.runtime")
+        exclude(group = "androidx.compose.ui")
+    }
+
+    // Testing (Unit)
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.params)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.junit)
+    testRuntimeOnly(libs.junit.vintage.engine)
+    testRuntimeOnly(libs.junitplatformlauncher)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.truth)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.room.testing)
+    testImplementation(kotlin("test"))
+
+    // Testing (Instrumentation)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.truth)
+    androidTestImplementation(libs.mockk)
+    androidTestImplementation(libs.worktesting)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.benchmark.macro.junit4)
+    androidTestImplementation(libs.androidx.uiautomator)
+
+    // Debug
+    debugImplementation(platform(libs.androidx.compose.bom))
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+
+    constraints {
+        // Fix vulnerabilities in transitive dependencies
+        implementation(libs.bouncycastle.bcprov)
+        implementation(libs.bouncycastle.bcpkix)
+        implementation(libs.commons.lang3)
+        implementation(libs.jdom2)
+        implementation(libs.jose4j)
+        implementation(libs.apache.httpclient)
+    }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+configurations.all {
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
+}

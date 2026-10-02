@@ -1,0 +1,130 @@
+**Sub release 4.4.6**
+
+* 🎧 **Listen Together Bug Fixes & Improvements:** Fixed animation hiccups from per-frame layout remeasurement, overlapping UI during state transitions, and the guest view layout; removed the breathing pulse animation; end session button now pinned to the bottom.
+
+**Sub release 4.4.4**
+
+* 🏝️ **Dynamic Island / Live Notification Compatibility Fix:** Corrected the dynamic island compatibility check to require at least Android 14 (API 34) on supported OEM skins or Android 16 (API 36) for native live notifications, properly hiding it on Android 10-13.
+* 📋 **Feature Compatibility Screen & Summary:** Added a dedicated System Feature Compatibility screen with detailed requirement cards, filter chips, and a summary card in Device Capabilities showing all Android API-dependent features.
+* 🛡️ **Android Version-Aware Feature Gating:** Features requiring newer Android APIs (motion blur on < Android 13, hardware blurs & dynamic theming on < Android 12, dynamic island / live activities on non-supported OS/ROMs, and video sharing engine when unsupported) are now smartly hidden on older, unsupported Android versions instead of presenting non-functional options.
+* ⚡ **Instagram Story Video Share Fix:** Fixed an issue where sharing song cards as a video to Instagram Story resulted in a blank story canvas; video assets are now properly assigned using `setDataAndType` for background media handling in Instagram Stories instead of being treated as sticker assets.
+
+* ⚫ **Black & White Theme:** Added a new monochrome "Black and White" palette (Theme ++) with pure black, pure white, and neutral greys, plus a grayscale color filter applied to all thumbnails in this mode.
+
+* 🎤 **Immersive Lyrics Styles:** New word-by-word, blur focus, gradient sweep, and slide & fade styles for immersive lyrics, with progressive word reveal, single word pop, and word timing interpolation.
+
+* ⏱️ **Sleep Timer & Equalizer in Player Options:** Fixed the sleep timer, removed it from the queue sheet, and added sleep timer plus equalizer to the player options sheet. The options sheet now fully expands with better divider visibility and origin navigation in the header.
+
+* 🔍 **Search & Player Stability:** Resolved intermittent search failures and player controls freezing.
+
+* 📶 **Data-Saving Optimizations:** New data-saving optimizations for queue preloading, audio buffering, mobile bitrate, and lyrics fetching.
+
+* ⏳ **Minimum Duration Filter:** Cloud YouTube songs can now be filtered by minimum duration in search and radio/auto-queue.
+
+* 🚀 **Fresh Cold Launch:** The app now starts a fresh session on cold launch instead of restoring the last played song or mini player.
+
+* 🎨 **Player Queue Polish:** Removed the full player queue scale-down to fix the status bar seam, with a smooth blur effect when the queue opens.
+
+* 🛠️ **Build Fixes:** Fixed missing imports and the end-of-track timer call in the full player.
+
+* 👥 **YouTube Multi-Account:** Connect up to 2 YouTube accounts and switch between them seamlessly from Settings — the library, synced playlists, and counts follow the active account.
+
+* 🎧 **Listen Together (Synchronized Group Listening):** Real-time shared music rooms powered by Firebase Realtime Database. Host sessions, invite friends with 7-letter room codes, synchronize playback with coordinated buffering and drift correction, send floating emoji reactions, chat presets, and submit/vote on song requests.
+
+---
+
+**Sub release 4.4.0**
+
+* ⚡ **CursorWindow & Memory Leak Fix (OOM Prevention):** Resolved a critical OutOfMemoryError and playback stuttering issue reported on high-end flagship devices (e.g., Meizu 21, Snapdragon 8 Gen 3 / 8 Gen 2 / Dimensity 9300+ devices with high heap allocation limits) caused by unbounded lyrics loading across full library database queries. Optimized Room DAO projections to exclude heavy metadata from list queries and actively trimmed image memory caches under memory pressure.
+
+* 📶 **Wi-Fi Streaming Quality Fix:** Fixed an issue where changing the Wi-Fi streaming audio quality setting was not updating properly.
+
+* 🎵 **Embedded Rich Metadata & Synchronized Lyrics:** Downloaded tracks now embed complete ID3/MP4 metadata (Title, Artist, Album, Album Artist, Year, Track Number, Genre, Comment), high-resolution album artwork, and timestamped synchronized lyrics (`.lrc`) via TagLib & JAudioTagger. Synchronized directly with Android MediaStore. Includes a new toggle in Settings -> Library -> Download Management.
+
+* ⚡ **Parallel Chunk Downloader & 403 Fixes:** Multi-provider parallel chunk downloading with byte-level range resumption to eliminate timeouts and prevent HTTP 403 Forbidden errors on audio streams.
+
+* 🛡️ **Playlist Safeguards & Direct Song Removal:** Added confirmation dialogs before deleting custom playlists or removing songs from playlists to prevent accidental loss. Songs can now be removed directly from the Song Info bottom sheet with real-time YouTube sync.
+
+* 🚀 **Engine & Network Modernization:** Migrated network request architecture from Fuel to OkHttp, pruned legacy cipher/QuickJS dependencies, optimized queue preloading, and resolved Compose compiler warnings and deprecations.
+
+* 🎬 **Share as 30s Video & Robust Audio Handling:** Fixed video generation for local and online/YouTube tracks with image MIME recognition, streaming cache extraction, and real-time progress logging.
+* 📝 **Universal App Logging & Export:** Overhauled logging across the entire app so all events (verbose, debug, info, warn, error, fatal) are captured when developer logging is toggled on, and zero logs when off. Added direct log sharing and buffer clearing from Developer Settings.
+
+* 📶 **Adaptive Streaming Quality:** Added dynamic "Auto" streaming audio quality that automatically adjusts bitrate based on network connectivity (Wi-Fi vs Cellular).
+
+* 🤖 **AI Lyrics Rescue (Beta) & YTM Fixes:** Integrated AI-powered fallback lyrics generation when standard sources are missing. Fixed YouTube Music lyrics extraction and synced lyric parsing.
+
+* 🖼️ **Explore Screen Preview:** High quality artwork & redesigned layouts
+
+* 🔍 **Lyrics Matching Engine:** Overhauled lyrics matching with smart filename/title normalization (removes remix tags, feat markers, and brackets for higher match rates), resolved lyric dismiss loops, and improved async concurrency.
+
+* 🎙️ **Music Recognition Polish:** Isolated recognition overlay activity in its own task so invoking recognition doesn't bring the main app forward. Added release-to-recognize confirmation gesture with tactile haptics to the Home Shuffle button.
+
+* 🖼️ **Unified Thumbnail Quality & Shared Cache:** Unified image resolution settings across all screens based on user preferences. Optimized Coil image caching to avoid redundant reloads on scrolling and reduced memory overhead.
+
+* 🔄 **Resilient In-App Updater & SemVer:** Implemented 3-part Semantic Versioning and numerical version comparison (`isNewerVersion`) to eliminate false downgrade prompts. Added HTTP 206 Partial Content checks during download resume to prevent APK corruption. Fixed notification icons, direct installer launches, and unified the `"app_updates"` notification channel with deep-link navigation to the About / Update screen.
+
+* 🧹 **Compose Modernization & Code Cleanup:** Migrated deprecated `rememberModalBottomSheetState` to `rememberBottomSheetState` across all components and screens. Resolved compiler warnings and deprecated calls across data, UI, and build configurations.
+
+---
+
+**Sub release 4.3**
+Fixed some download related bugs on Samsung devices and resolved crashes reported by users.
+
+---
+
+**Sub release 4.2**
+
+* 🎨 **Explore & Home Redesign:** Fresh, minimal layouts on both screens with fading titles, a smooth fog scrim over the status bar, motion-blur artifacts eliminated, and a fully reactive shuffle FAB with spring-back swipe gestures. [@Xyg901]
+
+* 🔍 **Settings Search:** Powerful new search across every setting with fuzzy matching, recent-history, auto-scroll to the target, and a pulsing highlight when you land on it. The main search history UI was redesigned to match. [@Xyg901]
+
+* 🎭 **Mood Browsing & Charts Resilience:** New expressive mood chips on Explore let you instantly browse by vibe (Relax, Workout, Party…). Charts now gracefully recover with a Retry button if the initial fetch fails. [@Xyg901]
+
+* 🔄 **Revamped Update Screen:** Rolled out a redesigned, user-friendly in-app update screen to make downloading future beta releases seamless. [@Saurav124x]
+
+---
+
+**Sub release 3.7** 
+
+* 🔔 **Lock Screen Notifications:** Fixed double notification on lock screen. [@Saurav124x]
+* 🎤 **Lyrics Everywhere:** Added lyrics on the Now Playing screen in Immersive or Immersive Extended mode. [@Saurav124x]
+* 🚗 **CarPlay / Android Auto:** Fixed automotive media controls. [@Xyg901]
+* ✨ **Music Recognition Animation:** Updated and polished music recognition animation. [@Saurav124x]
+* 🏝️ **Dynamic Island Support:** OriginOS special status bar capsule integration. [@Saurav124x]
+* 🌀 **Motion Blur:** Android 13+ motion blur in development. [@Xyg901]
+* 🎛️ **FAB Alignment:** Fixed Home screen shuffle button position. [@Xyg901]
+
+---
+
+------Final Release 3.5-------
+
+**Pixel Music Beta-3**
+
+* ⚡ **The Core Breakthrough — High-Performance Direct Streaming Engine:** We completely rebuilt stream playback from the ground up! Pixel Music now features a resilient Direct Streaming architecture. Audio streams are resolved directly to clean, unencrypted GoogleVideo CDN links (Opus & M4A), bypassing YouTube tracking, slashing UI overhead, and ending 403 playback errors for good. [@Saurav124x]
+
+* 🏝️ **Native Dynamic Island Support:** Fully integrated status bar capsule support for OriginOS, HyperOS, Realme UI, OxygenOS, and ColorOS. View live playback progress directly in your system's dynamic island.
+
+* 🏗️ **Native Stream Architecture:** Completely transitioned to direct CDN stream resolution with optimized pre-buffering for instant start times and rock-solid playback reliability. [@Saurav124x]
+
+* 🎨 **Material You Expressive Account Management:** Reimagined the expandable account card with modern Material 3 Expressive surface cards. Tapping your profile reveals a unified management hub with direct access to your connected cloud accounts, removing redundant menus from the main Settings page. [@Saurav124x]
+
+* 🌈 **Dynamic Ambient Profile Ring:** Profile avatars now feature an adaptive, flowing sweep gradient ring that harmoniously shifts its colors to match your active Material You theme and wallpaper palette. [@Saurav124x]
+
+* 📊 **Accurate Audio Specs & Bitrate Fix:** Resolved the playback metadata bug that caused the player to display "0 kbps". Implemented an intelligent `itag` resolution map and bitrate normalizer, accurately showcasing live bitrate (e.g., 160 kbps OPUS, 128 kbps AAC) and sample frequencies. [@Saurav124x]
+
+* ♾️ **Endless Explore Feed:** Wired automated continuation pagination to the Explore page. Scrolling down now seamlessly pulls endless personalized YouTube Music shelves. [@Saurav124x]
+
+* 🔍 **Search Result Polish:** Fixed an issue where online YouTube playlists in search results defaulted to showing "0 Song" before being saved or downloaded. [@Saurav124x]
+
+* 📋 **Streamlined Playlist Detail View:** Online YouTube playlists now automatically hide irrelevant local editing actions and spotlight streaming, queueing, and downloading. Cleaned up delete actions to "Remove from Library" for cloud-linked playlists. [@Xyg901]
+
+* 💾 **Resilient Download Engine:** Built a robust, pauseable, and cancelable playlist download manager with precise byte-level resumption. [@Saurav124x]
+
+* ✨ **Next-Gen Fluid Animations (Android 13+):** Introduced smooth, high-quality AGSL visual animations that react beautifully to your music. [@Xyg901]
+
+* 🎵 **Music Recognition Anywhere:** Added a dedicated Quick Settings Tile service to identify tracks playing around you from the home screen, lock screen, or other apps.
+
+* 📱 **UI & Navigation Polish:** Fixed an overlapping layout bug affecting the shuffle button when using traditional 3-button system navigation. [@Xyg901]
+
+* 🐛 **Under-the-Hood Polish & Bug Fixes:** Squashed various background bugs, memory leaks, and edge-case crashes for a rock-solid listening experience. [@Saurav124x] [@Xyg901]
