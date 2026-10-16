@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f1eb">
+  <meta name="description" content="PixelMusic — open-source Android music player built with Material 3 Expressive aesthetics, high-performance direct streaming, offline caching, and synchronized lyrics.">
+  <title>PixelMusic — Music, with intention.</title>
+  <link rel="icon" href="app/src/main/res/drawable/ic_launcher_custom_fg.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="music-field" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="topbar" id="site-header">
+    <a class="brand" href="#" aria-label="PixelMusic home">
+      <span class="brand-mark"><img src="app/src/main/res/drawable/ic_launcher_custom_fg.png" alt="PixelMusic Logo"></span>
+      <span>PixelMusic</span>
+    </a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#features">Features</a>
+      <a href="#showcase">Showcase</a>
+      <a href="#compatibility">Self-Hosted</a>
+      <a href="#about">About</a>
+      <a href="https://github.com/Saurav-02/PixelMusic" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+    <a class="top-action" id="header-cta" href="https://github.com/Saurav-02/PixelMusic/releases/latest" target="_blank" rel="noreferrer" aria-label="Download PixelMusic">
+      <span class="top-action-text">Get PixelMusic</span>
+      <span class="top-action-icon">↗</span>
+      <span class="top-action-badge">v4.4.6</span>
+    </a>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section id="hero" class="hero section-shell">
+      <div class="hero-copy reveal">
+        <div class="eyebrow-group">
+          <div class="eyebrow">
+            <span class="pulse-dot"></span>
+            <span>Open Source</span>
+            <span class="sep">·</span>
+            <span class="badge-pill">Android 11+ (API 30+)</span>
+          </div>
+          <div class="platform-badges" aria-label="Platform and architecture details">
+            <span class="mini-badge">arm64-v8a</span>
+            <span class="mini-badge">armeabi-v7a</span>
+            <span class="mini-badge highlight">Direct APK</span>
+            <span class="mini-badge">Obtainium</span>
+            <span class="mini-badge">F-Droid / IzzyOnDroid</span>
+          </div>
+        </div>
+
+        <h1>Music,<br><em>with intention.</em></h1>
+        <p class="hero-lede">An open-source Android music player built with Material 3 Expressive design, bit-perfect Media3 audio, synchronized lyrics, and seamless cloud & local library unification.</p>
+
+        <!-- Streamlined mobile actions: side-by-side buttons pulling phone mockup above the fold -->
+        <div class="hero-actions">
+          <a class="button button-filled hero-download-btn" href="https://github.com/Saurav-02/PixelMusic/releases/latest" target="_blank" rel="noreferrer">
+            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download APK</span>
+            <span class="version-tag">v4.4.6</span>
+          </a>
+          <a class="button button-tonal hero-secondary-btn" href="#showcase">
+            <span>Explore Screens</span>
+            <span class="arrow-down">↓</span>
+          </a>
+        </div>
+
+        <!-- Release security & checksum disclosure drawer -->
+        <details class="release-security">
+          <summary class="security-toggle">
+            <span class="shield-icon">🛡️</span>
+            <span>Release Integrity & Checksum (v4.4.6)</span>
+            <span class="toggle-arrow">▾</span>
+          </summary>
+          <div class="security-content">
+            <div class="security-grid">
+              <div class="sec-item">
+                <span class="sec-label">Package ID</span>
+                <span class="sec-val"><code>com.saurav.pixelmusic</code></span>
+              </div>
+              <div class="sec-item">
+                <span class="sec-label">Size</span>
+                <span class="sec-val">~28.4 MB (Universal) · ~22.1 MB (arm64)</span>
+              </div>
+              <div class="sec-item sec-full">
+                <span class="sec-label">SHA-256 Checksum</span>
+                <div class="hash-row">
+                  <code id="apk-hash">9f8e4b7c12a6d830b5e96a41f71253907a82ecb15f948834d807661cf94e9f3b</code>
+                  <button type="button" class="copy-btn" id="copy-hash-btn" title="Copy SHA-256">Copy</button>
+                </div>
+              </div>
+              <div class="sec-item sec-full">
+                <span class="sec-label">Verification & Distribution</span>
+                <div class="dist-links">
+                  <a href="https://www.virustotal.com/gui/file/9f8e4b7c12a6d830b5e96a41f71253907a82ecb15f948834d807661cf94e9f3b" target="_blank" rel="noreferrer" class="trust-pill vt-clean">
+                    <span class="dot-green">●</span> VirusTotal Clean (0/72)
+                  </a>
+                  <a href="https://github.com/Saurav-02/PixelMusic/releases" target="_blank" rel="noreferrer" class="trust-pill">
+                    GitHub Releases
+                  </a>
+                  <a href="obtainium://add/https://github.com/Saurav-02/PixelMusic" class="trust-pill">
+                    Add to Obtainium
+                  </a>
+                  <a href="https://github.com/Saurav-02/PixelMusic/releases.atom" target="_blank" rel="noreferrer" class="trust-pill">
+                    RSS Release Feed
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Compact hero stat badges -->
+        <div class="hero-meta">
+          <span><b>100%</b> Kotlin</span>
+          <span class="meta-sep">/</span>
+          <span><b>Bit-Perfect</b> Media3</span>
+          <span class="meta-sep">/</span>
+          <span><b>100%</b> Offline Capable</span>
+        </div>
+      </div>
+
+      <!-- Hero Device Mockup Stage with Pixel 8/9 bezel & ambient artwork glow -->
+      <div class="hero-stage reveal reveal-delay">
+        <div class="stage-orbit orbit-one"></div>
+        <div class="stage-orbit orbit-two"></div>
+        <div class="music-note note-a">♪</div>
+        <div class="music-note note-b">♫</div>
+        <div class="music-note note-c">·</div>
+
+        <!-- Ambient glow backdrop matching active album art -->
+        <div class="ambient-art-glow" aria-hidden="true"></div>
+
+        <!-- Secondary phone behind -->
+        <div class="device-frame hero-phone phone-back">
+          <div class="device-statusbar">
+            <span class="sb-time">9:41</span>
+            <div class="sb-icons"><span>5G</span><span>100%</span></div>
+          </div>
+          <div class="device-camera"></div>
+          <img src="assets/IMG_20260923_100325.jpg" alt="PixelMusic Appearance Settings screen">
+          <div class="device-navbar-pill"></div>
+        </div>
+
+        <!-- Primary Phone Front with Pixel 8/9 Bezel & Clean Statusbar -->
+        <div class="device-frame hero-phone phone-front">
+          <div class="device-statusbar">
+            <span class="sb-time">9:41</span>
+            <div class="sb-icons"><span>5G</span><span>100%</span></div>
+          </div>
+          <div class="device-camera"></div>
+          <img src="assets/IMG_20260923_100233.jpg" alt="PixelMusic Now Playing interface">
+          <div class="phone-sheen"></div>
+          <div class="device-navbar-pill"></div>
+        </div>
+
+        <div class="track-chip">
+          <span class="mini-art"><img src="assets/IMG_20260923_100206.jpg" alt="Album Art"></span>
+          <span><small>NOW PLAYING</small><strong>Smooth Operator — Sade</strong></span>
+          <span class="mini-bars"><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARQUEE BAR -->
+    <section class="marquee-wrap" aria-label="PixelMusic principles">
+      <div class="marquee">
+        <span>PLAYBACK THAT DISAPPEARS</span><b>✦</b><span>DESIGN THAT BREATHES</span><b>✦</b><span>OPEN SOURCE · COMMUNITY FIRST</span><b>✦</b><span>BIT-PERFECT MEDIA3 AUDIO</span><b>✦</b><span>PLAYBACK THAT DISAPPEARS</span><b>✦</b><span>DESIGN THAT BREATHES</span><b>✦</b>
+      </div>
+    </section>
+
+    <!-- INTRO -->
+    <section class="intro section-shell reveal">
+      <div class="section-kicker">01 / The philosophy</div>
+      <div>
+        <h2>Everything you need.<br><span>Nothing shouting for attention.</span></h2>
+        <p>PixelMusic brings a modern, expressive Android interface to a serious music player. Album art shapes the atmosphere, controls stay close, and the experience is built to feel native rather than decorated.</p>
+      </div>
+    </section>
+
+    <!-- FEATURES SECTION WITH CLEAR DIFFERENTIATION -->
+    <section id="features" class="features section-shell">
+      <div class="feature-card feature-large reveal">
+        <div class="card-number">01</div>
+        <div class="feature-visual waveform-visual">
+          <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="feature-text">
+          <span class="tag">High-Performance Audio Engine</span>
+          <h3>Bit-perfect playback with smart queue preloading.</h3>
+          <p>Powered by AndroidX Media3 (ExoPlayer), with live <code>itag</code> bitrate resolution (160 kbps OPUS / 128 kbps AAC), dual-player architecture for instantaneous transitions, gapless playback, ReplayGain volume normalization, and built-in equalizer tuning.</p>
+        </div>
+      </div>
+
+      <div class="feature-card reveal reveal-delay">
+        <div class="card-number">02</div>
+        <div class="feature-visual color-tiles">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="feature-text">
+          <span class="tag">Material 3 Expressive UI</span>
+          <h3>Adaptive Monet colors derived from your artwork.</h3>
+          <p>Dynamic color harmonization with your active wallpaper and album art, flowing ambient profile rings, fluid AGSL shader animations, AMOLED true black toggles, and customized wallpaper blurs.</p>
+        </div>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="card-number">03</div>
+        <div class="feature-visual lyrics-visual">
+          <div>Diamond lights,<br><strong>Coast to coast, LA to Chicago</strong></div>
+          <div class="lyric-line">karaoke-style word highlight</div>
+          <div class="lyric-line faint">with AI lyrics rescue beta fallback</div>
+        </div>
+        <div class="feature-text">
+          <span class="tag">Synchronized Lyrics & AI Rescue</span>
+          <h3>Lyrics that keep time down to the syllable.</h3>
+          <p>Real-time scrolling lyrics with karaoke highlights, .lrc file embedding, smart title normalization to strip remix noise, and an AI-powered fallback engine to reconstruct lyrics when standard databases come up empty.</p>
+        </div>
+      </div>
+
+      <!-- Feature 04: Explicit breakdown of Offline vs Cloud vs Direct Streaming -->
+      <div class="feature-card feature-wide reveal">
+        <div class="card-number">04</div>
+        <div class="feature-visual cloud-visual">
+          <div class="cloud-node node-1">LOCAL</div>
+          <div class="cloud-node node-2">SUBSONIC</div>
+          <div class="cloud-node node-3">JELLYFIN</div>
+          <div class="cloud-node node-4">YOUTUBE</div>
+          <div class="cloud-line line-1"></div><div class="cloud-line line-2"></div><div class="cloud-line line-3"></div><div class="cloud-line line-4"></div>
+          <div class="cloud-center">PIXEL MUSIC</div>
+        </div>
+        <div class="feature-text">
+          <span class="tag">Source Transparency & Integration</span>
+          <h3>Offline storage, self-hosted servers, and direct web streaming.</h3>
+          <p class="feature-explanation">PixelMusic brings three distinct listening sources together under one unified interface:</p>
+          <ul class="source-list">
+            <li><strong>1. 100% Offline Local Playback:</strong> Reads internal storage and SD cards via Android MediaStore. Downloads embed full ID3/MP4 metadata and synced <code>.lrc</code> lyrics via TagLib & JAudioTagger.</li>
+            <li><strong>2. Self-Hosted Cloud Libraries:</strong> Native Subsonic API compatibility (Navidrome, Gonic, Airsonic) and Jellyfin media server streaming with two-way scrobbling and remote playlist sync.</li>
+            <li><strong>3. Direct Online Streaming:</strong> Direct GoogleVideo CDN streaming engine for YouTube & YouTube Music. Streams unencrypted Opus and AAC streams directly with zero tracking, no ads, and multi-account switching.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPREHENSIVE SCREEN SHOWCASE (STACK STYLE) -->
+    <section id="showcase" class="showcase section-shell">
+      <div class="showcase-heading reveal">
+        <div class="section-kicker">02 / Comprehensive screen showcase</div>
+        <h2>Crafted for the<br><em>modern listener.</em></h2>
+        <p>Explore every screen of the app. Layered in an interactive card stack — slide right to preview each screen one by one.</p>
+      </div>
+
+      <!-- Stack Navigation Controls & Pills -->
+      <div class="showcase-stack-controls">
+        <div class="showcase-tabs" role="tablist" aria-label="PixelMusic screen showcase tabs">
+          <button class="tab-pill active" role="tab" aria-selected="true" data-index="0" id="tab-0">
+            <span class="tab-icon">🎵</span> Now Playing
+          </button>
+          <button class="tab-pill" role="tab" aria-selected="false" data-index="1" id="tab-1">
+            <span class="tab-icon">🎤</span> Live Lyrics
+          </button>
+          <button class="tab-pill" role="tab" aria-selected="false" data-index="2" id="tab-2">
+            <span class="tab-icon">👥</span> Listen Together
+          </button>
+          <button class="tab-pill" role="tab" aria-selected="false" data-index="3" id="tab-3">
+            <span class="tab-icon">📚</span> Library & Explore
+          </button>
+          <button class="tab-pill" role="tab" aria-selected="false" data-index="4" id="tab-4">
+            <span class="tab-icon">⚙️</span> Settings & Audio FX
+          </button>
+        </div>
+
+        <div class="stack-action-bar">
+          <span class="stack-counter" id="stack-counter" aria-live="polite"><strong>01</strong> / 05</span>
+          <div class="stack-nav-buttons">
+            <button class="stack-nav-btn" id="stack-prev" aria-label="Previous screen (slide left)" title="Previous screen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="stack-nav-btn stack-next-btn" id="stack-next" aria-label="Next screen (slide right)" title="Slide right">
+              <span>Slide Right</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- The Stack Cards Deck -->
+      <div class="showcase-stack-container" id="showcase-stack-container">
+        <div class="showcase-stack" id="showcase-stack">
+          <!-- Card 1: Now Playing -->
+          <div class="stack-card is-active" data-index="0" id="card-0">
+            <div class="stack-card-inner">
+              <div class="panel-preview">
+                <div class="device-frame pixel-device">
+                  <div class="device-statusbar">
+                    <span class="sb-time">9:41</span>
+                    <div class="sb-icons"><span>5G</span><span>100%</span></div>
+                  </div>
+                  <div class="device-camera"></div>
+                  
+                  <div class="motion-mockup-wrap">
+                    <video class="motion-video" autoplay loop muted playsinline poster="assets/IMG_20260923_100255.jpg">
+                      <source src="assets/pixelmusic-preview.webm" type="video/webm">
+                      <source src="assets/pixelmusic-preview.mp4" type="video/mp4">
+                      <img src="assets/IMG_20260923_100255.jpg" alt="PixelMusic Now Playing Screen">
+                    </video>
+                    <canvas id="spring-canvas" class="spring-overlay" aria-hidden="true"></canvas>
+                  </div>
+
+                  <div class="phone-sheen"></div>
+                  <div class="device-navbar-pill"></div>
+                </div>
+                <div class="ambient-glow-effect glow-purple" aria-hidden="true"></div>
+              </div>
+              <div class="panel-info">
+                <div class="stack-card-header">
+                  <span class="tag">01 · Now Playing View</span>
+                  <span class="stack-swipe-hint" data-action="slide-right">Slide right to advance ➔</span>
+                </div>
+                <h3>Atmospheric visuals tuned to your sound.</h3>
+                <p>Full-bleed album art extraction dynamically tints controls, seekbars, and notification surfaces. Real-time spring physics animate the wavy seeker bar as playback progresses.</p>
+                <div class="spec-chips">
+                  <span class="spec-chip">160 kbps OPUS</span>
+                  <span class="spec-chip">Gapless Audio</span>
+                  <span class="spec-chip">ReplayGain Normalization</span>
+                  <span class="spec-chip">Material You Monet</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Live Lyrics -->
+          <div class="stack-card is-next-1" data-index="1" id="card-1">
+            <div class="stack-card-inner">
+              <div class="panel-preview">
+                <div class="device-frame pixel-device">
+                  <div class="device-statusbar">
+                    <span class="sb-time">9:41</span>
+                    <div class="sb-icons"><span>5G</span><span>100%</span></div>
+                  </div>
+                  <div class="device-camera"></div>
+                  <img src="assets/IMG_20260923_100314.jpg" alt="Synchronized lyrics screen">
+                  <div class="device-navbar-pill"></div>
+                </div>
+                <div class="ambient-glow-effect glow-green" aria-hidden="true"></div>
+              </div>
+              <div class="panel-info">
+                <div class="stack-card-header">
+                  <span class="tag">02 · Immersive Syllable Lyrics</span>
+                  <span class="stack-swipe-hint" data-action="slide-right">Slide right to advance ➔</span>
+                </div>
+                <h3>Sing along with zero lag and AI rescue.</h3>
+                <p>Word-by-word synchronized scrolling highlights each phrase in real time. If standard lyric databases miss a track, the built-in AI Lyrics Rescue engine parses and interpolates timestamps automatically.</p>
+                <div class="spec-chips">
+                  <span class="spec-chip">Synced .LRC</span>
+                  <span class="spec-chip">Word-by-Word Reveal</span>
+                  <span class="spec-chip">AI Rescue Beta</span>
+                  <span class="spec-chip">Embedded Tags</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Listen Together -->
+          <div class="stack-card is-next-2" data-index="2" id="card-2">
+            <div class="stack-card-inner">
+              <div class="panel-preview">
+                <div class="device-frame pixel-device">
+                  <div class="device-statusbar">
+                    <span class="sb-time">9:41</span>
+                    <div class="sb-icons"><span>5G</span><span>100%</span></div>
+                  </div>
+                  <div class="device-camera"></div>
+                  <img src="assets/IMG_20260923_100221.jpg" alt="Listen Together and group session">
+                  <div class="device-navbar-pill"></div>
+                </div>
+                <div class="ambient-glow-effect glow-amber" aria-hidden="true"></div>
+              </div>
+              <div class="panel-info">
+                <div class="stack-card-header">
+                  <span class="tag">03 · Synchronized Group Listening</span>
+                  <span class="stack-swipe-hint" data-action="slide-right">Slide right to advance ➔</span>
+                </div>
+                <h3>Shared music rooms with drift correction.</h3>
+                <p>Host music sessions and invite friends with 7-letter room codes. Powered by Firebase Realtime Database with coordinated buffer sync, live floating emoji reactions, chat presets, and collaborative queue voting.</p>
+                <div class="spec-chips">
+                  <span class="spec-chip">7-Letter Room Code</span>
+                  <span class="spec-chip">Millisecond Drift Sync</span>
+                  <span class="spec-chip">Live Reactions</span>
+                  <span class="spec-chip">Shared Queue</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Library & Explore -->
+          <div class="stack-card is-hidden" data-index="3" id="card-3">
+            <div class="stack-card-inner">
+              <div class="panel-preview">
+                <div class="device-frame pixel-device">
+                  <div class="device-statusbar">
+                    <span class="sb-time">9:41</span>
+                    <div class="sb-icons"><span>5G</span><span>100%</span></div>
+                  </div>
+                  <div class="device-camera"></div>
+                  <img src="assets/IMG_20260923_100206.jpg" alt="PixelMusic Library and Explore view">
+                  <div class="device-navbar-pill"></div>
+                </div>
+                <div class="ambient-glow-effect glow-purple" aria-hidden="true"></div>
+              </div>
+              <div class="panel-info">
+                <div class="stack-card-header">
+                  <span class="tag">04 · Library & Endless Explore</span>
+                  <span class="stack-swipe-hint" data-action="slide-right">Slide right to advance ➔</span>
+                </div>
+                <h3>Every song, artist, and playlist at your fingertips.</h3>
+                <p>Effortlessly browse your favorite artists, automated 2024 recaps, mood-based chips, and personalized shelves. Instant ambient recognition identifies unknown songs playing around you with a single tap.</p>
+                <div class="spec-chips">
+                  <span class="spec-chip">Infinite Pagination</span>
+                  <span class="spec-chip">Mood Browsing</span>
+                  <span class="spec-chip">Ambient Song Identifier</span>
+                  <span class="spec-chip">Smart Cache</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5: Settings & Audio FX -->
+          <div class="stack-card is-hidden" data-index="4" id="card-4">
+            <div class="stack-card-inner">
+              <div class="panel-preview">
+                <div class="device-frame pixel-device">
+                  <div class="device-statusbar">
+                    <span class="sb-time">9:41</span>
+                    <div class="sb-icons"><span>5G</span><span>100%</span></div>
+                  </div>
+                  <div class="device-camera"></div>
+                  <img src="assets/IMG_20260923_100349.jpg" alt="PixelMusic Settings and Audio FX">
+                  <div class="device-navbar-pill"></div>
+                </div>
+                <div class="ambient-glow-effect glow-blue" aria-hidden="true"></div>
+              </div>
+              <div class="panel-info">
+                <div class="stack-card-header">
+                  <span class="tag">05 · Total Control & Tuning</span>
+                  <span class="stack-swipe-hint" data-action="slide-right">Slide right to advance ➔</span>
+                </div>
+                <h3>Engineered for audio enthusiasts.</h3>
+                <p>Fuzzy settings search, multi-band equalization, custom sleep timers with fade-out, AMOLED pure black theme, granular cache cleaner, and full database export for seamless device migrations.</p>
+                <div class="spec-chips">
+                  <span class="spec-chip">Sleep Timer</span>
+                  <span class="spec-chip">AMOLED Black</span>
+                  <span class="spec-chip">Settings Search</span>
+                  <span class="spec-chip">Full Backup / Restore</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELF-HOSTED PROTOCOL SUPPORT BREAKDOWN & COMPATIBILITY MATRIX -->
+    <section id="compatibility" class="compatibility section-shell reveal">
+      <div class="compat-header">
+        <div class="section-kicker">03 / Self-hosted ecosystem</div>
+        <h2>Direct protocol support & compatibility.</h2>
+        <p>Built for self-hosters and digital archivists. Connect directly to your home media servers with end-to-end support for transcoding, lyrics, and offline syncing.</p>
+      </div>
+
+      <div class="compat-grid">
+        <!-- Backend Card 1: Navidrome -->
+        <div class="compat-card">
+          <div class="compat-card-head">
+            <div class="compat-icon">📻</div>
+            <div>
+              <h4>Navidrome</h4>
+              <span class="protocol-badge">Subsonic v1.16+</span>
+            </div>
+          </div>
+          <ul class="compat-features">
+            <li><span class="check">✓</span> Direct Stream & Transcoding</li>
+            <li><span class="check">✓</span> Embedded & Synced Lyrics</li>
+            <li><span class="check">✓</span> Starred & Smart Playlists</li>
+            <li><span class="check">✓</span> Last.fm & Native Scrobbling</li>
+            <li><span class="check">✓</span> Offline Range-Chunk Downloads</li>
+          </ul>
+        </div>
+
+        <!-- Backend Card 2: OpenSubsonic / Gonic -->
+        <div class="compat-card">
+          <div class="compat-card-head">
+            <div class="compat-icon">⚡</div>
+            <div>
+              <h4>Gonic / OpenSubsonic</h4>
+              <span class="protocol-badge">OpenSubsonic API</span>
+            </div>
+          </div>
+          <ul class="compat-features">
+            <li><span class="check">✓</span> High-Performance Go Backend</li>
+            <li><span class="check">✓</span> Opus / FLAC Transcode Direct</li>
+            <li><span class="check">✓</span> .LRC Lyric File Fetching</li>
+            <li><span class="check">✓</span> Server-Side Playlist Sync</li>
+            <li><span class="check">✓</span> Fast Incremental Scrobble</li>
+          </ul>
+        </div>
+
+        <!-- Backend Card 3: Jellyfin -->
+        <div class="compat-card">
+          <div class="compat-card-head">
+            <div class="compat-icon">🍿</div>
+            <div>
+              <h4>Jellyfin Media Server</h4>
+              <span class="protocol-badge">Native REST v10.8+</span>
+            </div>
+          </div>
+          <ul class="compat-features">
+            <li><span class="check">✓</span> Audio Library Auto-Discovery</li>
+            <li><span class="check">✓</span> High-Res Album Art Caching</li>
+            <li><span class="check">✓</span> User Playback State Sync</li>
+            <li><span class="check">✓</span> Multi-User Profile Support</li>
+            <li><span class="check">✓</span> MediaStore Synchronization</li>
+          </ul>
+        </div>
+
+        <!-- Backend Card 4: Ampache / Airsonic -->
+        <div class="compat-card">
+          <div class="compat-card-head">
+            <div class="compat-icon">📦</div>
+            <div>
+              <h4>Airsonic & Ampache</h4>
+              <span class="protocol-badge">Standard Subsonic</span>
+            </div>
+          </div>
+          <ul class="compat-features">
+            <li><span class="check">✓</span> Subsonic Endpoint Handshake</li>
+            <li><span class="check">✓</span> Adaptive Bitrate Streaming</li>
+            <li><span class="check">✓</span> Podcast & Audio Bookmark Sync</li>
+            <li><span class="check">✓</span> ID3 Tag Embedded Parsing</li>
+            <li><span class="check">✓</span> Offline Cache Retention</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHILOSOPHY STATEMENT -->
+    <section class="statement section-shell reveal">
+      <div class="statement-mark">✦</div>
+      <p>“An open-source music player<br>built with its community.”</p>
+      <span>— The PixelMusic philosophy</span>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="about section-shell">
+      <div class="about-copy reveal">
+        <div class="section-kicker">04 / About PixelMusic</div>
+        <h2>Built in the open.<br><em>Shaped by listening.</em></h2>
+        <p>PixelMusic is an open-source Android music player focused on an uncompromising daily listening experience. It combines expressive Material 3 design with bit-perfect audio playback, offline downloads, lyrics, self-hosted cloud integrations, and deep system-level Android features.</p>
+        <p>The project is developed by <strong>Saurav Biswas</strong>, with UI makeover and design collaboration from <strong>@Xyg901</strong>, and builds upon and credits the open-source PixelPlayer project by Theo Vilardo.</p>
+        
+        <div class="about-actions">
+          <a class="button button-filled" href="https://github.com/Saurav-02/PixelMusic" target="_blank" rel="noreferrer">View source on GitHub ↗</a>
+          <a class="button button-tonal" href="https://t.me/Saurav124x" target="_blank" rel="noreferrer">Join Telegram Community ↗</a>
+        </div>
+      </div>
+
+      <div class="about-panel reveal reveal-delay">
+        <div class="panel-top"><span>PIXELMUSIC</span><span>EST. 2025</span></div>
+        <div class="panel-logo"><img src="app/src/main/res/drawable/ic_launcher_custom_fg.png" alt="PixelMusic logo"></div>
+        <div class="panel-spec">
+          <div><span>Target OS</span><strong>Android 11.0+ (API 30+)</strong></div>
+          <div><span>UI Framework</span><strong>Jetpack Compose · Material 3</strong></div>
+          <div><span>Audio Stack</span><strong>AndroidX Media3 (ExoPlayer)</strong></div>
+          <div><span>Language</span><strong>100% Kotlin</strong></div>
+          <div><span>Current Version</span><strong>v4.4.6 (Code: 31)</strong></div>
+          <div><span>License</span><strong>Open Source</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta section-shell reveal">
+      <div class="cta-inner">
+        <div>
+          <span class="tag">Ready when you are</span>
+          <h2>Put your music<br><em>back in focus.</em></h2>
+          <p class="cta-sub">Free forever · No ads · No telemetry · Bit-perfect audio.</p>
+        </div>
+        <div class="cta-btns">
+          <a class="button button-dark" href="https://github.com/Saurav-02/PixelMusic/releases/latest" target="_blank" rel="noreferrer">
+            Download Latest APK <span>↓</span>
+          </a>
+          <a class="button button-tonal" href="obtainium://add/https://github.com/Saurav-02/PixelMusic">
+            Add to Obtainium
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer section-shell">
+    <div class="brand">
+      <span class="brand-mark"><img src="app/src/main/res/drawable/ic_launcher_custom_fg.png" alt="PixelMusic"></span>
+      <span>PixelMusic</span>
+    </div>
+    <p>Open source · Community first · Made for Android</p>
+    <div class="footer-links">
+      <a href="https://github.com/Saurav-02/PixelMusic" target="_blank" rel="noreferrer">GitHub</a>
+      <a href="https://github.com/Saurav-02/PixelMusic/releases" target="_blank" rel="noreferrer">Releases</a>
+      <a href="https://t.me/Saurav124x" target="_blank" rel="noreferrer">Telegram</a>
+      <a href="https://www.instagram.com/holy_saurav" target="_blank" rel="noreferrer">Instagram</a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
