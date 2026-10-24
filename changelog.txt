@@ -1,0 +1,20 @@
+**Sub release 4.5.0**
+
+* 🔮 **iOS Liquid Glass (Brand New Feature - Unreleased / Experimental):** Real-time liquid glass refraction, backdrop blur passes, and specular highlight physics across the navigation bar, mini player, bottom toggle pill, sliders, and headers. Controlled via a unified master toggle with blur, refraction, vibrancy, depth, surface tint, and opacity sliders.
+* ⚡ **Performance Mode Integration:** Liquid glass is automatically patched into Device Performance Mode — suspending all heavy real-time shader passes and backdrop sampling whenever performance mode or battery saving is enabled.
+* 📋 **Device Compatibility Matrix Update:** Added Liquid Glass Effect requirements (Android 12+ / API 31 RenderEffect) to the System Feature Compatibility dashboard with technical hardware specifications and limitation notes.
+* 🔍 **Settings Search Engine Overhaul:** Enhanced settings search with multi-word token query parsing, fuzzy typo matching, and dedicated index tags for Liquid Glass, Performance Mode, and display styles.
+* ⚠️ **Experimental Safety & Battery Notice:** Added prominent safety advisory to the Liquid Glass settings page detailing resource usage, potential battery impact, and device thermals.
+* 🤖 **Telegram Update Bot Card:** Added official Telegram Update Bot card (@PixelMusicAppBot) in the About screen for fast beta updates and announcements.
+* 🛠️ **UI Polish & Controls Fix:** Refined header pill size, fixed update download button glitch and colors on the Update Download screen, and polished changelog link button.
+* 🖼️ **Explore & Performance Polish:** Disabled SmartImage crossfade in carousels to prevent scroll hitching on high refresh rate displays, fixed duplicate crossfadeDurationMillis parameter in ExploreScreen, resolved mix thumbnail cache collisions, and stabilized endless mix pagination.
+* 🎧 **InnerTube & YouTube Music Stabilization:**
+  - Resolved serialization crashes on `NextResponse` continuations and queue pagination by providing safe defaults across all InnerTube response models.
+  - Fixed recursive self-reference bug in `BrowseResponse.MusicThumbnailRenderer` and missing field exceptions on blocked or deleted tracks in `PlaylistPanelVideoRenderer`.
+  - Fixed tab resolution for Lyrics and Related recommendations: dynamically discover tabs via endpoint inspection instead of hardcoded indices, ensuring recommendations load reliably even when lyrics are missing.
+  - Enhanced Related endpoint parser to check both single-column and section-list layouts, fixing empty Related recommendation carousels.
+  - Fixed Liked Songs and playlist sync continuation (`songsContinuation`) so large library playlists paginate and sync completely.
+  - Hardened Home, Explore, Search, Suggestion, Album, and Artist parsers against null durations, missing thumbnails, single-group subtitle formats, and non-ASCII separator bullet characters.
+  - Added predecessor support and VL-prefix normalization in playlist reordering (`ACTION_MOVE_VIDEO_AFTER`) for moving songs to the end of playlists.
+  - Optimized playlist creation with atomic multi-track creation in a single request instead of sequential loops.
+  - Enforced 'Not Interested' and skipped song filtering within AutoQueue / Radio mode to prevent unwanted recommendations from appearing in upcoming queues.

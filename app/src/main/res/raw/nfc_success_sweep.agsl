@@ -1,0 +1,33 @@
+uniform shader inputShader;
+uniform float2 uResolution;
+uniform float uTime;
+
+half4 main(float2 fragCoord) {
+    float2 pos = fragCoord;
+    
+    // Origin at the bottom-center of the screen
+    float2 origin = float2(uResolution.x * 0.5, uResolution.y + 50.0);
+    
+    float dist = length(pos - origin);
+    float maxDist = max(uResolution.y, uResolution.x) * 1.2;
+    
+    // The expanding ring radius based on time
+    float currentRadius = uTime * maxDist;
+    
+    // Distance from the current pixel to the expanding ring boundary
+    float ringDist = abs(dist - currentRadius);
+    
+    // Lower number = much THICKER, wider wave
+    float wave = exp(-ringDist * 0.004);
+    
+    // Direction of the distortion
+    float2 dir = normalize(pos - origin);
+    
+    // Warp the pixels (softened from 45.0 to 30.0 for the wider wave)
+    float2 newPos = pos + (dir * wave * 30.0);
+    
+    // Softer, wider glass highlight
+    float highlight = wave * 0.15;
+    
+    return inputShader.eval(newPos) + half4(highlight, highlight, highlight, 0.0);
+}

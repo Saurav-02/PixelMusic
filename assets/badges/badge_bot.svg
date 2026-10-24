@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="270" height="68" viewBox="0 0 270 68" role="img" aria-label="Telegram Bot">
+  <defs>
+    <style>
+      .label {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+      }
+      .title {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+      }
+    </style>
+  </defs>
+  <!-- Background Pill -->
+  <rect x="1" y="1" width="268" height="66" rx="33" fill="#F8EBF3" stroke="#ECCBD9" stroke-width="1.2" />
+  
+  <!-- Scalloped Badge -->
+  
+      <g transform="translate(35, 34)">
+        <rect x="-18.375" y="-18.375" width="36.75" height="36.75" rx="10.290000000000001" fill="#4A2E46" transform="rotate(0)" />
+        <rect x="-18.375" y="-18.375" width="36.75" height="36.75" rx="10.290000000000001" fill="#4A2E46" transform="rotate(30)" />
+        <rect x="-18.375" y="-18.375" width="36.75" height="36.75" rx="10.290000000000001" fill="#4A2E46" transform="rotate(60)" />
+      </g>
+    
+  
+  <!-- Icon -->
+  <g transform="translate(35, 34)">
+    
+      <rect x="-7" y="-5" width="14" height="11" rx="3" stroke="#F8EBF3" stroke-width="1.8" fill="none" />
+      <circle cx="-3" cy="0.5" r="1.3" fill="#F8EBF3" />
+      <circle cx="3" cy="0.5" r="1.3" fill="#F8EBF3" />
+      <line x1="0" y1="-5" x2="0" y2="-8" stroke="#F8EBF3" stroke-width="1.8" stroke-linecap="round" />
+      <circle cx="0" cy="-8.5" r="1" fill="#F8EBF3" />
+    
+  </g>
+  
+  <!-- Texts -->
+  <text x="68" y="27" fill="#6B4B67" class="label">UPDATES &amp; FEEDBACK</text>
+  <text x="68" y="47" fill="#2E172B" class="title">Telegram Bot</text>
+</svg>
