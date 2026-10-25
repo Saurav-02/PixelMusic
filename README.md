@@ -1,3 +1,4 @@
+<img src="app/src/main/res/drawable/Gemini_Generated_Image_ykro45ykro45ykro~2.jpg" alt="Celebration banner" />
 <img src="app/src/main/res/drawable/ic_launcher_custom_fg.png" width="130" height="130" alt="PixelMusic Logo" />
 
 # 🎵 PixelMusic
