@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="270" height="68" viewBox="0 0 270 68" role="img" aria-label="Official Website">
+  <defs>
+    <style>
+      .label {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+      }
+      .title {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+      }
+    </style>
+  </defs>
+  <!-- Background Pill -->
+  <rect x="1" y="1" width="268" height="66" rx="33" fill="#F8EBF3" stroke="#ECCBD9" stroke-width="1.2" />
+  
+  <!-- Scalloped Badge -->
+  
+      <g transform="translate(35, 34)">
+        <rect x="-18.375" y="-18.375" width="36.75" height="36.75" rx="10.290000000000001" fill="#4A2E46" transform="rotate(0)" />
+        <rect x="-18.375" y="-18.375" width="36.75" height="36.75" rx="10.290000000000001" fill="#4A2E46" transform="rotate(30)" />
+        <rect x="-18.375" y="-18.375" width="36.75" height="36.75" rx="10.290000000000001" fill="#4A2E46" transform="rotate(60)" />
+      </g>
+    
+  
+  <!-- Icon -->
+  <g transform="translate(35, 34)">
+    
+      <circle cx="0" cy="0" r="7.5" stroke="#F8EBF3" stroke-width="1.8" fill="none" />
+      <ellipse cx="0" cy="0" rx="3.5" ry="7.5" stroke="#F8EBF3" stroke-width="1.8" fill="none" />
+      <line x1="-7.5" y1="0" x2="7.5" y2="0" stroke="#F8EBF3" stroke-width="1.8" />
+    
+  </g>
+  
+  <!-- Texts -->
+  <text x="68" y="27" fill="#6B4B67" class="label">OFFICIAL SITE</text>
+  <text x="68" y="47" fill="#2E172B" class="title">pixelmusic.pages.dev</text>
+</svg>

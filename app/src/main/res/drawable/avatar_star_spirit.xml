@@ -1,0 +1,42 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Plump rounded star body -->
+    <path
+        android:fillColor="#FFD166"
+        android:pathData="M100,28 C108,28 116,58 122,64 C128,70 160,68 164,76 C168,84 144,106 142,114 C140,122 154,152 146,158 C138,164 110,146 100,146 C90,146 62,164 54,158 C46,152 60,122 58,114 C56,106 32,84 36,76 C40,68 72,70 78,64 C84,58 92,28 100,28 Z" />
+    <!-- Soft inner glow -->
+    <path
+        android:fillColor="#FFE599"
+        android:pathData="M100,48 C106,48 112,70 116,74 C120,78 144,76 146,82 C148,88 130,104 128,110 C126,116 136,138 130,142 C124,146 106,134 100,134 C94,134 76,146 70,142 C64,138 74,116 72,110 C70,104 52,88 54,82 C56,76 80,78 84,74 C88,70 94,48 100,48 Z" />
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FF8FA3"
+        android:fillAlpha="0.6"
+        android:pathData="M68,112 a9,6 0 1,0 18,0 a9,6 0 1,0 -18,0 Z" />
+    <path
+        android:fillColor="#FF8FA3"
+        android:fillAlpha="0.6"
+        android:pathData="M114,112 a9,6 0 1,0 18,0 a9,6 0 1,0 -18,0 Z" />
+    <!-- Glossy eyes -->
+    <path
+        android:fillColor="#3D2C1E"
+        android:pathData="M76,97 a7.5,8.5 0 1,0 15,0 a7.5,8.5 0 1,0 -15,0 Z" />
+    <path
+        android:fillColor="#3D2C1E"
+        android:pathData="M109,97 a7.5,8.5 0 1,0 15,0 a7.5,8.5 0 1,0 -15,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M79,93 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M112,93 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0 Z" />
+    <!-- Happy smile -->
+    <path
+        android:strokeColor="#3D2C1E"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:pathData="M91,114 C96,120 104,120 109,114" />
+</vector>

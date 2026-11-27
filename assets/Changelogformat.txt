@@ -1,0 +1,40 @@
+Formatting Cheat Sheet
+
+Features and Syntax
+Here's a guide to the formatting features available and their corresponding syntax:
+
+Notice / Alert Card:
+Syntax in changelog.txt: ⚠️ **Title** or 🚨 **Title**
+Result in App: Colored callout container with border & alert icon
+
+Version Pill:
+Syntax in changelog.txt: **Sub release 4.4.0** or ## Version 4.4
+Result in App: Colored pill badge (🚀 Sub-release, 🌟 Final, 🧪 Beta)
+
+Feature Bullet:
+Syntax in changelog.txt: * 🎨 **Feature Title:** Description...
+Result in App: Circular emoji avatar, bold title, formatted body
+
+Image:
+Syntax in changelog.txt: !Caption(https://example.com/image.png)
+Result in App: Rounded image card with caption
+
+Contributor Tag:
+Syntax in changelog.txt: @Username
+Result in App: Clickable pill opening https://t.me/Username
+
+Inline Code:
+Syntax in changelog.txt: `code_snippet`
+Result in App: Monospace code chip
+
+Highlight Text:
+Syntax in changelog.txt: ==highlighted text==
+Result in App: Highlighted color pill
+
+Web Link:
+Syntax in changelog.txt: Website(https://example.com)
+Result in App: Clickable underline hyperlink
+
+Divider:
+Syntax in changelog.txt: ---
+Result in App: Material 3 horizontal divider

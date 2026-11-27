@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pixel Music</string>
+    <string name="app_name_change_title">Thay đổi tên ứng dụng</string>
+    <string name="app_name_change_message">Chúng tôi đã đổi tên ứng dụng từ PixelMusic sang PixelMusic do vấn đề liên quan đến nhãn hiệu. Hãy tiếp tục thưởng thức âm nhạc nhé!</string>
+    <string name="do_not_show_again">Không hiển thị lại</string>
+    <string name="dismiss">Đóng</string>
+    <string name="all_files_access_title">Cần quyền đặc biệt</string>
+    <string name="all_files_access_description">Để chỉnh sửa siêu dữ liệu bài hát (tệp .mp3), PixelMusic cần quyền truy cập tất cả tệp. Quyền này cho phép chỉnh sửa trực tiếp thẻ thông tin bài hát. Vui lòng cấp quyền này ở màn hình tiếp theo để bật tính năng chỉnh sửa siêu dữ liệu.</string>
+    <string name="grant_permission_button">Cấp quyền</string>
+    <string name="all_files_access_setting">Quyền truy cập tất cả tệp</string>
+    <string name="error">Lỗi</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Hủy</string>
+    <string name="import_file">Nhập</string>
+    <string name="search">Tìm kiếm</string>
+
+    <string name="lyrics">Lời bài hát</string>
+    <string name="close_lyrics_sheet">Đóng bảng lời bài hát</string>
+    <string name="loading_lyrics">Đang tải lời bài hát…</string>
+    <string name="cant_find_lyrics">Không tìm thấy lời cho bài hát này.</string>
+    <string name="lyrics_provided_by">Lời bài hát được cung cấp bởi</string>
+    <string name="lrclib_uri">https://lrclib.net/</string>
+    <string name="lyrics_not_found">Không tìm thấy lời bài hát</string>
+    <string name="search_lyrics_online_prompt">Bạn có muốn tìm lời bài hát trực tuyến không?</string>
+    <string name="lyrics_custom_search_hint">Không thể tự động tìm lời bài hát. Bạn có thể chỉnh sửa tên bài hát hoặc nghệ sĩ rồi thử tìm thủ công.</string>
+    <string name="failed_to_search_for_lyrics">Tìm kiếm lời bài hát thất bại</string>
+    <string name="failed_to_fetch_lyrics_from_remote">Không thể tải lời bài hát từ máy chủ</string>
+    <string name="lyrics_fetch_timeout">Hết thời gian kết nối. Vui lòng kiểm tra kết nối mạng của bạn.</string>
+    <string name="lyrics_network_error">Lỗi mạng. Vui lòng kiểm tra kết nối mạng của bạn.</string>
+    <string name="lyrics_server_error">Lỗi máy chủ (mã %d). Vui lòng thử lại sau.</string>
+    <string name="found_n_matches_format">Tìm thấy %d kết quả</string>
+    <string name="searched_for_x_format">Đã tìm kiếm \"%s\"</string>
+    <string name="searching_lyrics">Đang tìm lời bài hát…</string>
+    <string name="lyrics_already_available">Đã có sẵn lời bài hát. Đã bỏ qua tải trực tuyến.</string>
+    <string name="lyrics_embedded_already_available">Đã tìm thấy lời bài hát nhúng sẵn. Đã bỏ qua tải trực tuyến.</string>
+    <string name="local_lrc_already_available">Đã tìm thấy tệp lời bài hát (.lrc) cục bộ. Đã bỏ qua tải trực tuyến.</string>
+    <string name="fetch_lyrics_show_options_title">Hiển thị các tùy chọn lời bài hát</string>
+    <string name="fetch_lyrics_show_options_subtitle">Luôn mở danh sách chọn thay vì tự động áp dụng kết quả đầu tiên</string>
+    <string name="save_lyrics_as_lrc">Lưu lời bài hát dưới dạng .lrc</string>
+    <string name="save_lyrics_dialog_title">Lưu lời bài hát</string>
+    <string name="save_lyrics_dialog_message">Chọn phiên bản muốn lưu:</string>
+    <string name="save_synced_lyrics">Đồng bộ (có mốc thời gian)</string>
+    <string name="save_plain_lyrics">Thuần văn bản (chỉ có chữ)</string>
+    <string name="lyrics_saved_successfully">Đã lưu lời bài hát thành công</string>
+    <string name="lyrics_save_failed">Lưu lời bài hát thất bại</string>
+    <string name="no_lyrics_to_save">Không có lời bài hát để lưu</string>
+    <string name="reset_imported_lyrics">Đặt lại lời bài hát đã nhập</string>
+    <string name="lyrics_sync_offset">Độ lệch đồng bộ lời bài hát</string>
+    <string name="lyrics_sync_offset_format">%+.1fs</string>
+    <string name="lyrics_sync_offset_reset">Đặt lại</string>
+    <string name="lyrics_earlier">Sớm hơn</string>
+    <string name="lyrics_later">Trễ hơn</string>
+
+    <string name="sync_scanning">Đang quét tệp nhạc…</string>
+    <string name="sync_processing">Đang xử lý tệp…</string>
+    <string name="sync_files_progress">%1$d trên %2$d tệp</string>
+    <string name="sync_in_progress">Đang đồng bộ thư viện…</string>
+    <string name="sync_complete">Đồng bộ hoàn tất</string>
+    <string name="sync_pending">Đang chờ…</string>
+    <string name="syncing_library">Đang đồng bộ thư viện…</string>
+    <string name="library_background_sync">Đang hoàn tất trong nền…</string>
+    <string name="library_background_sync_lyrics">Đang quét lời bài hát…</string>
+    <string name="library_background_sync_cache">Đang dọn bộ nhớ đệm ảnh bìa…</string>
+    <string name="library_background_sync_cloud">Đang đồng bộ nguồn đám mây…</string>
+    <string name="unknown_song_title">Bài hát không xác định</string>
+    <string name="unknown_artist">Nghệ sĩ không xác định</string>
+    <string name="unknown_album">Album không xác định</string>
+    <string name="artist_picker_title">Chọn nghệ sĩ</string>
+    <string name="artist_picker_supporting_text">Mở bất kỳ nghệ sĩ nào được ghi nhận cho bài hát này.</string>
+    <string name="artist_picker_count_single">1 nghệ sĩ</string>
+    <string name="artist_picker_count_multiple">%1$d nghệ sĩ</string>
+    <string name="artist_picker_primary_label">Nghệ sĩ chính</string>
+    <string name="artist_picker_shortcut_label">Trang nghệ sĩ</string>
+    <string name="external_queue_label">Phát nhanh</string>
+    <string name="external_playback_error">Không thể mở tệp âm thanh đó.</string>
+    <string name="open_full_player">Mở trình phát đầy đủ</string>
+    <string name="close_external_player">Đóng trình phát nổi</string>
+    <string name="close_notification_player">Đóng trình phát</string>
+    <string name="previous_track">Bài trước</string>
+    <string name="next_track">Bài tiếp theo</string>
+    <string name="pause_playback">Tạm dừng phát</string>
+    <string name="play_playback">Phát</string>
+    <string name="playlist_not_found">Không tìm thấy danh sách phát.</string>
+    <string name="disc_number_header">Đĩa %d</string>
+
+    <string name="ai_error_api_key">Vui lòng cấu hình khóa API hợp lệ cho nhà cung cấp AI đã chọn trong Cài đặt.</string>
+    <string name="ai_error_generic">Lỗi AI: %s</string>
+    <string name="ai_error_quota">Nhà cung cấp AI đã chọn từ chối yêu cầu vì tài khoản đã hết tín dụng hoặc hạn mức khả dụng.</string>
+    <string name="ai_error_model_unavailable">Mô hình AI đã chọn không còn khả dụng. PixelMusic đã thử tự động chuyển sang một mô hình được hỗ trợ.</string>
+    <string name="ai_no_songs_found">AI không tìm thấy bài hát nào phù hợp với yêu cầu của bạn.</string>
+    <string name="ai_prompt_empty">Viết ý tưởng cho Daily Mix của bạn</string>
+    <string name="ai_daily_mix_updated">Đã cập nhật Daily Mix bằng AI</string>
+    <string name="ai_no_songs_for_mix">AI không tìm thấy bài hát nào cho bản mix này</string>
+
+    <string name="shortcut_shuffle_short">Phát ngẫu nhiên</string>
+    <string name="shortcut_shuffle_long">Phát ngẫu nhiên tất cả bài hát</string>
+    <string name="shortcut_playlist_short">Danh sách phát</string>
+    <string name="shortcut_playlist_long">Danh sách phát nghe gần nhất</string>
+
+    <string name="tile_shuffle_all">Phát ngẫu nhiên tất cả</string>
+    <string name="tile_last_playlist">Danh sách phát gần nhất</string>
+    <string name="tile_last_playlist_unavailable">Không có danh sách phát nào để mở</string>
+
+    <string name="invalid_album_id">ID album không hợp lệ</string>
+    <string name="album_id_not_found">Không tìm thấy ID album</string>
+    <string name="error_loading_album">Lỗi tải dữ liệu album: %s</string>
+    <string name="album_not_found">Không tìm thấy album</string>
+    <string name="could_not_update">Không thể cập nhật: %s</string>
+    <string name="invalid_artist_id">ID nghệ sĩ không hợp lệ</string>
+    <string name="artist_id_not_found">Không tìm thấy ID nghệ sĩ</string>
+    <string name="error_loading_artist">Lỗi tải dữ liệu nghệ sĩ: %s</string>
+    <string name="could_not_find_artist">Không tìm thấy nghệ sĩ</string>
+    <string name="no_valid_songs">Không tìm thấy bài hát hợp lệ để phát</string>
+
+    <string name="glance_widget_description">Tiện ích thích ứng linh hoạt theo kích thước</string>
+    <string name="widget_bar_4x1_desc">Thanh phát nhạc nhỏ gọn</string>
+    <string name="widget_control_4x2_desc">Đầy đủ nút điều khiển kèm phát ngẫu nhiên và lặp lại</string>
+    <string name="widget_grid_2x2_desc">Trình phát hình vuông tối giản</string>
+    <string name="widget_blur_2x2_desc">Trình phát hình vuông với ảnh bìa làm mờ</string>
+
+    <string name="service_processing_action">Đang xử lý thao tác phát nhạc…</string>
+
+    <!-- Playlist bulk actions -->
+    <string name="playlist_none_to_share">Không có danh sách phát nào để chia sẻ</string>
+    <string name="playlist_share_chooser_title">Chia sẻ danh sách phát</string>
+    <string name="playlist_share_failed">Chia sẻ thất bại: %1$s</string>
+    <string name="playlist_none_to_export">Không có danh sách phát nào để xuất</string>
+    <string name="playlist_export_failed">Xuất thất bại: %1$s</string>
+    <string name="playlist_export_folder_display">Music/PixelMusic Exports</string>
+    <string name="ai_playlist_gemini_key_required">Vui lòng cấu hình khóa API Gemini trong Cài đặt.</string>
+    <string name="error_unknown">Lỗi không xác định</string>
+
+    <!-- Watch transfer foreground service -->
+    <string name="watch_transfer_sending_n_to_watch">Đang gửi %1$d bài hát sang đồng hồ</string>
+    <string name="watch_transfer_sending_to_watch">Đang gửi sang đồng hồ</string>
+    <string name="watch_transfer_complete">Chuyển hoàn tất</string>
+    <string name="watch_transfer_failed">Chuyển thất bại</string>
+    <string name="watch_transfer_cancelled">Đã hủy chuyển</string>
+    <string name="watch_transfer_preparing">Đang chuẩn bị chuyển sang đồng hồ</string>
+    <string name="watch_transfer_summary_n">%1$d lượt chuyển</string>
+    <string name="watch_transfer_starting">Đang bắt đầu chuyển…</string>
+    <string name="watch_transfer_multiple_active">Nhiều lượt chuyển đang hoạt động</string>
+    <string name="watch_transfer_preparing_transfer">Đang chuẩn bị chuyển…</string>
+    <string name="watch_transfer_status_transferring">Đang chuyển</string>
+    <string name="watch_transfer_status_completed">Hoàn tất</string>
+    <string name="watch_transfer_status_failed">Thất bại</string>
+    <string name="watch_transfer_status_cancelled">Đã hủy</string>
+    <string name="watch_transfer_status_preparing">Đang chuẩn bị</string>
+    <string name="watch_transfer_starting_short">Đang bắt đầu</string>
+    <string name="watch_transfer_channel_name">Chuyển nhạc sang đồng hồ</string>
+    <string name="watch_transfer_channel_description">Hiển thị tiến trình trực tiếp khi chuyển nhạc từ điện thoại sang đồng hồ</string>
+
+    <!-- Cast HTTP server -->
+    <string name="cast_server_channel_name">Máy chủ phát Cast</string>
+    <string name="cast_server_notification_title">Đang truyền tới thiết bị</string>
+    <string name="cast_server_notification_text">Đang phát nội dung tới thiết bị Cast</string>
+    <string name="cast_server_foreground_error">%1$s: %2$s</string>
+
+    <!-- Backup / data transfer (ViewModels) -->
+    <string name="backup_invalid_format">Bản sao lưu không hợp lệ: %1$s</string>
+    <string name="backup_progress_preparing_restore">Đang chuẩn bị khôi phục</string>
+    <string name="backup_progress_starting_task">Đang bắt đầu tác vụ khôi phục.</string>
+    <string name="backup_progress_preparing_backup">Đang chuẩn bị sao lưu</string>
+    <string name="backup_progress_starting_backup_task">Đang bắt đầu tác vụ sao lưu.</string>
+    <string name="restore_completed_success">Khôi phục bản sao lưu thành công</string>
+    <string name="restore_completed_partial_issues">Đã hoàn tất khôi phục nhưng còn một số sự cố chưa được giải quyết.</string>
+    <string name="restore_could_not_complete">Không thể hoàn tất khôi phục: %1$s</string>
+    <string name="restore_failed_format">Khôi phục thất bại: %1$s</string>
+    <string name="data_exported_successfully">Xuất dữ liệu thành công</string>
+    <string name="export_failed_format">Xuất thất bại: %1$s</string>
+    <string name="data_restored_successfully">Khôi phục dữ liệu thành công</string>
+    <string name="restore_partial_unresolved_format">Đã hoàn tất khôi phục với một số sự cố chưa giải quyết. Thất bại: %1$s</string>
+    <string name="models_fetch_failed">Không thể tải danh sách mô hình</string>
+    <string name="dev_test_crash_message">Đã kích hoạt sự cố thử nghiệm từ Tùy chọn nhà phát triển - Đây là hành động có chủ đích để kiểm tra hệ thống báo lỗi</string>
+
+    <!-- PlayerViewModel -->
+    <string name="player_song_not_found_in_list">Không tìm thấy bài hát trong danh sách hiện tại</string>
+    <string name="player_could_not_locate_song">Không thể định vị bài hát</string>
+    <string name="player_no_songs_in_library_toast">Không tìm thấy bài hát nào trong thư viện</string>
+    <string name="player_playback_stopped_eot">Đã dừng phát: %1$s đã kết thúc (Hết bài).</string>
+    <string name="player_default_track_title">Bài hát</string>
+    <string name="player_no_songs_to_shuffle">Không có bài hát nào để phát ngẫu nhiên.</string>
+    <string name="player_queue_name_selected_albums">Album đã chọn</string>
+    <string name="player_no_playable_songs_in_albums">Không tìm thấy bài hát có thể phát trong các album đã chọn</string>
+    <string name="player_only_first_n_albums_queued">Chỉ %1$d album đầu tiên được thêm vào hàng đợi</string>
+    <string name="player_albums_queued_format">Đã thêm %1$d album vào hàng đợi (%2$d bài hát)</string>
+    <string name="player_could_not_queue_albums">Không thể thêm các album đã chọn vào hàng đợi</string>
+    <string name="player_all_songs_already_in_favorites">Tất cả bài hát đã có trong mục yêu thích</string>
+    <string name="player_no_songs_were_in_favorites">Không có bài hát nào trong mục yêu thích</string>
+    <string name="player_creating_zip">Đang tạo tệp ZIP…</string>
+    <string name="player_share_zip_failed_format">Chia sẻ thất bại: %1$s</string>
+    <string name="player_cannot_delete_currently_playing">Không thể xóa bài hát đang phát</string>
+    <string name="player_batch_delete_files_deleted_skipped_format">Đã xóa %1$d tệp (bỏ qua %2$d tệp đang phát)</string>
+    <string name="player_batch_delete_partial_format">Đã xóa %1$d trên %2$d tệp</string>
+    <string name="player_delete_files_failed">Xóa tệp thất bại</string>
+    <string name="player_file_deleted">Đã xóa tệp</string>
+    <string name="player_delete_file_not_found">Không thể xóa hoặc không tìm thấy tệp</string>
+    <string name="player_deletion_cancelled">Đã hủy xóa</string>
+    <string name="player_permission_denied_edit_files">Bị từ chối quyền – không thể chỉnh sửa tệp</string>
+    <string name="player_permission_denied_save_lyrics">Bị từ chối quyền – không thể lưu lời bài hát</string>
+    <string name="player_permission_denied_edit_this_file">Bị từ chối quyền – không thể chỉnh sửa tệp này</string>
+    <string name="metadata_updated_successfully">Cập nhật siêu dữ liệu thành công</string>
+    <string name="player_updating_n_songs">Đang cập nhật %1$d bài hát…</string>
+    <string name="player_batch_genre_updated_all">Đã cập nhật thành công %1$d bài hát!</string>
+    <string name="player_batch_genre_updated_partial">Đã cập nhật %1$d bài hát. Thất bại: %2$d</string>
+    <string name="playlist_restored_toast">Đã khôi phục danh sách phát</string>
+    <string name="delete_songs_permanent_message">Những bài hát này sẽ bị xóa vĩnh viễn khỏi thiết bị của bạn và không thể khôi phục.</string>
+    <string name="delete_action">Xóa</string>
+
+    <!-- Sleep timer (SleepTimerStateHolder + TimerOptionsBottomSheet) -->
+    <string name="sleep_timer_n_minutes_format">%1$d phút</string>
+    <string name="sleep_timer_display_eot">Hết bài hát</string>
+    <string name="sleep_timer_set_for_minutes_toast">Đã hẹn giờ tắt sau %1$d phút.</string>
+    <string name="sleep_timer_cancelled_toast">Đã hủy hẹn giờ.</string>
+    <string name="sleep_timer_eot_no_song_toast">Không thể bật dừng khi hết bài: không có bài hát đang phát.</string>
+    <string name="sleep_timer_eot_song_changed_toast">Đã tắt hẹn giờ hết bài: bài hát đã chuyển từ %1$s sang %2$s.</string>
+    <string name="sleep_timer_eot_stop_at_end_toast">Nhạc sẽ dừng khi hết bài hiện tại.</string>
+    <string name="sleep_timer_label_previous_track">Bài trước</string>
+    <string name="sleep_timer_label_current_track">Bài hiện tại</string>
+    <string name="sleep_timer_ui_title">Hẹn giờ tắt nhạc</string>
+    <string name="sleep_timer_ui_slider_label_timer">Hẹn giờ</string>
+    <string name="sleep_timer_ui_end_of_current_track">Hết bài hiện tại</string>
+    <string name="sleep_timer_ui_custom_time">Thời gian tùy chỉnh</string>
+    <string name="sleep_timer_ui_cancel_timer">Hủy hẹn giờ</string>
+    <string name="sleep_timer_ui_set_custom_duration">Đặt thời lượng tùy chỉnh</string>
+    <string name="sleep_timer_ui_play_count_label">Số lần phát: %1$s</string>
+    <string name="sleep_timer_ui_play_count_one_time">1 lần</string>
+    <string name="cd_switch_on">Bật</string>
+    <string name="ui_format_percent_d">%1$d%%</string>
+    <string name="backup_manifest_schema_v">v%1$d</string>
+    <string name="backup_manifest_device_line">%1$s %2$s</string>
+
+    <!-- Share Bottom Sheet -->
+    <string name="share_sheet_title">Chia sẻ</string>
+    <string name="share_sheet_chooser_title">Chia sẻ qua</string>
+    <string name="share_card_tab_song">Thẻ bài hát</string>
+    <string name="share_card_tab_lyrics">Thẻ lời bài hát</string>
+    <string name="share_action_snapchat">Tin\nSnapchat</string>
+    <string name="share_action_instagram">Tin\nInstagram</string>
+    <string name="share_action_download_card">Lưu\nthẻ</string>
+    <string name="share_action_copy_yt_link">Sao chép\nliên kết YT</string>
+    <string name="share_action_more_apps">Chia sẻ\nkhác</string>
+    <string name="share_action_add_to_playlist">Thêm vào danh sách phát</string>
+    <string name="share_action_add_to_playlist_sub">Thêm bài hát này vào một trong các danh sách phát của bạn</string>
+    <string name="share_action_copy_github_link">Sao chép liên kết ứng dụng</string>
+    <string name="share_card_saved">Đã lưu thẻ vào thư mục Pictures</string>
+    <string name="share_link_copied">Đã sao chép liên kết vào khay nhớ tạm</string>
+    <string name="share_text_format">Đang nghe \"%1$s\" của %2$s 🎵\n%3$s</string>
+    <string name="share_format_photo">Ảnh</string>
+    <string name="share_format_video">Video 30 giây</string>
+    <string name="share_action_download_video">Lưu\nvideo</string>
+    <string name="share_action_share_video">Chia sẻ\nvideo</string>
+    <string name="share_video_saved">Đã lưu video vào Movies/PixelMusic</string>
+    <string name="share_video_generating">Đang tạo video 30 giây…</string>
+    <string name="share_video_failed">Tạo video thất bại: %1$s</string>
+    <string name="share_video_progress_title">Đang tạo video 30 giây</string>
+    <string name="share_video_progress_subtitle">Đang mã hóa ảnh thẻ cùng âm thanh bài hát…</string>
+
+    <!-- Player Share / Options Menu -->
+    <string name="player_menu_share_card">Chia sẻ thẻ tin</string>
+    <string name="player_menu_download">Tải xuống bài hát</string>
+    <string name="player_menu_add_to_playlist">Thêm vào danh sách phát</string>
+    <string name="cd_player_more_options">Tùy chọn khác</string>
+    <string name="cd_player_theme">Đổi giao diện</string>
+    <string name="setcat_navbar_style_floating_pill">Viên thuốc nổi</string>
+
+    <!-- Listen Together -->
+    <string name="listen_together">Nghe cùng nhau</string>
+    <string name="listen_together_desc">Cùng nghe một bản nhạc vào cùng thời điểm, dù bạn bè ở bất cứ đâu</string>
+    <string name="listen_together_host_only">Chỉ chủ phòng mới có thể điều khiển phát nhạc</string>
+    <string name="listen_together_your_name">Tên của bạn</string>
+    <string name="listen_together_start">Bắt đầu phiên nghe</string>
+    <string name="listen_together_join">Tham gia phiên nghe</string>
+    <string name="listen_together_room_code">Mã phòng</string>
+    <string name="listen_together_guest_name">Tên khách (không bắt buộc)</string>
+    <string name="listen_together_creating">Đang tạo phiên nghe\u2026</string>
+    <string name="listen_together_joining">Đang tham gia\u2026</string>
+    <string name="listen_together_share_code">Chia sẻ mã này với bạn bè</string>
+    <string name="listen_together_copy_code">Sao chép mã</string>
+    <string name="listen_together_code_copied">Đã sao chép mã vào khay nhớ tạm</string>
+    <string name="listen_together_listeners">%1$d/4 người đang nghe</string>
+    <string name="listen_together_end_session">Kết thúc phiên</string>
+    <string name="listen_together_listening_with">Đang nghe cùng %1$s</string>
+    <string name="listen_together_guest_note">Thư giãn đi, chủ phòng đang điều khiển nhạc</string>
+    <string name="listen_together_leave">Rời phòng</string>
+    <string name="listen_together_live">Trực tiếp</string>
+    <string name="listen_together_listening">Đang nghe</string>
+    <string name="listen_together_reconnecting">Đang kết nối lại\u2026</string>
+    <string name="listen_together_slow_down">Chậm lại một chút nhé</string>
+    <string name="listen_together_host">Chủ phòng</string>
+    <string-array name="listen_together_preset_messages">
+        <item>Bài này cuốn quá 🔥</item>
+        <item>Nghe lại nhé? 🔁</item>
+        <item>Bài sau nhẹ nhàng nhé 🎧</item>
+        <item>Tăng âm lượng lên 🔊</item>
+    </string-array>
+    <string name="listen_together_track_unavailable">Bài hát này không khả dụng với bạn, đang giữ đồng bộ với chủ phòng</string>
+</resources>

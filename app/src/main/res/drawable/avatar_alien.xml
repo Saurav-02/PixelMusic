@@ -1,0 +1,66 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Shoulders -->
+    <path
+        android:fillColor="#38B2AC"
+        android:pathData="M52,198 C56,162 74,152 100,152 C126,152 144,162 148,198 Z" />
+    <!-- Bouncy antennae -->
+    <path
+        android:strokeColor="#4FD1C5"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M76,68 C68,52 62,40 58,34" />
+    <path
+        android:strokeColor="#4FD1C5"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M124,68 C132,52 138,40 142,34" />
+    <path
+        android:fillColor="#81E6D9"
+        android:pathData="M48,32 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z" />
+    <path
+        android:fillColor="#81E6D9"
+        android:pathData="M132,32 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z" />
+    <!-- Alien head -->
+    <path
+        android:fillColor="#4FD1C5"
+        android:pathData="M100,56 C140,56 160,82 156,114 C152,144 128,164 100,164 C72,164 48,144 44,114 C40,82 60,56 100,56 Z" />
+    <!-- Big glossy alien eyes -->
+    <path
+        android:fillColor="#1A202C"
+        android:pathData="M62,104 C62,88 86,88 88,104 C90,118 76,124 68,118 C64,115 62,110 62,104 Z" />
+    <path
+        android:fillColor="#1A202C"
+        android:pathData="M138,104 C138,88 114,88 112,104 C110,118 124,124 132,118 C136,115 138,110 138,104 Z" />
+    <!-- Starry eye highlights -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M69,98 a4.2,4.2 0 1,0 8.4,0 a4.2,4.2 0 1,0 -8.4,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M122,98 a4.2,4.2 0 1,0 8.4,0 a4.2,4.2 0 1,0 -8.4,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M78,108 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M118,108 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 Z" />
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FF8FA3"
+        android:fillAlpha="0.5"
+        android:pathData="M54,126 a9,6 0 1,0 18,0 a9,6 0 1,0 -18,0 Z" />
+    <path
+        android:fillColor="#FF8FA3"
+        android:fillAlpha="0.5"
+        android:pathData="M128,126 a9,6 0 1,0 18,0 a9,6 0 1,0 -18,0 Z" />
+    <!-- Friendly smile -->
+    <path
+        android:strokeColor="#1D4044"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M87,132 C94,140 106,140 113,132" />
+</vector>

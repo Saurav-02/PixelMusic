@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared login / streaming auth -->
+    <string name="auth_cd_back">戻る</string>
+    <string name="auth_show_password">パスワードを表示</string>
+    <string name="auth_hide_password">パスワードを隠す</string>
+    <string name="auth_connecting">接続中…</string>
+    <string name="auth_connect">接続</string>
+    <string name="auth_connection_details">接続情報</string>
+    <string name="auth_connection_details_subtitle">サーバー URL とアカウントの認証情報を入力してください。</string>
+    <string name="auth_server_url">サーバー URL</string>
+    <string name="auth_username">ユーザー名</string>
+    <string name="auth_password">パスワード</string>
+    <string name="auth_password_placeholder">パスワードを入力</string>
+    <string name="auth_username_placeholder_admin">admin</string>
+    <string name="toast_welcome_user">ようこそ、%1$s さん！</string>
+
+    <!-- Navidrome / Subsonic -->
+    <string name="auth_navidrome_title">Subsonic / Navidrome</string>
+    <string name="auth_navidrome_subtitle">セルフホスト型音楽サーバーに接続</string>
+    <string name="auth_navidrome_info_card">Navidrome、Airsonic、Gonic、Ampache およびその他の Subsonic API 互換サーバーに対応しています。</string>
+    <string name="auth_server_url_placeholder_https">https://music.example.com</string>
+    <string name="auth_navidrome_server_url_hint">サーバーの https:// から始まる完全なベースアドレスを入力してください。</string>
+    <string name="auth_navidrome_username_hint">Subsonic または Navidrome のアカウント名です。</string>
+    <string name="auth_navidrome_password_hint">サーバーが対応している場合は、アプリパスワードも使用できます。</string>
+    <string name="auth_navidrome_пароль_hint">サーバーが対応している場合は、アプリパスワードも使用できます。</string>
+    <string name="auth_prefill_https">https:// を自動入力</string>
+    <string name="auth_navidrome_footer">Navidrome、Gonic、Airsonic などの Subsonic 互換サーバーに対応</string>
+    <string name="cd_navidrome_logo">Navidrome</string>
+    <string name="cd_subsonic_logo">Subsonic</string>
+
+    <string name="auth_prefill_http">http:// を自動入力</string>
+
+    <!-- Google Drive -->
+    <string name="auth_gdrive_toast_connected">Google Drive に接続しました！</string>
+    <string name="auth_gdrive_title">Google Drive</string>
+
+    <!-- Web login (NetEase / QQ Music) — shared -->
+    <string name="auth_web_exit_confirm_title_netease">NetEase ログインを終了しますか？</string>
+    <string name="auth_web_exit_confirm_title_qq">QQ Music ログインを終了しますか？</string>
+    <string name="auth_web_exit_confirm_body">後からやり直すことができます。閉じると現在のページ状態は破棄されます。</string>
+    <string name="auth_exit">終了</string>
+    <string name="auth_stay">このまま続ける</string>
+    <string name="auth_login_netease_title">NetEase Music にログイン</string>
+    <string name="auth_login_qq_title">QQ Music にログイン</string>
+    <string name="auth_web_cd_web_back">前のページへ</string>
+    <string name="auth_web_cd_web_forward">次のページへ</string>
+    <string name="auth_web_cd_refresh">再読み込み</string>
+    <string name="auth_web_cd_open_home">ホームを開く</string>
+    <string name="auth_saving">保存中…</string>
+    <string name="auth_done">完了</string>
+    <string name="auth_web_retry">再試行</string>
+    <string name="auth_dial_plus">+</string>
+    <string name="auth_snackbar_page_timeout">ページの読み込みがタイムアウトしました。入力内容を失わずに再試行できます。</string>
+    <string name="auth_error_cookies_unreadable">セッション Cookie を読み取れませんでした。</string>
+    <string name="auth_page_slow">ページの読み込みに時間がかかっています。再読み込みするか、別のネットワークをお試しください。</string>
+    <string name="auth_webview_load_failed">WebView の読み込みに失敗しました。</string>
+    <string name="auth_http_error_loading_netease">NetEase の読み込み中に HTTP %1$d エラーが発生しました。</string>
+    <string name="auth_http_error_loading_qq">QQ Music の読み込み中に HTTP %1$d エラーが発生しました。</string>
+    <string name="auth_error_no_cookies">Cookie が見つかりません。先にログインしてください。</string>
+    <string name="auth_error_netease_login_incomplete">ログインがまだ検出されていません。NetEase のログインを完了してから「完了」を押してください。</string>
+    <string name="auth_error_qq_login_incomplete">ログインがまだ検出されていません。QQ Music のログインを完了してから「完了」を押してください。</string>
+</resources>

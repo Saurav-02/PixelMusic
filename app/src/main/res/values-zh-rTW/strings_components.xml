@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_tap_to_open">輕觸開啟</string>
+    <string name="widget_album_art">專輯封面</string>
+    <string name="widget_album_art_placeholder">專輯封面預留圖</string>
+    <string name="cd_favorite">最愛</string>
+    <string name="cd_play">播放</string>
+    <string name="cd_pause">暫停</string>
+    <string name="widget_tap_to_play">輕觸播放</string>
+    <string name="widget_preview_song_title">歌曲名稱</string>
+    <string name="widget_preview_artist">藝人</string>
+    <string name="cd_repeat">重複播放</string>
+    <string name="widget_wavy_progress_bar_desc">進度列，百分之 %1$d</string>
+
+    <!-- Lyrics more bottom sheet -->
+    <string name="lyrics_more_appearance">外觀</string>
+    <string name="lyrics_more_alignment">對齊方式</string>
+    <string name="lyrics_more_controls">控制項</string>
+    <string name="lyrics_more_dialog_reset_title">要重設歌詞嗎？</string>
+    <string name="lyrics_more_dialog_reset_message">確定要重設這首歌曲的歌詞嗎？</string>
+    <string name="lyrics_more_hide_sync_controls">隱藏同步控制項</string>
+    <string name="lyrics_more_adjust_sync">調整同步</string>
+    <string name="lyrics_more_show_romanization">顯示羅馬拼音</string>
+    <string name="lyrics_more_show_translations">顯示翻譯</string>
+    <string name="lyrics_more_disable_immersive_once">暫時停用沉浸模式（本次）</string>
+    <string name="lyrics_more_keep_screen_on">保持螢幕開啟</string>
+    <string name="cd_lyrics_align_left">歌詞靠左對齊</string>
+    <string name="cd_lyrics_align_center">歌詞置中對齊</string>
+    <string name="cd_lyrics_align_right">歌詞靠右對齊</string>
+
+    <!-- No internet -->
+    <string name="no_internet_dialog_title">沒有網路連線</string>
+    <string name="no_internet_dialog_message">此內容需要網路連線。請檢查您的網路設定後再試一次。</string>
+    <string name="offline_screen_title">您目前處於離線狀態</string>
+    <string name="offline_screen_message">請檢查您的網路連線並重試，以存取此內容。</string>
+
+    <!-- Equalizer preset dialogs -->
+    <string name="equalizer_save_custom_preset_title">儲存自訂預設</string>
+    <string name="equalizer_save_custom_preset_body">請輸入自訂等化器預設的名稱。</string>
+    <string name="equalizer_preset_name_label">預設名稱</string>
+    <string name="equalizer_rename_preset_title">重新命名預設</string>
+    <string name="error_name_empty">名稱不可為空白</string>
+    <string name="action_save">儲存</string>
+    <string name="action_rename">重新命名</string>
+    <string name="equalizer_action_save_new">另存為新預設</string>
+
+    <!-- AI metadata sheet -->
+    <string name="ai_metadata_headline_success">標籤已完美補齊！</string>
+    <string name="ai_metadata_headline_default">AI 中繼資料</string>
+    <string name="ai_metadata_subtitle_generating">正在查詢每日精選指南…</string>
+    <string name="ai_metadata_subtitle_review">檢視並微調產生的詳細資訊</string>
+    <string name="song_field_title">曲名</string>
+    <string name="song_field_artist">藝人</string>
+    <string name="song_field_album">專輯</string>
+    <string name="song_field_album_artist">專輯藝人</string>
+    <string name="song_field_genre">音樂類型</string>
+    <string name="song_field_composer">作曲家</string>
+    <string name="action_try_again">再試一次</string>
+    <string name="action_apply_changes">套用變更</string>
+
+    <!-- Edit song metadata sheet -->
+    <string name="edit_song_info_dialog_title">編輯歌曲中繼資料</string>
+    <string name="edit_song_info_dialog_body">編輯歌曲的中繼資料會影響它在音樂庫中的顯示與整理方式。變更將永久寫入，且可能無法復原。</string>
+    <string name="edit_song_got_it">知道了</string>
+    <string name="cd_info_icon">資訊</string>
+    <string name="edit_song_toolbar_title">編輯歌曲</string>
+    <string name="cd_use_gemini_ai">使用 Gemini AI</string>
+    <string name="cd_show_metadata_info">顯示資訊</string>
+    <string name="song_field_track_number">曲目編號</string>
+    <string name="song_field_disc_number">光碟編號</string>
+    <string name="song_field_replaygain_track_db">ReplayGain 曲目（dB）</string>
+    <string name="song_field_replaygain_album_db">ReplayGain 專輯（dB）</string>
+    <string name="placeholder_replaygain_track_example">-6.50</string>
+    <string name="placeholder_replaygain_album_example">-8.20</string>
+    <string name="cd_replaygain_track">ReplayGain 曲目</string>
+    <string name="cd_replaygain_album">ReplayGain 專輯</string>
+    <string name="cd_song_title_icon">曲名</string>
+    <string name="cd_track_number_icon">曲目編號</string>
+    <string name="cd_disc_number_icon">光碟編號</string>
+    <string name="cd_search_lyrics_lrclib">在 lrclib.net 上搜尋歌詞</string>
+    <string name="edit_song_cover_art_heading">專輯封面</string>
+    <string name="edit_song_cover_art_hint">選擇正方形圖片並進行微調，讓封面在整個應用程式中呈現最佳效果。</string>
+    <string name="edit_song_change_cover_art">變更封面</string>
+    <string name="edit_song_delete_cover_art">刪除封面</string>
+    <string name="cd_cover_art_preview">新封面預覽</string>
+    <string name="cd_current_song_cover_art">目前歌曲封面</string>
+    <string name="edit_song_crop_dialog_title">調整專輯封面</string>
+    <string name="edit_song_crop_dialog_hint">使用雙指縮放與拖曳手勢調整至理想構圖。</string>
+    <string name="edit_song_apply_cover_art">套用封面</string>
+    <string name="edit_song_unable_to_load_image">無法載入所選圖片</string>
+
+    <!-- Song info bottom sheet -->
+    <string name="song_info_share_chooser_title">分享歌曲檔案方式</string>
+    <string name="cd_play_song_action">播放歌曲</string>
+    <string name="cd_share_song_file">分享歌曲檔案</string>
+    <string name="cd_add_to_queue">加入播放佇列</string>
+    <string name="cd_play_next_in_queue">在佇列中接續播放</string>
+    <string name="cd_add_to_playlist">加入播放清單</string>
+    <string name="action_add_to_queue">加入播放佇列</string>
+    <string name="action_queue_next">接續播放</string>
+    <string name="action_interested">感興趣</string>
+    <string name="action_not_interested">不感興趣</string>
+    <string name="toast_marked_interested">已標記為感興趣，正在調整推薦內容。</string>
+    <string name="toast_marked_not_interested">已標記為不感興趣，將從推薦中隱藏。</string>
+    <string name="toast_interest_cleared">已移除興趣偏好</string>
+    <string name="song_info_checking_watch">正在檢查手錶</string>
+    <string name="song_info_transferring_percent">傳輸中 %1$d%%</string>
+    <string name="song_info_transferring_to_watch">正在傳送至手錶</string>
+    <string name="song_info_transfer_in_progress">傳輸進行中</string>
+    <string name="song_info_send_to_watch">傳送至手錶</string>
+    <string name="song_info_watch_unavailable">無法連線至手錶</string>
+    <string name="cd_send_song_to_watch">將歌曲傳送至手錶</string>
+    <string name="cd_watch_unavailable">無法連線至手錶</string>
+    <string name="song_info_label_duration">時長</string>
+    <string name="song_info_label_song_metadata">歌曲資訊</string>
+    <string name="cd_duration_icon">時長</string>
+    <string name="cd_genre_icon">音樂類型</string>
+    <string name="cd_album_icon">專輯</string>
+    <string name="cd_artist_icon">藝人</string>
+    <string name="cd_audio_format_icon">音訊格式</string>
+    <string name="cd_provider_icon">來源</string>
+    <string name="cd_file_icon">檔案</string>
+    <string name="cd_edit_song_metadata">編輯歌曲中繼資料</string>
+    <string name="cd_remove_from_favorites">從最愛中移除</string>
+    <string name="cd_add_to_favorites">加入最愛</string>
+    <string name="song_info_tab_options">選項</string>
+    <string name="song_info_tab_options_badge">選項</string>
+    <string name="song_info_tab_details">詳細資訊</string>
+    <string name="song_info_tab_info_badge">資訊</string>
+    <string name="cd_details_tab">詳細資訊</string>
+
+    <!-- Multi-selection bottom sheet -->
+    <string name="multi_selection_songs_count_upper">%1$d 首歌曲</string>
+    <string name="multi_selection_selected">已選取</string>
+    <string name="cd_play_all">全部播放</string>
+    <string name="action_play_all">全部播放</string>
+    <string name="cd_like_all">全部加入最愛</string>
+    <string name="cd_unlike_all">全部移出最愛</string>
+    <string name="cd_share_all_as_zip">全部打包為 ZIP 分享</string>
+    <string name="cd_add_all_to_queue">全部加入佇列</string>
+    <string name="cd_delete_all_songs">全部刪除</string>
+    <string name="action_delete_all">全部刪除</string>
+
+    <string name="playlist_dismissed_message">已移除播放清單</string>
+    <string name="action_undo">復原</string>
+    <string name="home_option_dj_mashup">DJ 混音</string>
+    <string name="create_playlist_dialog_title">新增播放清單</string>
+    <string name="create_playlist_name_label">播放清單名稱</string>
+    <string name="create_playlist_name_placeholder">我的播放清單</string>
+    <string name="action_create">建立</string>
+    <string name="playlist_picker_add_songs_title">將 %1$d 首歌曲加入…</string>
+    <string name="playlist_picker_select_playlists">選擇播放清單</string>
+    <string name="search_playlists_hint">搜尋播放清單…</string>
+
+    <string name="multi_selection_playlists_count_upper">%1$d 個播放清單</string>
+    <string name="cd_export_all">全部匯出</string>
+    <string name="cd_merge_all">全部合併</string>
+    <string name="cd_share_all">全部分享</string>
+    <string name="action_export">匯出</string>
+    <string name="action_merge">合併</string>
+
+    <string name="reorder_tabs_sheet_title">重新排序音樂庫分頁</string>
+    <string name="reorder_tabs_reset_dialog_title">重設順序</string>
+    <string name="reorder_tabs_reset_dialog_body">要將分頁順序重設為預設值嗎？</string>
+    <string name="reorder_tabs_reordering">正在重新排序分頁…</string>
+    <string name="cd_drag_handle">拖曳控點</string>
+    <string name="cd_reset">重設</string>
+    <string name="action_done">完成</string>
+</resources>

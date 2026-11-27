@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation / misc -->
+    <string name="nav_error_genre_id_missing">ত্রুটি: ঘরানার আইডি অনুপস্থিত</string>
+    <string name="easter_egg_thank_you">PixelMusic ব্যবহার করার জন্য ধন্যবাদ!</string>
+
+    <!-- Word delimiter config -->
+    <string name="word_delimiter_section_title">বর্তমান শব্দ বিভাজক</string>
+    <string name="word_delimiter_section_subtitle">দুই পাশে স্পেস থাকলে এই কীওয়ার্ডগুলো শিল্পীর নাম আলাদা করে। বড় বা ছোট হাতের অক্ষর বিবেচনা করা হয় না। সরাতে ট্যাপ করুন।</string>
+    <string name="word_delimiter_empty">কোনো শব্দ বিভাজক কনফিগার করা হয়নি</string>
+    <string name="word_delimiter_add_title">নতুন শব্দ বিভাজক যোগ করুন</string>
+    <string name="word_delimiter_hint">যেমন: feat. বা ft.</string>
+    <string name="word_delimiter_help_title">শব্দ বিভাজক কীভাবে কাজ করে</string>
+    <string name="word_delimiter_help_body">শব্দ বিভাজকগুলো দুই পাশে স্পেসসহ বড়-ছোট অক্ষর নির্বিশেষে মেলানো হয়।\n\nভুল ম্যাচ এড়াতে এক-অক্ষরের বিভাজকের (যেমন \"x\") দুই পাশেই স্পেস থাকা প্রয়োজন।\n\nউদাহরণ:\n  \"Drake feat. Rihanna\" -&gt; Drake, Rihanna\n  \"Marshmello x Bastille\" -&gt; Marshmello, Bastille\n  \"A vs. B\" -&gt; A, B</string>
+    <string name="word_delimiters_screen_title">শব্দ বিভাজক</string>
+    <string name="word_delimiter_reset_title">শব্দ বিভাজক রিসেট করবেন?</string>
+    <string name="word_delimiter_reset_message">এটি আপনার সব কাস্টম শব্দ বিভাজক মুছে ডিফল্ট কীওয়ার্ডগুলো ফিরিয়ে আনবে। এই কাজটি আর ফিরিয়ে আনা যাবে না।</string>
+    <string name="word_delimiter_toast_added">শব্দ বিভাজক যোগ করা হয়েছে</string>
+    <string name="word_delimiter_toast_invalid">ইতিমধ্যেই রয়েছে বা অবৈধ</string>
+    <string name="word_delimiter_toast_reset">শব্দ বিভাজক ডিফল্টে রিসেট হয়েছে</string>
+    <string name="action_reset">রিসেট</string>
+
+    <!-- Delimiter config (path separators) -->
+    <string name="delimiter_section_title">বর্তমান বিভাজক</string>
+    <string name="delimiter_section_subtitle">সরাতে একটি বিভাজকে ট্যাপ করুন। অন্তত একটি বিভাজক প্রয়োজন।</string>
+    <string name="delimiter_add_title">নতুন বিভাজক যোগ করুন</string>
+    <string name="delimiter_hint">যেমন: / বা ;</string>
+    <string name="delimiter_defaults_title">ডিফল্ট বিভাজক</string>
+    <string name="delimiter_reset_title">বিভাজক রিসেট করবেন?</string>
+    <string name="delimiter_reset_message">এটি আপনার সব কাস্টম বিভাজক মুছে ডিফল্টগুলো ফিরিয়ে আনবে। এই কাজটি আর ফিরিয়ে আনা যাবে না।</string>
+    <string name="delimiter_toast_reset">বিভাজক ডিফল্টে রিসেট হয়েছে</string>
+    <string name="delimiter_toast_at_least_one">অন্তত একটি বিভাজক প্রয়োজন</string>
+    <string name="delimiter_toast_added">বিভাজক যোগ করা হয়েছে</string>
+    <string name="delimiter_toast_invalid">বিভাজক ইতিমধ্যেই রয়েছে বা অবৈধ</string>
+    <string name="path_delimiters_toolbar_title">বিভাজকসমূহ</string>
+    <string name="delimiter_label_space">স্পেস</string>
+    <string name="cd_add_path_delimiter">বিভাজক যোগ করুন</string>
+
+    <!-- Accounts -->
+    <string name="accounts_google_drive_soon">Google Drive শীঘ্রই আসছে।</string>
+    <string name="accounts_unable_open_screen">এই মুহূর্তে স্ক্রিনটি খোলা যাচ্ছে না।</string>
+
+    <!-- Setup (subset; more keys follow in same file) -->
+    <string name="setup_welcome_prefix">স্বাগতম </string>
+    <string name="setup_beta_symbol">β</string>
+    <string name="setup_beta_label">বিটা</string>
+    <string name="setup_intro_body">চলুন আপনার জন্য সবকিছু গুছিয়ে নিই।</string>
+    <string name="setup_checking_backup">ব্যাকআপ প্যাকেজ পরীক্ষা করা হচ্ছে…</string>
+    <string name="setup_theme_title">অ্যাপ থিম</string>
+    <string name="setup_theme_subtitle">আপনার লাইব্রেরি ঘুরে দেখার আগে পছন্দের চেহারা বেছে নিন।</string>
+    <string name="setup_theme_footer">আপনি এটি পরে সেটিংস &gt; চেহারা &gt; অ্যাপ থিম থেকে পরিবর্তন করতে পারবেন।</string>
+    <string name="setup_recommended">সুপারিশকৃত</string>
+    <string name="setup_library_layout_title">লাইব্রেরি লেআউট</string>
+    <string name="setup_library_layout_subtitle">আপনার লাইব্রেরি নেভিগেট করার পছন্দের উপায় বেছে নিন।</string>
+    <string name="setup_compact_mode">কমপ্যাক্ট মোড</string>
+    <string name="setup_library_layout_footer">আপনি এটি পরে সেটিংস &gt; চেহারা &gt; লাইব্রেরি নেভিগেশন থেকে পরিবর্তন করতে পারবেন।</string>
+    <string name="tab_library">লাইব্রেরি</string>
+    <string name="tab_songs">গান</string>
+    <string name="tab_albums">অ্যালবাম</string>
+    <string name="tab_artists">শিল্পী</string>
+    <string name="setup_all_set_title">সব প্রস্তুত!</string>
+    <string name="setup_all_set_body">আপনি এখন আপনার গান উপভোগ করার জন্য প্রস্তুত।</string>
+    <string name="setup_restore_backup_title">ব্যাকআপ রিস্টোর করুন</string>
+    <string name="setup_restore_backup_subtitle">সেটআপ শেষ করার আগে কী কী ইম্পোর্ট করতে চান তা দেখে নিন।</string>
+    <string name="setup_modules_selected_format">%2$dটির মধ্যে %1$dটি মডিউল নির্বাচিত</string>
+    <string name="setup_backup_created_format">তৈরি হয়েছে %1$s</string>
+    <string name="setup_backup_from_version">%1$s থেকে ব্যাকআপ</string>
+    <string name="unknown_version">অজানা সংস্করণ</string>
+    <string name="setup_lets_go">শুরু করা যাক!</string>
+    <string name="setup_step_format">ধাপ %1$d / %2$d</string>
+    <string name="setup_app_navigation_title">অ্যাপ নেভিগেশন</string>
+    <string name="setup_app_navigation_subtitle">নিচের নেভিগেশন বারের স্টাইল বেছে নিন।</string>
+    <string name="setup_navbar_default_style">ডিফল্ট স্টাইল</string>
+    <string name="setup_navbar_footer">আপনি এটি পরে সেটিংস &gt; চেহারা &gt; নেভবার স্টাইল থেকে পরিবর্তন করতে পারবেন।</string>
+    <string name="skip_for_now">এখনকার জন্য এড়িয়ে যান</string>
+    <string name="skip_not_now">এড়িয়ে যান / এখন নয়</string>
+    <string name="restoring">রিস্টোর হচ্ছে</string>
+    <string name="restore_selected">নির্বাচিতগুলো রিস্টোর করুন</string>
+    <string name="customize_corner_radius">কোণার বক্রতা কাস্টমাইজ করুন</string>
+    <string name="toast_grant_permission_first">অনুগ্রহ করে প্রথমে প্রয়োজনীয় অনুমতি দিন।</string>
+    <string name="toast_grant_all_permissions">অনুগ্রহ করে সমস্ত প্রয়োজনীয় অনুমতি দিন।</string>
+    <string name="toast_grant_storage_first">প্রথমে স্টোরেজ অনুমতি দিন</string>
+    <string name="toast_battery_settings_unavailable">ব্যাটারি সেটিংস খোলা যায়নি</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_expand_menu">মেনু প্রসারিত করুন</string>
+    <string name="cd_next_step">পরবর্তী</string>
+    <string name="cd_finish">শেষ করুন</string>
+    <string name="cd_close">বন্ধ করুন</string>
+    <string name="cd_remove">সরান</string>
+    <string name="cd_add_word_delimiter">শব্দ বিভাজক যোগ করুন</string>
+    <string name="cd_reset_defaults">ডিফল্ট রিসেট করুন</string>
+
+    <!-- Setup (additional literals) -->
+    <string name="setup_excluded_folders_title">বাদ দেওয়া ফোল্ডার</string>
+    <string name="setup_excluded_folders_description">ডিফল্টভাবে সমস্ত ফোল্ডার স্ক্যান করা হয়। লাইব্রেরি তৈরি করার সময় যে স্থানগুলো এড়িয়ে যেতে চান সেগুলো বেছে নিন।</string>
+    <string name="setup_choose_folders_ignore">এড়িয়ে যাওয়ার ফোল্ডার বেছে নিন</string>
+    <string name="setup_permission_media_title">মিডিয়া অনুমতি</string>
+    <string name="setup_permission_media_description">আপনার মিউজিক লাইব্রেরি তৈরি করতে PixelMusic-এর অডিও ফাইলে অ্যাক্সেস প্রয়োজন।</string>
+    <string name="setup_permission_granted">অনুমতি দেওয়া হয়েছে</string>
+    <string name="setup_grant_media_permission">মিডিয়া অনুমতি দিন</string>
+    <string name="setup_permission_notifications_title">বিজ্ঞপ্তি</string>
+    <string name="setup_permission_notifications_description">লক স্ক্রিন এবং নোটিফিকেশন শেড থেকে আপনার গান নিয়ন্ত্রণ করতে বিজ্ঞপ্তি চালু করুন।</string>
+    <string name="setup_enable_notifications">বিজ্ঞপ্তি চালু করুন</string>
+    <string name="setup_permission_alarms_title">অ্যালার্ম ও রিমাইন্ডার</string>
+    <string name="setup_permission_alarms_description">ঐচ্ছিক, তবে আপনি যদি স্লিপ টাইমার ব্যবহার করেন এবং চান যে PixelMusic ঠিক সময়ে প্লেব্যাক বন্ধ করুক, তবে এটি সুপারিশকৃত।</string>
+    <string name="setup_grant_permission_generic">অনুমতি দিন</string>
+    <string name="setup_backup_have_title">আপনার কি কোনো ব্যাকআপ আছে?</string>
+    <string name="setup_backup_have_description">আপনার কাছে আগে থেকেই PixelMusic-এর ব্যাকআপ থাকলে এখনই তা রিস্টোর করুন এবং এই ডিভাইসে বাকি সেটআপের বেশিরভাগ অংশ এড়িয়ে যান।</string>
+    <string name="setup_inspecting_backup">ব্যাকআপ পরীক্ষা করা হচ্ছে</string>
+    <string name="setup_restoring_backup">ব্যাকআপ রিস্টোর হচ্ছে</string>
+    <string name="setup_import_backup">ব্যাকআপ ইম্পোর্ট করুন</string>
+    <string name="setup_theme_dark_title">গাঢ়</string>
+    <string name="setup_theme_dark_description">PixelMusic-এর ডিফল্ট Material 3 গাঢ় চেহারা।</string>
+    <string name="setup_theme_light_title">হালকা</string>
+    <string name="setup_theme_light_description">অ্যাপ জুড়ে একটি উজ্জ্বল Material 3 চেহারা।</string>
+    <string name="setup_theme_follow_title">সিস্টেম অনুসরণ করুন</string>
+    <string name="setup_theme_follow_description">আপনার ফোনের বর্তমান চেহারা সেটিংসের সাথে মিলিয়ে নিন।</string>
+    <string name="setup_compact_mode_pill_hint">মিনিমাল পিল নেভিগেশন ব্যবহৃত হচ্ছে</string>
+    <string name="setup_compact_mode_tab_hint">সাধারণ ট্যাব সারি ব্যবহৃত হচ্ছে</string>
+    <string name="setup_preview_songs_label">গান</string>
+    <string name="setup_battery_optimization_title">ব্যাটারি অপ্টিমাইজেশন</string>
+    <string name="setup_battery_optimization_description">কিছু Android ডিভাইস ব্যাকগ্রাউন্ড অ্যাপগুলো জোর করে বন্ধ করে দেয়। অপ্রত্যাশিত প্লেব্যাক বাধা এড়াতে PixelMusic-এর জন্য ব্যাটারি অপ্টিমাইজেশন নিষ্ক্রিয় করুন।</string>
+    <string name="setup_disable_battery_optimization">অপ্টিমাইজেশন নিষ্ক্রিয় করুন</string>
+    <string name="setup_nav_floating_pill_description">গোলাকার কোণাসহ ফ্লোটিং পিল</string>
+    <string name="setup_nav_full_width_description">সাধারণ সম্পূর্ণ-প্রস্থের বার</string>
+
+    <!-- Delete song (Material dialog from ViewModel) -->
+    <string name="dialog_delete_song_title">গানটি মুছবেন?</string>
+    <string name="dialog_delete_song_message">%2$s-এর \"%1$s\"\n\nএই গানটি আপনার ডিভাইস থেকে স্থায়ীভাবে মুছে ফেলা হবে এবং আর পুনরুদ্ধার করা যাবে না।</string>
+
+    <!-- Home / detail shared -->
+    <string name="home_your_mix_title">আপনার\nমিক্স</string>
+    <string name="home_empty_placeholder_title">এখনও দেখানোর মতো কোনো ডেটা নেই</string>
+    <string name="home_empty_placeholder_subtitle">PixelMusic গান খুঁজে পেলে বা কোনো সোর্স সিঙ্ক করলে আপনার মিক্স এখানে দেখা যাবে।</string>
+    <string name="home_empty_placeholder_refresh">রিফ্রেশ</string>
+    <string name="cd_shuffle_play">শাফল প্লে</string>
+    <string name="cd_album_art_for_title">%1$s-এর অ্যালবাম আর্ট</string>
+    <string name="cd_options">বিকল্প</string>
+    <string name="genre_quick_fill">দ্রুত ঘরানা পূরণ</string>
+    <string name="cd_generic_artist">সাধারণ শিল্পী</string>
+    <string name="cd_play_album">অ্যালবাম চালান</string>
+    <string name="cd_shuffle_play_album">অ্যালবাম শাফল প্লে করুন</string>
+    <string name="album_cover_for">%1$s-এর কভার</string>
+    <string name="album_detail_meta_line">%1$s · %2$s</string>
+    <string name="mashup_cd_play_pause">প্লে/বিরতি</string>
+    <string name="cd_song_cover">গানের কভার</string>
+
+    <!-- Crash report dialog -->
+    <string name="crash_report_title">উফ! কিছু একটা ভুল হয়েছে</string>
+    <string name="crash_report_subtitle">আপনার শেষ সেশনে অ্যাপটি ক্র্যাশ হয়েছে। ক্র্যাশ রিপোর্টটি শেয়ার করে আমাদের এটি ঠিক করতে সাহায্য করুন।</string>
+    <string name="crash_report_date_line">তারিখ: %1$s</string>
+    <string name="crash_report_error_label">ত্রুটি:</string>
+    <string name="crash_report_stack_preview_label">স্ট্যাক ট্রেস (প্রিভিউ):</string>
+    <string name="crash_report_clipboard_label">ক্র্যাশ লগ</string>
+    <string name="toast_crash_log_copied">ক্র্যাশ লগ ক্লিপবোর্ডে কপি হয়েছে</string>
+    <string name="crash_report_share_subject">PixelMusic ক্র্যাশ রিপোর্ট</string>
+    <string name="crash_report_share_chooser">ক্র্যাশ রিপোর্ট শেয়ার করুন</string>
+    <string name="action_copy">কপি</string>
+    <string name="action_share">শেয়ার</string>
+
+    <!-- Search screen -->
+    <string name="search_placeholder">খুঁজুন…</string>
+    <string name="cd_search_icon">খুঁজুন</string>
+    <string name="cd_clear_search_query">অনুসন্ধান মুছুন</string>
+    <string name="recent_searches">সাম্প্রতিক অনুসন্ধান</string>
+    <string name="clear_all">সব মুছুন</string>
+    <string name="cd_search_history_icon">ইতিহাস</string>
+    <string name="cd_delete_search_history_item">অনুসন্ধানের ইতিহাস আইটেম মুছুন</string>
+    <string name="cd_no_search_results">কোনো ফলাফল নেই</string>
+    <string name="search_no_results_for_query">\"%1$s\"-এর জন্য কোনো ফলাফল নেই</string>
+    <string name="search_nothing_found">কিছুই পাওয়া যায়নি</string>
+    <string name="search_try_different_or_filters">ভিন্ন কোনো শব্দ দিয়ে চেষ্টা করুন বা আপনার ফিল্টারগুলো পরীক্ষা করুন।</string>
+    <string name="search_no_results_found">কোনো ফলাফল পাওয়া যায়নি।</string>
+
+    <!-- Genre browse -->
+    <string name="browse_by_genre">ঘরানা অনুযায়ী ব্রাউজ করুন</string>
+    <string name="no_genres_available">কোনো ঘরানা উপলব্ধ নেই।</string>
+
+    <!-- About -->
+    <string name="about_credits_title">মূল নির্মাতা</string>
+    <string name="about_credits_description">এই অ্যাপ্লিকেশনটি প্রোপ্রাইটারি লাইসেন্সের অধীনে Theo Vilardo দ্বারা নির্মিত ওপেন-সোর্স PixelPlayer প্রকল্পের ওপর ভিত্তি করে ও অনুপ্রাণিত হয়ে তৈরি।</string>
+    <string name="about_no_contributors">এই মুহূর্তে কোনো অবদানকারী পাওয়া যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</string>
+    <string name="about_app_name">PixelMusic</string>
+    <string name="about_tagline">কমিউনিটির সাথে তৈরি ওপেন সোর্স মিউজিক প্লেয়ার।</string>
+    <string name="about_version_format">সংস্করণ v%1$s</string>
+    <string name="about_contributions_format">%1$d অবদান</string>
+    <string name="screen_about">সম্পর্কে</string>
+    <string name="about_maintainer_title">রক্ষণাবেক্ষণকারী</string>
+    <string name="about_maintainer_subtitle">PixelMusic-এর পেছনের ব্যক্তি।</string>
+    <string name="about_spotlight_title">কমিউনিটি স্পটলাইট</string>
+    <string name="about_spotlight_subtitle">গুরুত্বপূর্ণ অবদান রাখা সহযোগীদের স্বীকৃতি।</string>
+    <string name="about_contributors_section_title">ওপেন সোর্স অবদানকারী</string>
+    <string name="about_contributors_section_subtitle">GitHub থেকে লাইভ অবদানকারীদের তালিকা।</string>
+    <string name="about_signal_open_source">ওপেন সোর্স</string>
+    <string name="about_signal_community_first">কমিউনিটি-প্রথম</string>
+    <string name="about_signal_material3">Material 3 এক্সপ্রেসিভ</string>
+    <string name="cd_open_github_profile">GitHub প্রোফাইল খুলুন</string>
+    <string name="cd_open_telegram">Telegram খুলুন</string>
+    <string name="cd_contributor_avatar">%1$s-এর অ্যাভাটার</string>
+    <string name="cd_contributor_icon">%1$s-এর আইকন</string>
+
+    <!-- Streaming / cloud dashboards -->
+    <string name="screen_subsonic_dashboard_title">Subsonic</string>
+    <string name="dash_playlists_synced_count">%1$dটি প্লেলিস্ট সিঙ্ক হয়েছে</string>
+    <string name="dash_folders_synced_count">%1$dটি ফোল্ডার সিঙ্ক হয়েছে</string>
+    <string name="dash_title_playlists">প্লেলিস্ট</string>
+    <string name="dash_music_folders">মিউজিক ফোল্ডার</string>
+    <string name="dash_action_sync">সিঙ্ক</string>
+    <string name="dash_playlists_empty_title">এখনও কোনো প্লেলিস্ট সিঙ্ক হয়নি</string>
+    <string name="dash_playlists_empty_hint_subsonic">আপনার প্লেলিস্টগুলো আনতে সিঙ্কে ট্যাপ করুন</string>
+    <string name="dash_playlists_empty_hint_jellyfin">আপনার Jellyfin প্লেলিস্টগুলো আনতে সিঙ্কে ট্যাপ করুন</string>
+    <string name="dash_no_folders_yet">এখনও কোনো ফোল্ডার যোগ করা হয়নি</string>
+    <string name="dash_tap_plus_add_drive_folder">একটি Drive ফোল্ডার যোগ করতে + ট্যাপ করুন</string>
+    <string name="dash_quick_actions">দ্রুত অ্যাকশন</string>
+    <string name="dash_quick_actions_subsonic_subtitle">Navidrome, Airsonic এবং অন্যান্য Subsonic-সমর্থিত সার্ভার পরিচালনা করুন।</string>
+    <string name="dash_quick_actions_jellyfin_subtitle">আপনার Jellyfin সার্ভার সংযোগ পরিচালনা করুন।</string>
+    <string name="dash_status_syncing">সিঙ্ক হচ্ছে</string>
+    <string name="dash_action_sync_library">লাইব্রেরি সিঙ্ক করুন</string>
+    <string name="dash_action_disconnect">বিচ্ছিন্ন করুন</string>
+    <string name="dash_status_syncing_library">লাইব্রেরি সিঙ্ক হচ্ছে…</string>
+    <string name="dash_status_fetching_playlists">প্লেলিস্ট আনা হচ্ছে…</string>
+    <string name="dash_status_syncing_playlist_format">প্লেলিস্ট সিঙ্ক হচ্ছে: %1$s</string>
+    <string name="dash_status_updating_local">লোকাল লাইব্রেরি আপডেট হচ্ছে…</string>
+    <string name="dash_status_sync_complete">সিঙ্ক সম্পন্ন</string>
+    <string name="dash_status_fetching_albums">অ্যালবাম তালিকা আনা হচ্ছে…</string>
+    <string name="dash_status_fetching_songs_from_format">%1$s থেকে গান আনা হচ্ছে…</string>
+    <string name="dash_status_saving_songs_format">ডেটাবেসে %1$dটি গান সেভ হচ্ছে…</string>
+    <string name="dash_status_no_songs_found">লাইব্রেরিতে কোনো গান পাওয়া যায়নি</string>
+    <string name="dash_status_library_sync_complete">লাইব্রেরি সিঙ্ক সম্পন্ন</string>
+    <string name="dash_song_count">%1$dটি গান</string>
+    <string name="cd_sync">সিঙ্ক</string>
+    <string name="cd_sync_all">সব সিঙ্ক করুন</string>
+    <string name="cd_add_drive_folder">ফোল্ডার যোগ করুন</string>
+    <string name="cd_logout">লগ আউট</string>
+    <string name="screen_netease_dashboard_title">NetEase Music</string>
+    <string name="cd_sync_all_playlists">সব প্লেলিস্ট সিঙ্ক করুন</string>
+    <string name="error_with_message_format">ত্রুটি: %1$s</string>
+    <string name="sync_status_syncing_ellipsis">সিঙ্ক হচ্ছে…</string>
+    <string name="qq_select_playlist_type_title">প্লেলিস্টের ধরন নির্বাচন করুন</string>
+    <string name="qq_choose_playlists_to_sync">কোন প্লেলিস্টগুলো সিঙ্ক করবেন তা বেছে নিন:</string>
+    <string name="qq_all_playlists">সব প্লেলিস্ট</string>
+    <string name="qq_created_and_collected">তৈরি করা ও সংগৃহীত</string>
+    <string name="qq_created_playlists">তৈরি করা প্লেলিস্ট</string>
+    <string name="qq_collected_playlists">সংগৃহীত প্লেলিস্ট</string>
+    <string name="cd_user_avatar">ব্যবহারকারীর অ্যাভাটার</string>
+    <string name="toast_playlist_created">প্লেলিস্ট সফলভাবে তৈরি হয়েছে</string>
+    <string name="toast_set_ai_provider_api_key_first">প্রথমে আপনার AI প্রোভাইডার API কী সেট করুন</string>
+    <string name="toast_set_gemini_api_key_first">প্রথমে আপনার Gemini API কী সেট করুন</string>
+    <string name="toast_added_to_queue">কিউতে যোগ করা হয়েছে</string>
+    <string name="toast_playing_next">এরপর চলবে</string>
+    <string name="error_share_song_format">গানটি শেয়ার করা যায়নি: %1$s</string>
+</resources>

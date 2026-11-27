@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Spacesuit shoulders -->
+    <path
+        android:fillColor="#EEF2F7"
+        android:pathData="M42,198 C46,158 68,146 100,146 C132,146 154,158 158,198 Z" />
+    <!-- Collar ring -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:pathData="M66,150 C78,158 122,158 134,150 L138,162 C122,170 78,170 62,162 Z" />
+    <!-- Chest badge -->
+    <path
+        android:fillColor="#4D96FF"
+        android:pathData="M86,174 L114,174 C116,174 118,176 118,178 L118,190 C118,192 116,194 114,194 L86,194 C84,194 82,192 82,190 L82,178 C82,176 84,174 86,174 Z" />
+    <!-- Helmet side pods -->
+    <path
+        android:fillColor="#D3DCE6"
+        android:pathData="M34,90 L48,90 L48,126 L34,126 C30,126 28,122 28,118 L28,98 C28,94 30,90 34,90 Z" />
+    <path
+        android:fillColor="#D3DCE6"
+        android:pathData="M152,90 L166,90 C170,90 172,94 172,98 L172,118 C172,122 170,126 166,126 L152,126 Z" />
+    <!-- Helmet dome -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M100,40 C138,40 162,68 162,104 C162,138 136,160 100,160 C64,160 38,138 38,104 C38,68 62,40 100,40 Z" />
+    <!-- Deep indigo visor -->
+    <path
+        android:fillColor="#1E2749"
+        android:pathData="M100,62 C130,62 146,80 146,105 C146,130 128,144 100,144 C72,144 54,130 54,105 C54,80 70,62 100,62 Z" />
+    <!-- Visor reflection glint -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.22"
+        android:pathData="M68,78 C78,70 92,68 102,70 C90,74 78,84 72,96 C66,92 64,84 68,78 Z" />
+    <!-- Glowing cute visor eyes -->
+    <path
+        android:fillColor="#72EFDD"
+        android:pathData="M75,105 a6.5,7.5 0 1,0 13,0 a6.5,7.5 0 1,0 -13,0 Z" />
+    <path
+        android:fillColor="#72EFDD"
+        android:pathData="M112,105 a6.5,7.5 0 1,0 13,0 a6.5,7.5 0 1,0 -13,0 Z" />
+    <!-- Cute glowing smile -->
+    <path
+        android:strokeColor="#72EFDD"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M90,121 C95,127 105,127 110,121" />
+    <!-- Little star glint in visor -->
+    <path
+        android:fillColor="#FFE066"
+        android:pathData="M130,82 L132,87 L137,89 L132,91 L130,96 L128,91 L123,89 L128,87 Z" />
+</vector>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared login / streaming auth -->
+    <string name="auth_cd_back">返回</string>
+    <string name="auth_show_password">顯示密碼</string>
+    <string name="auth_hide_password">隱藏密碼</string>
+    <string name="auth_connecting">連線中…</string>
+    <string name="auth_connect">連線</string>
+    <string name="auth_connection_details">連線詳細資訊</string>
+    <string name="auth_connection_details_subtitle">請輸入您的伺服器網址與帳戶憑證。</string>
+    <string name="auth_server_url">伺服器網址</string>
+    <string name="auth_username">使用者名稱</string>
+    <string name="auth_password">密碼</string>
+    <string name="auth_password_placeholder">輸入密碼</string>
+    <string name="auth_username_placeholder_admin">admin</string>
+    <string name="toast_welcome_user">歡迎，%1$s！</string>
+
+    <!-- Navidrome / Subsonic -->
+    <string name="auth_navidrome_title">Subsonic / Navidrome</string>
+    <string name="auth_navidrome_subtitle">連線至您的自架音樂伺服器</string>
+    <string name="auth_navidrome_info_card">支援 Navidrome、Airsonic、Gonic、Ampache 及其他相容於 Subsonic API 的伺服器。</string>
+    <string name="auth_server_url_placeholder_https">https://music.example.com</string>
+    <string name="auth_navidrome_server_url_hint">請使用伺服器的完整 https:// 基礎網址。</string>
+    <string name="auth_navidrome_username_hint">這是您的 Subsonic 或 Navidrome 帳戶名稱。</string>
+    <string name="auth_navidrome_password_hint">若您的伺服器支援，也可使用應用程式密碼。</string>
+    <string name="auth_navidrome_пароль_hint">若您的伺服器支援，也可使用應用程式密碼。</string>
+    <string name="auth_prefill_https">預填 https://</string>
+    <string name="auth_navidrome_footer">相容於 Navidrome、Gonic、Airsonic 及其他 Subsonic 相容伺服器</string>
+    <string name="cd_navidrome_logo">Navidrome</string>
+    <string name="cd_subsonic_logo">Subsonic</string>
+
+    <string name="auth_prefill_http">預填 http://</string>
+
+    <!-- Google Drive -->
+    <string name="auth_gdrive_toast_connected">已連線至 Google Drive！</string>
+    <string name="auth_gdrive_title">Google Drive</string>
+
+    <!-- Web login (NetEase / QQ Music) — shared -->
+    <string name="auth_web_exit_confirm_title_netease">要結束 NetEase 登入嗎？</string>
+    <string name="auth_web_exit_confirm_title_qq">要結束 QQ Music 登入嗎？</string>
+    <string name="auth_web_exit_confirm_body">您稍後仍可回來登入。關閉後目前的頁面狀態將會被捨棄。</string>
+    <string name="auth_exit">離開</string>
+    <string name="auth_stay">留下</string>
+    <string name="auth_login_netease_title">登入 NetEase Music</string>
+    <string name="auth_login_qq_title">登入 QQ Music</string>
+    <string name="auth_web_cd_web_back">網頁上一頁</string>
+    <string name="auth_web_cd_web_forward">網頁下一頁</string>
+    <string name="auth_web_cd_refresh">重新整理</string>
+    <string name="auth_web_cd_open_home">開啟首頁</string>
+    <string name="auth_saving">儲存中…</string>
+    <string name="auth_done">完成</string>
+    <string name="auth_web_retry">重試</string>
+    <string name="auth_dial_plus">+</string>
+    <string name="auth_snackbar_page_timeout">頁面載入逾時，您可以重試而不會遺失進度。</string>
+    <string name="auth_error_cookies_unreadable">無法讀取工作階段 Cookie。</string>
+    <string name="auth_page_slow">頁面載入時間過長，請重新整理或切換其他網路。</string>
+    <string name="auth_webview_load_failed">WebView 載入失敗。</string>
+    <string name="auth_http_error_loading_netease">載入 NetEase 時發生 HTTP %1$d 錯誤。</string>
+    <string name="auth_http_error_loading_qq">載入 QQ Music 時發生 HTTP %1$d 錯誤。</string>
+    <string name="auth_error_no_cookies">找不到 Cookie，請先登入。</string>
+    <string name="auth_error_netease_login_incomplete">尚未偵測到登入狀態，請先完成 NetEase 登入再按下「完成」。</string>
+    <string name="auth_error_qq_login_incomplete">尚未偵測到登入狀態，請先完成 QQ Music 登入再按下「完成」。</string>
+</resources>
