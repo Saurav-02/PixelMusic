@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared login / streaming auth -->
+    <string name="auth_cd_back">Quay lại</string>
+    <string name="auth_show_password">Hiện mật khẩu</string>
+    <string name="auth_hide_password">Ẩn mật khẩu</string>
+    <string name="auth_connecting">Đang kết nối…</string>
+    <string name="auth_connect">Kết nối</string>
+    <string name="auth_connection_details">Chi tiết kết nối</string>
+    <string name="auth_connection_details_subtitle">Nhập URL máy chủ và thông tin tài khoản của bạn.</string>
+    <string name="auth_server_url">URL máy chủ</string>
+    <string name="auth_username">Tên người dùng</string>
+    <string name="auth_password">Mật khẩu</string>
+    <string name="auth_password_placeholder">Nhập mật khẩu</string>
+    <string name="auth_username_placeholder_admin">admin</string>
+    <string name="toast_welcome_user">Chào mừng, %1$s!</string>
+
+    <!-- Navidrome / Subsonic -->
+    <string name="auth_navidrome_title">Subsonic / Navidrome</string>
+    <string name="auth_navidrome_subtitle">Kết nối với máy chủ nhạc tự lưu trữ của bạn</string>
+    <string name="auth_navidrome_info_card">Hỗ trợ Navidrome, Airsonic, Gonic, Ampache và các máy chủ khác tương thích với Subsonic API.</string>
+    <string name="auth_server_url_placeholder_https">https://music.example.com</string>
+    <string name="auth_navidrome_server_url_hint">Dùng địa chỉ gốc https:// đầy đủ của máy chủ.</string>
+    <string name="auth_navidrome_username_hint">Đây là tên tài khoản Subsonic hoặc Navidrome của bạn.</string>
+    <string name="auth_navidrome_password_hint">Mật khẩu ứng dụng cũng hoạt động nếu máy chủ của bạn hỗ trợ.</string>
+    <string name="auth_navidrome_пароль_hint">Mật khẩu ứng dụng cũng hoạt động nếu máy chủ của bạn hỗ trợ.</string>
+    <string name="auth_prefill_https">Điền sẵn https://</string>
+    <string name="auth_navidrome_footer">Tương thích với Navidrome, Gonic, Airsonic và các máy chủ tương thích Subsonic khác</string>
+    <string name="cd_navidrome_logo">Navidrome</string>
+    <string name="cd_subsonic_logo">Subsonic</string>
+
+    <string name="auth_prefill_http">Điền sẵn http://</string>
+
+    <!-- Google Drive -->
+    <string name="auth_gdrive_toast_connected">Đã kết nối Google Drive!</string>
+    <string name="auth_gdrive_title">Google Drive</string>
+
+    <!-- Web login (NetEase / QQ Music) — shared -->
+    <string name="auth_web_exit_confirm_title_netease">Thoát đăng nhập NetEase?</string>
+    <string name="auth_web_exit_confirm_title_qq">Thoát đăng nhập QQ Music?</string>
+    <string name="auth_web_exit_confirm_body">Bạn có thể quay lại sau. Trạng thái trang hiện tại sẽ bị hủy khi đóng.</string>
+    <string name="auth_exit">Thoát</string>
+    <string name="auth_stay">Ở lại</string>
+    <string name="auth_login_netease_title">Đăng nhập NetEase Music</string>
+    <string name="auth_login_qq_title">Đăng nhập QQ Music</string>
+    <string name="auth_web_cd_web_back">Quay lại trang trước</string>
+    <string name="auth_web_cd_web_forward">Đi tới trang sau</string>
+    <string name="auth_web_cd_refresh">Làm mới</string>
+    <string name="auth_web_cd_open_home">Mở trang chủ</string>
+    <string name="auth_saving">Đang lưu…</string>
+    <string name="auth_done">Xong</string>
+    <string name="auth_web_retry">Thử lại</string>
+    <string name="auth_dial_plus">+</string>
+    <string name="auth_snackbar_page_timeout">Tải trang quá thời gian. Bạn có thể thử lại mà không mất tiến trình.</string>
+    <string name="auth_error_cookies_unreadable">Không thể đọc cookie phiên đăng nhập.</string>
+    <string name="auth_page_slow">Trang tải quá lâu. Hãy làm mới hoặc thử mạng khác.</string>
+    <string name="auth_webview_load_failed">Tải WebView thất bại.</string>
+    <string name="auth_http_error_loading_netease">Lỗi HTTP %1$d khi tải NetEase.</string>
+    <string name="auth_http_error_loading_qq">Lỗi HTTP %1$d khi tải QQ Music.</string>
+    <string name="auth_error_no_cookies">Không tìm thấy cookie. Vui lòng đăng nhập trước.</string>
+    <string name="auth_error_netease_login_incomplete">Chưa phát hiện đăng nhập. Hãy hoàn tất đăng nhập NetEase trước khi nhấn Xong.</string>
+    <string name="auth_error_qq_login_incomplete">Chưa phát hiện đăng nhập. Hãy hoàn tất đăng nhập QQ Music trước khi nhấn Xong.</string>
+</resources>

@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pixel Music</string>
+    <string name="app_name_change_title">應用程式名稱變更</string>
+    <string name="app_name_change_message">基於商標相關問題，我們已將應用程式名稱從 PixelMusic 變更為 PixelMusic。繼續享受音樂吧！</string>
+    <string name="do_not_show_again">不再顯示</string>
+    <string name="dismiss">關閉</string>
+    <string name="all_files_access_title">需要特殊權限</string>
+    <string name="all_files_access_description">若要編輯歌曲中繼資料（.mp3 檔案），PixelMusic 需要所有檔案的存取權限，以直接修改音軌標籤。請在下一個畫面授予此權限以啟用中繼資料編輯功能。</string>
+    <string name="grant_permission_button">授予權限</string>
+    <string name="all_files_access_setting">所有檔案存取權</string>
+    <string name="error">錯誤</string>
+    <string name="ok">確定</string>
+    <string name="cancel">取消</string>
+    <string name="import_file">匯入</string>
+    <string name="search">搜尋</string>
+
+    <string name="lyrics">歌詞</string>
+    <string name="close_lyrics_sheet">關閉歌詞面板</string>
+    <string name="loading_lyrics">正在載入歌詞…</string>
+    <string name="cant_find_lyrics">找不到這首歌曲的歌詞。</string>
+    <string name="lyrics_provided_by">歌詞提供者</string>
+    <string name="lrclib_uri">https://lrclib.net/</string>
+    <string name="lyrics_not_found">找不到歌詞</string>
+    <string name="search_lyrics_online_prompt">要線上搜尋歌詞嗎？</string>
+    <string name="lyrics_custom_search_hint">無法自動找到歌詞。您可以編輯曲名或藝人名稱，嘗試手動搜尋。</string>
+    <string name="failed_to_search_for_lyrics">搜尋歌詞失敗</string>
+    <string name="failed_to_fetch_lyrics_from_remote">從遠端擷取歌詞失敗</string>
+    <string name="lyrics_fetch_timeout">連線逾時，請檢查您的網路連線。</string>
+    <string name="lyrics_network_error">網路錯誤，請檢查您的網路連線。</string>
+    <string name="lyrics_server_error">伺服器錯誤（代碼 %d），請稍後再試。</string>
+    <string name="found_n_matches_format">找到 %d 筆相符結果</string>
+    <string name="searched_for_x_format">已搜尋「%s」</string>
+    <string name="searching_lyrics">正在搜尋歌詞…</string>
+    <string name="lyrics_already_available">已有歌詞，已略過線上擷取。</string>
+    <string name="lyrics_embedded_already_available">已找到內嵌歌詞，已略過線上擷取。</string>
+    <string name="local_lrc_already_available">已找到本機（.lrc）歌詞，已略過線上擷取。</string>
+    <string name="fetch_lyrics_show_options_title">顯示歌詞選項</string>
+    <string name="fetch_lyrics_show_options_subtitle">一律開啟選擇器，而非自動套用第一筆相符結果</string>
+    <string name="save_lyrics_as_lrc">將歌詞另存為 .lrc</string>
+    <string name="save_lyrics_dialog_title">儲存歌詞</string>
+    <string name="save_lyrics_dialog_message">選擇要儲存的版本：</string>
+    <string name="save_synced_lyrics">動態同步（含時間戳記）</string>
+    <string name="save_plain_lyrics">純文字（僅文字內容）</string>
+    <string name="lyrics_saved_successfully">歌詞已成功儲存</string>
+    <string name="lyrics_save_failed">儲存歌詞失敗</string>
+    <string name="no_lyrics_to_save">沒有可儲存的歌詞</string>
+    <string name="reset_imported_lyrics">重設已匯入的歌詞</string>
+    <string name="lyrics_sync_offset">歌詞同步偏移</string>
+    <string name="lyrics_sync_offset_format">%+.1fs</string>
+    <string name="lyrics_sync_offset_reset">重設</string>
+    <string name="lyrics_earlier">提前</string>
+    <string name="lyrics_later">延後</string>
+
+    <string name="sync_scanning">正在掃描音樂檔案…</string>
+    <string name="sync_processing">正在處理檔案…</string>
+    <string name="sync_files_progress">%1$d / %2$d 個檔案</string>
+    <string name="sync_in_progress">正在同步音樂庫…</string>
+    <string name="sync_complete">同步完成</string>
+    <string name="sync_pending">等待中…</string>
+    <string name="syncing_library">正在同步音樂庫…</string>
+    <string name="library_background_sync">正在背景完成作業…</string>
+    <string name="library_background_sync_lyrics">正在掃描歌詞…</string>
+    <string name="library_background_sync_cache">正在清理專輯封面快取…</string>
+    <string name="library_background_sync_cloud">正在同步雲端來源…</string>
+    <string name="unknown_song_title">未知曲目</string>
+    <string name="unknown_artist">未知藝人</string>
+    <string name="unknown_album">未知專輯</string>
+    <string name="artist_picker_title">選擇藝人</string>
+    <string name="artist_picker_supporting_text">開啟此曲目的任一參與藝人頁面。</string>
+    <string name="artist_picker_count_single">1 位藝人</string>
+    <string name="artist_picker_count_multiple">%1$d 位藝人</string>
+    <string name="artist_picker_primary_label">主要藝人</string>
+    <string name="artist_picker_shortcut_label">藝人頁面</string>
+    <string name="external_queue_label">快速播放</string>
+    <string name="external_playback_error">無法開啟該音訊檔案。</string>
+    <string name="open_full_player">開啟完整播放器</string>
+    <string name="close_external_player">關閉懸浮播放器</string>
+    <string name="close_notification_player">關閉播放器</string>
+    <string name="previous_track">上一首</string>
+    <string name="next_track">下一首</string>
+    <string name="pause_playback">暫停播放</string>
+    <string name="play_playback">播放</string>
+    <string name="playlist_not_found">找不到播放清單。</string>
+    <string name="disc_number_header">光碟 %d</string>
+
+    <string name="ai_error_api_key">請在「設定」中為所選的 AI 供應商設定有效的 API 金鑰。</string>
+    <string name="ai_error_generic">AI 錯誤：%s</string>
+    <string name="ai_error_quota">所選 AI 供應商拒絕了請求，因為帳戶已無點數或可用配額。</string>
+    <string name="ai_error_model_unavailable">所選 AI 模型已不再可用。PixelMusic 已嘗試自動切換至支援的模型。</string>
+    <string name="ai_no_songs_found">AI 找不到符合您提示詞的歌曲。</string>
+    <string name="ai_prompt_empty">為您的每日精選合輯寫下一個想法</string>
+    <string name="ai_daily_mix_updated">已使用 AI 更新每日精選合輯</string>
+    <string name="ai_no_songs_for_mix">AI 找不到適合此合輯的歌曲</string>
+
+    <string name="shortcut_shuffle_short">隨機播放</string>
+    <string name="shortcut_shuffle_long">隨機播放所有歌曲</string>
+    <string name="shortcut_playlist_short">播放清單</string>
+    <string name="shortcut_playlist_long">上次播放的清單</string>
+
+    <string name="tile_shuffle_all">全部隨機播放</string>
+    <string name="tile_last_playlist">上次播放清單</string>
+    <string name="tile_last_playlist_unavailable">沒有可開啟的播放清單</string>
+
+    <string name="invalid_album_id">無效的專輯 ID</string>
+    <string name="album_id_not_found">找不到專輯 ID</string>
+    <string name="error_loading_album">載入專輯資料時發生錯誤：%s</string>
+    <string name="album_not_found">找不到專輯</string>
+    <string name="could_not_update">無法更新：%s</string>
+    <string name="invalid_artist_id">無效的藝人 ID</string>
+    <string name="artist_id_not_found">找不到藝人 ID</string>
+    <string name="error_loading_artist">載入藝人資料時發生錯誤：%s</string>
+    <string name="could_not_find_artist">找不到該藝人</string>
+    <string name="no_valid_songs">找不到可播放的有效歌曲</string>
+
+    <string name="glance_widget_description">會依尺寸自動調整的響應式小工具</string>
+    <string name="widget_bar_4x1_desc">精簡播放列</string>
+    <string name="widget_control_4x2_desc">含隨機與重複播放的完整控制</string>
+    <string name="widget_grid_2x2_desc">極簡方形播放器</string>
+    <string name="widget_blur_2x2_desc">模糊專輯封面方形播放器</string>
+
+    <string name="service_processing_action">正在處理播放操作…</string>
+
+    <!-- Playlist bulk actions -->
+    <string name="playlist_none_to_share">沒有可分享的播放清單</string>
+    <string name="playlist_share_chooser_title">分享播放清單</string>
+    <string name="playlist_share_failed">分享失敗：%1$s</string>
+    <string name="playlist_none_to_export">沒有可匯出的播放清單</string>
+    <string name="playlist_export_failed">匯出失敗：%1$s</string>
+    <string name="playlist_export_folder_display">Music/PixelMusic Exports</string>
+    <string name="ai_playlist_gemini_key_required">請在「設定」中設定您的 Gemini API 金鑰。</string>
+    <string name="error_unknown">未知錯誤</string>
+
+    <!-- Watch transfer foreground service -->
+    <string name="watch_transfer_sending_n_to_watch">正在傳送 %1$d 首歌曲至手錶</string>
+    <string name="watch_transfer_sending_to_watch">正在傳送至手錶</string>
+    <string name="watch_transfer_complete">傳輸完成</string>
+    <string name="watch_transfer_failed">傳輸失敗</string>
+    <string name="watch_transfer_cancelled">已取消傳輸</string>
+    <string name="watch_transfer_preparing">正在準備手錶傳輸</string>
+    <string name="watch_transfer_summary_n">%1$d 項傳輸</string>
+    <string name="watch_transfer_starting">正在開始傳輸…</string>
+    <string name="watch_transfer_multiple_active">多項傳輸進行中</string>
+    <string name="watch_transfer_preparing_transfer">正在準備傳輸…</string>
+    <string name="watch_transfer_status_transferring">傳輸中</string>
+    <string name="watch_transfer_status_completed">已完成</string>
+    <string name="watch_transfer_status_failed">失敗</string>
+    <string name="watch_transfer_status_cancelled">已取消</string>
+    <string name="watch_transfer_status_preparing">準備中</string>
+    <string name="watch_transfer_starting_short">開始中</string>
+    <string name="watch_transfer_channel_name">手錶傳輸</string>
+    <string name="watch_transfer_channel_description">顯示從手機傳輸音樂至手錶的即時進度</string>
+
+    <!-- Cast HTTP server -->
+    <string name="cast_server_channel_name">投放媒體伺服器</string>
+    <string name="cast_server_notification_title">正在投放至裝置</string>
+    <string name="cast_server_notification_text">正在將媒體提供給投放裝置</string>
+    <string name="cast_server_foreground_error">%1$s：%2$s</string>
+
+    <!-- Backup / data transfer (ViewModels) -->
+    <string name="backup_invalid_format">無效的備份：%1$s</string>
+    <string name="backup_progress_preparing_restore">正在準備還原</string>
+    <string name="backup_progress_starting_task">正在啟動還原工作。</string>
+    <string name="backup_progress_preparing_backup">正在準備備份</string>
+    <string name="backup_progress_starting_backup_task">正在啟動備份工作。</string>
+    <string name="restore_completed_success">備份已成功還原</string>
+    <string name="restore_completed_partial_issues">還原已完成，但仍有部分未解決的問題。</string>
+    <string name="restore_could_not_complete">無法完成還原：%1$s</string>
+    <string name="restore_failed_format">還原失敗：%1$s</string>
+    <string name="data_exported_successfully">資料已成功匯出</string>
+    <string name="export_failed_format">匯出失敗：%1$s</string>
+    <string name="data_restored_successfully">資料已成功還原</string>
+    <string name="restore_partial_unresolved_format">還原已完成，但有未解決的問題。失敗項目：%1$s</string>
+    <string name="models_fetch_failed">載入模型失敗</string>
+    <string name="dev_test_crash_message">已從開發人員選項觸發測試當機 — 此為測試當機回報系統之用途</string>
+
+    <!-- PlayerViewModel -->
+    <string name="player_song_not_found_in_list">目前清單中找不到此歌曲</string>
+    <string name="player_could_not_locate_song">無法定位歌曲</string>
+    <string name="player_no_songs_in_library_toast">音樂庫中找不到歌曲</string>
+    <string name="player_playback_stopped_eot">已停止播放：%1$s 已播畢（曲目結束）。</string>
+    <string name="player_default_track_title">曲目</string>
+    <string name="player_no_songs_to_shuffle">沒有可隨機播放的歌曲。</string>
+    <string name="player_queue_name_selected_albums">所選專輯</string>
+    <string name="player_no_playable_songs_in_albums">所選專輯中找不到可播放的歌曲</string>
+    <string name="player_only_first_n_albums_queued">僅將前 %1$d 張專輯加入佇列</string>
+    <string name="player_albums_queued_format">已將 %1$d 張專輯加入佇列（共 %2$d 首歌曲）</string>
+    <string name="player_could_not_queue_albums">無法將所選專輯加入佇列</string>
+    <string name="player_all_songs_already_in_favorites">所有歌曲都已在最愛中</string>
+    <string name="player_no_songs_were_in_favorites">最愛中沒有任何歌曲</string>
+    <string name="player_creating_zip">正在建立 ZIP 檔案…</string>
+    <string name="player_share_zip_failed_format">分享失敗：%1$s</string>
+    <string name="player_cannot_delete_currently_playing">無法刪除正在播放的歌曲</string>
+    <string name="player_batch_delete_files_deleted_skipped_format">已刪除 %1$d 個檔案（已略過 %2$d 個正在播放的檔案）</string>
+    <string name="player_batch_delete_partial_format">已刪除 %1$d / %2$d 個檔案</string>
+    <string name="player_delete_files_failed">刪除檔案失敗</string>
+    <string name="player_file_deleted">已刪除檔案</string>
+    <string name="player_delete_file_not_found">無法刪除檔案或找不到檔案</string>
+    <string name="player_deletion_cancelled">已取消刪除</string>
+    <string name="player_permission_denied_edit_files">權限遭拒 – 無法編輯檔案</string>
+    <string name="player_permission_denied_save_lyrics">權限遭拒 – 無法儲存歌詞</string>
+    <string name="player_permission_denied_edit_this_file">權限遭拒 – 無法編輯此檔案</string>
+    <string name="metadata_updated_successfully">中繼資料已成功更新</string>
+    <string name="player_updating_n_songs">正在更新 %1$d 首歌曲…</string>
+    <string name="player_batch_genre_updated_all">已成功更新 %1$d 首歌曲！</string>
+    <string name="player_batch_genre_updated_partial">已更新 %1$d 首歌曲，失敗：%2$d</string>
+    <string name="playlist_restored_toast">已還原播放清單</string>
+    <string name="delete_songs_permanent_message">這些歌曲將會從您的裝置永久刪除，且無法復原。</string>
+    <string name="delete_action">刪除</string>
+
+    <!-- Sleep timer (SleepTimerStateHolder + TimerOptionsBottomSheet) -->
+    <string name="sleep_timer_n_minutes_format">%1$d 分鐘</string>
+    <string name="sleep_timer_display_eot">曲目結束時</string>
+    <string name="sleep_timer_set_for_minutes_toast">已設定 %1$d 分鐘計時器。</string>
+    <string name="sleep_timer_cancelled_toast">已取消計時器。</string>
+    <string name="sleep_timer_eot_no_song_toast">無法啟用曲目結束停止：目前沒有播放中的歌曲。</string>
+    <string name="sleep_timer_eot_song_changed_toast">已停用曲目結束計時器：歌曲已從 %1$s 變更為 %2$s。</string>
+    <string name="sleep_timer_eot_stop_at_end_toast">播放將於目前曲目結束時停止。</string>
+    <string name="sleep_timer_label_previous_track">上一首</string>
+    <string name="sleep_timer_label_current_track">目前曲目</string>
+    <string name="sleep_timer_ui_title">睡眠計時器</string>
+    <string name="sleep_timer_ui_slider_label_timer">計時器</string>
+    <string name="sleep_timer_ui_end_of_current_track">目前曲目結束時</string>
+    <string name="sleep_timer_ui_custom_time">自訂時間</string>
+    <string name="sleep_timer_ui_cancel_timer">取消計時器</string>
+    <string name="sleep_timer_ui_set_custom_duration">設定自訂時長</string>
+    <string name="sleep_timer_ui_play_count_label">播放次數：%1$s</string>
+    <string name="sleep_timer_ui_play_count_one_time">1 次</string>
+    <string name="cd_switch_on">開啟</string>
+    <string name="ui_format_percent_d">%1$d%%</string>
+    <string name="backup_manifest_schema_v">v%1$d</string>
+    <string name="backup_manifest_device_line">%1$s %2$s</string>
+
+    <!-- Share Bottom Sheet -->
+    <string name="share_sheet_title">分享</string>
+    <string name="share_sheet_chooser_title">分享方式</string>
+    <string name="share_card_tab_song">歌曲卡片</string>
+    <string name="share_card_tab_lyrics">歌詞卡片</string>
+    <string name="share_action_snapchat">Snapchat\n限時動態</string>
+    <string name="share_action_instagram">Instagram\n限時動態</string>
+    <string name="share_action_download_card">儲存\n卡片</string>
+    <string name="share_action_copy_yt_link">複製\nYT 連結</string>
+    <string name="share_action_more_apps">更多\n分享</string>
+    <string name="share_action_add_to_playlist">加入播放清單</string>
+    <string name="share_action_add_to_playlist_sub">將此歌曲加入您的任一播放清單</string>
+    <string name="share_action_copy_github_link">複製應用程式連結</string>
+    <string name="share_card_saved">卡片已儲存至圖片庫</string>
+    <string name="share_link_copied">連結已複製到剪貼簿</string>
+    <string name="share_text_format">正在聽 %2$s 的「%1$s」🎵\n%3$s</string>
+    <string name="share_format_photo">圖片</string>
+    <string name="share_format_video">30 秒影片</string>
+    <string name="share_action_download_video">儲存\n影片</string>
+    <string name="share_action_share_video">分享\n影片</string>
+    <string name="share_video_saved">影片已儲存至 Movies/PixelMusic</string>
+    <string name="share_video_generating">正在製作 30 秒影片…</string>
+    <string name="share_video_failed">製作影片失敗：%1$s</string>
+    <string name="share_video_progress_title">正在製作 30 秒影片</string>
+    <string name="share_video_progress_subtitle">正在將卡片封面與歌曲音訊編碼合成…</string>
+
+    <!-- Player Share / Options Menu -->
+    <string name="player_menu_share_card">分享動態卡片</string>
+    <string name="player_menu_download">下載歌曲</string>
+    <string name="player_menu_add_to_playlist">加入播放清單</string>
+    <string name="cd_player_more_options">更多選項</string>
+    <string name="cd_player_theme">變更主題</string>
+    <string name="setcat_navbar_style_floating_pill">懸浮膠囊</string>
+
+    <!-- Listen Together -->
+    <string name="listen_together">一起聽</string>
+    <string name="listen_together_desc">無論好友身在何處，都能同步聆聽同一首音樂</string>
+    <string name="listen_together_host_only">只有主辦人可以控制播放</string>
+    <string name="listen_together_your_name">您的名稱</string>
+    <string name="listen_together_start">建立房間</string>
+    <string name="listen_together_join">加入房間</string>
+    <string name="listen_together_room_code">房間代碼</string>
+    <string name="listen_together_guest_name">訪客名稱（選填）</string>
+    <string name="listen_together_creating">正在建立房間\u2026</string>
+    <string name="listen_together_joining">正在加入\u2026</string>
+    <string name="listen_together_share_code">與好友分享此代碼</string>
+    <string name="listen_together_copy_code">複製代碼</string>
+    <string name="listen_together_code_copied">代碼已複製到剪貼簿</string>
+    <string name="listen_together_listeners">%1$d/4 人正在收聽</string>
+    <string name="listen_together_end_session">結束房間</string>
+    <string name="listen_together_listening_with">正在與 %1$s 一起聽</string>
+    <string name="listen_together_guest_note">輕鬆聆聽，由主辦人控制音樂播放</string>
+    <string name="listen_together_leave">離開</string>
+    <string name="listen_together_live">即時同步</string>
+    <string name="listen_together_listening">收聽中</string>
+    <string name="listen_together_reconnecting">正在重新連線\u2026</string>
+    <string name="listen_together_slow_down">操作太快了，請稍候</string>
+    <string name="listen_together_host">主辦人</string>
+    <string-array name="listen_together_preset_messages">
+        <item>這首超讚 🔥</item>
+        <item>再聽一次？ 🔁</item>
+        <item>下一首來點輕鬆的 🎧</item>
+        <item>音量開大 🔊</item>
+    </string-array>
+    <string name="listen_together_track_unavailable">您無法播放此曲目，將持續與主辦人保持同步</string>
+</resources>

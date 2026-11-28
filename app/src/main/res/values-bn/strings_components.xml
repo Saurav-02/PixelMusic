@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_tap_to_open">খুলতে ট্যাপ করুন</string>
+    <string name="widget_album_art">অ্যালবাম আর্ট</string>
+    <string name="widget_album_art_placeholder">অ্যালবাম আর্ট প্লেসহোল্ডার</string>
+    <string name="cd_favorite">পছন্দ</string>
+    <string name="cd_play">প্লে</string>
+    <string name="cd_pause">বিরতি</string>
+    <string name="widget_tap_to_play">চালাতে ট্যাপ করুন</string>
+    <string name="widget_preview_song_title">গানের শিরোনাম</string>
+    <string name="widget_preview_artist">শিল্পী</string>
+    <string name="cd_repeat">রিপিট</string>
+    <string name="widget_wavy_progress_bar_desc">প্রোগ্রেস বার, %1$d শতাংশ</string>
+
+    <!-- Lyrics more bottom sheet -->
+    <string name="lyrics_more_appearance">চেহারা</string>
+    <string name="lyrics_more_alignment">সারিবদ্ধতা</string>
+    <string name="lyrics_more_controls">নিয়ন্ত্রণ</string>
+    <string name="lyrics_more_dialog_reset_title">লিরিক্স রিসেট করবেন?</string>
+    <string name="lyrics_more_dialog_reset_message">আপনি কি নিশ্চিত যে এই গানের লিরিক্স রিসেট করতে চান?</string>
+    <string name="lyrics_more_hide_sync_controls">সিঙ্ক নিয়ন্ত্রণ লুকান</string>
+    <string name="lyrics_more_adjust_sync">সিঙ্ক সামঞ্জস্য করুন</string>
+    <string name="lyrics_more_show_romanization">রোমানাইজেশন দেখান</string>
+    <string name="lyrics_more_show_translations">অনুবাদ দেখান</string>
+    <string name="lyrics_more_disable_immersive_once">ইমারসিভ বন্ধ করুন (একবারের জন্য)</string>
+    <string name="lyrics_more_keep_screen_on">স্ক্রিন চালু রাখুন</string>
+    <string name="cd_lyrics_align_left">লিরিক্স বাম দিকে সারিবদ্ধ করুন</string>
+    <string name="cd_lyrics_align_center">লিরিক্স মাঝখানে সারিবদ্ধ করুন</string>
+    <string name="cd_lyrics_align_right">লিরিক্স ডান দিকে সারিবদ্ধ করুন</string>
+
+    <!-- No internet -->
+    <string name="no_internet_dialog_title">ইন্টারনেট সংযোগ নেই</string>
+    <string name="no_internet_dialog_message">এই কনটেন্টের জন্য ইন্টারনেট সংযোগ প্রয়োজন। অনুগ্রহ করে আপনার নেটওয়ার্ক সেটিংস পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="offline_screen_title">আপনি অফলাইনে আছেন</string>
+    <string name="offline_screen_message">এই কনটেন্ট অ্যাক্সেস করতে অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।</string>
+
+    <!-- Equalizer preset dialogs -->
+    <string name="equalizer_save_custom_preset_title">কাস্টম প্রিসেট সেভ করুন</string>
+    <string name="equalizer_save_custom_preset_body">আপনার কাস্টম ইকুয়ালাইজার প্রিসেটের জন্য একটি নাম লিখুন।</string>
+    <string name="equalizer_preset_name_label">প্রিসেটের নাম</string>
+    <string name="equalizer_rename_preset_title">প্রিসেটের নাম পরিবর্তন করুন</string>
+    <string name="error_name_empty">নাম খালি রাখা যাবে না</string>
+    <string name="action_save">সেভ করুন</string>
+    <string name="action_rename">নাম পরিবর্তন</string>
+    <string name="equalizer_action_save_new">নতুন হিসেবে সেভ করুন</string>
+
+    <!-- AI metadata sheet -->
+    <string name="ai_metadata_headline_success">সঠিকভাবে ট্যাগ করা হয়েছে!</string>
+    <string name="ai_metadata_headline_default">AI মেটাডেটা</string>
+    <string name="ai_metadata_subtitle_generating">ডেইলি মিক্স গাইডের সাহায্য নেওয়া হচ্ছে…</string>
+    <string name="ai_metadata_subtitle_review">তৈরি করা বিবরণ পর্যালোচনা ও সংশোধন করুন</string>
+    <string name="song_field_title">শিরোনাম</string>
+    <string name="song_field_artist">শিল্পী</string>
+    <string name="song_field_album">অ্যালবাম</string>
+    <string name="song_field_album_artist">অ্যালবাম শিল্পী</string>
+    <string name="song_field_genre">ঘরানা</string>
+    <string name="song_field_composer">সুরকার</string>
+    <string name="action_try_again">আবার চেষ্টা করুন</string>
+    <string name="action_apply_changes">পরিবর্তন প্রয়োগ করুন</string>
+
+    <!-- Edit song metadata sheet -->
+    <string name="edit_song_info_dialog_title">গানের মেটাডেটা সম্পাদনা</string>
+    <string name="edit_song_info_dialog_body">গানের মেটাডেটা সম্পাদনা করলে এটি আপনার লাইব্রেরিতে কীভাবে প্রদর্শিত ও সাজানো হবে তা প্রভাবিত হতে পারে। পরিবর্তনগুলো স্থায়ী এবং হয়তো ফিরিয়ে আনা যাবে না।</string>
+    <string name="edit_song_got_it">বুঝেছি</string>
+    <string name="cd_info_icon">তথ্য</string>
+    <string name="edit_song_toolbar_title">গান সম্পাদনা করুন</string>
+    <string name="cd_use_gemini_ai">Gemini AI ব্যবহার করুন</string>
+    <string name="cd_show_metadata_info">তথ্য দেখান</string>
+    <string name="song_field_track_number">ট্র্যাক নম্বর</string>
+    <string name="song_field_disc_number">ডিস্ক নম্বর</string>
+    <string name="song_field_replaygain_track_db">ReplayGain ট্র্যাক (dB)</string>
+    <string name="song_field_replaygain_album_db">ReplayGain অ্যালবাম (dB)</string>
+    <string name="placeholder_replaygain_track_example">-6.50</string>
+    <string name="placeholder_replaygain_album_example">-8.20</string>
+    <string name="cd_replaygain_track">ReplayGain ট্র্যাক</string>
+    <string name="cd_replaygain_album">ReplayGain অ্যালবাম</string>
+    <string name="cd_song_title_icon">শিরোনাম</string>
+    <string name="cd_track_number_icon">ট্র্যাক নম্বর</string>
+    <string name="cd_disc_number_icon">ডিস্ক নম্বর</string>
+    <string name="cd_search_lyrics_lrclib">lrclib.net-এ লিরিক্স খুঁজুন</string>
+    <string name="edit_song_cover_art_heading">কভার আর্ট</string>
+    <string name="edit_song_cover_art_hint">একটি বর্গাকার ছবি বেছে নিন এবং ঠিকমতো সাজিয়ে নিন যাতে অ্যাপ জুড়ে আপনার কভার আর্ট চমৎকার দেখায়।</string>
+    <string name="edit_song_change_cover_art">কভার আর্ট পরিবর্তন করুন</string>
+    <string name="edit_song_delete_cover_art">কভার আর্ট মুছুন</string>
+    <string name="cd_cover_art_preview">নতুন কভার আর্টের প্রিভিউ</string>
+    <string name="cd_current_song_cover_art">বর্তমান গানের কভার আর্ট</string>
+    <string name="edit_song_crop_dialog_title">আপনার কভার আর্ট সামঞ্জস্য করুন</string>
+    <string name="edit_song_crop_dialog_hint">সঠিক ফ্রেমিংয়ের জন্য পিঞ্চ এবং ড্র্যাগ জেসচার ব্যবহার করুন।</string>
+    <string name="edit_song_apply_cover_art">কভার আর্ট প্রয়োগ করুন</string>
+    <string name="edit_song_unable_to_load_image">নির্বাচিত ছবিটি লোড করা যায়নি</string>
+
+    <!-- Song info bottom sheet -->
+    <string name="song_info_share_chooser_title">এর মাধ্যমে গানের ফাইল শেয়ার করুন</string>
+    <string name="cd_play_song_action">গান চালান</string>
+    <string name="cd_share_song_file">গানের ফাইল শেয়ার করুন</string>
+    <string name="cd_add_to_queue">কিউতে যোগ করুন</string>
+    <string name="cd_play_next_in_queue">কিউতে পরের গান হিসেবে চালান</string>
+    <string name="cd_add_to_playlist">প্লেলিস্টে যোগ করুন</string>
+    <string name="action_add_to_queue">কিউতে যোগ করুন</string>
+    <string name="action_queue_next">পরবর্তী</string>
+    <string name="action_interested">আগ্রহী</string>
+    <string name="action_not_interested">আগ্রহী নই</string>
+    <string name="toast_marked_interested">আগ্রহী হিসেবে চিহ্নিত। সুপারিশগুলো সাজানো হচ্ছে।</string>
+    <string name="toast_marked_not_interested">আগ্রহী নই হিসেবে চিহ্নিত। সুপারিশ থেকে লুকানো হয়েছে।</string>
+    <string name="toast_interest_cleared">আগ্রহের পছন্দ সরানো হয়েছে</string>
+    <string name="song_info_checking_watch">ঘড়ি পরীক্ষা করা হচ্ছে</string>
+    <string name="song_info_transferring_percent">ট্রান্সফার হচ্ছে %1$d%%</string>
+    <string name="song_info_transferring_to_watch">ঘড়িতে ট্রান্সফার হচ্ছে</string>
+    <string name="song_info_transfer_in_progress">ট্রান্সফার চলছে</string>
+    <string name="song_info_send_to_watch">ঘড়িতে পাঠান</string>
+    <string name="song_info_watch_unavailable">ঘড়ি উপলব্ধ নয়</string>
+    <string name="cd_send_song_to_watch">ঘড়িতে গান পাঠান</string>
+    <string name="cd_watch_unavailable">ঘড়ি উপলব্ধ নয়</string>
+    <string name="song_info_label_duration">সময়কাল</string>
+    <string name="song_info_label_song_metadata">গানের তথ্য</string>
+    <string name="cd_duration_icon">সময়কাল</string>
+    <string name="cd_genre_icon">ঘরানা</string>
+    <string name="cd_album_icon">অ্যালবাম</string>
+    <string name="cd_artist_icon">শিল্পী</string>
+    <string name="cd_audio_format_icon">অডিও ফরম্যাট</string>
+    <string name="cd_provider_icon">প্রোভাইডার</string>
+    <string name="cd_file_icon">ফাইল</string>
+    <string name="cd_edit_song_metadata">গানের মেটাডেটা সম্পাদনা করুন</string>
+    <string name="cd_remove_from_favorites">পছন্দের তালিকা থেকে সরান</string>
+    <string name="cd_add_to_favorites">পছন্দের তালিকায় যোগ করুন</string>
+    <string name="song_info_tab_options">বিকল্প</string>
+    <string name="song_info_tab_options_badge">বিকল্প</string>
+    <string name="song_info_tab_details">বিবরণ</string>
+    <string name="song_info_tab_info_badge">তথ্য</string>
+    <string name="cd_details_tab">বিবরণ</string>
+
+    <!-- Multi-selection bottom sheet -->
+    <string name="multi_selection_songs_count_upper">%1$dটি গান</string>
+    <string name="multi_selection_selected">নির্বাচিত</string>
+    <string name="cd_play_all">সব চালান</string>
+    <string name="action_play_all">সব চালান</string>
+    <string name="cd_like_all">সব পছন্দ করুন</string>
+    <string name="cd_unlike_all">সব অপছন্দ করুন</string>
+    <string name="cd_share_all_as_zip">সব ZIP হিসেবে শেয়ার করুন</string>
+    <string name="cd_add_all_to_queue">সব কিউতে যোগ করুন</string>
+    <string name="cd_delete_all_songs">সব মুছুন</string>
+    <string name="action_delete_all">সব মুছুন</string>
+
+    <string name="playlist_dismissed_message">প্লেলিস্ট বাতিল করা হয়েছে</string>
+    <string name="action_undo">পূর্বাবস্থায় ফেরান</string>
+    <string name="home_option_dj_mashup">DJ ম্যাশআপ</string>
+    <string name="create_playlist_dialog_title">নতুন প্লেলিস্ট</string>
+    <string name="create_playlist_name_label">প্লেলিস্টের নাম</string>
+    <string name="create_playlist_name_placeholder">আমার প্লেলিস্ট</string>
+    <string name="action_create">তৈরি করুন</string>
+    <string name="playlist_picker_add_songs_title">%1$dটি গান যোগ করুন…</string>
+    <string name="playlist_picker_select_playlists">প্লেলিস্ট নির্বাচন করুন</string>
+    <string name="search_playlists_hint">প্লেলিস্ট খুঁজুন…</string>
+
+    <string name="multi_selection_playlists_count_upper">%1$dটি প্লেলিস্ট</string>
+    <string name="cd_export_all">সব এক্সপোর্ট করুন</string>
+    <string name="cd_merge_all">সব একত্রিত করুন</string>
+    <string name="cd_share_all">সব শেয়ার করুন</string>
+    <string name="action_export">এক্সপোর্ট</string>
+    <string name="action_merge">একত্রিত করুন</string>
+
+    <string name="reorder_tabs_sheet_title">লাইব্রেরি ট্যাব পুনরায় সাজান</string>
+    <string name="reorder_tabs_reset_dialog_title">ক্রম রিসেট করুন</string>
+    <string name="reorder_tabs_reset_dialog_body">ট্যাবের ক্রম কি ডিফল্টে রিসেট করবেন?</string>
+    <string name="reorder_tabs_reordering">ট্যাব সাজানো হচ্ছে…</string>
+    <string name="cd_drag_handle">ড্র্যাগ হ্যান্ডেল</string>
+    <string name="cd_reset">রিসেট</string>
+    <string name="action_done">সম্পন্ন</string>
+</resources>

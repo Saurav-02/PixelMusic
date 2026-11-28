@@ -1,0 +1,47 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Soft shadow base -->
+    <path
+        android:fillColor="#E4E7F5"
+        android:pathData="M48,108 C48,66 70,40 102,40 C134,40 156,66 156,108 L156,162 C156,170 144,172 138,164 C132,156 122,156 116,164 C110,172 98,172 92,164 C86,156 76,156 70,164 C64,172 48,170 48,162 Z" />
+    <!-- Crisp white ghost body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,106 C46,64 68,38 100,38 C132,38 154,64 154,106 L154,158 C154,166 142,168 136,160 C130,152 120,152 114,160 C108,168 96,168 90,160 C84,152 74,152 68,160 C62,168 46,166 46,158 Z" />
+    <!-- Little waving arms -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,110 C32,104 28,118 38,126 C44,130 50,126 52,120 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M152,110 C168,104 172,118 162,126 C156,130 150,126 148,120 Z" />
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FFA6C1"
+        android:fillAlpha="0.65"
+        android:pathData="M58,114 a10,6.5 0 1,0 20,0 a10,6.5 0 1,0 -20,0 Z" />
+    <path
+        android:fillColor="#FFA6C1"
+        android:fillAlpha="0.65"
+        android:pathData="M122,114 a10,6.5 0 1,0 20,0 a10,6.5 0 1,0 -20,0 Z" />
+    <!-- Sparkly dark eyes -->
+    <path
+        android:fillColor="#2B2D42"
+        android:pathData="M71,96 a8.5,10 0 1,0 17,0 a8.5,10 0 1,0 -17,0 Z" />
+    <path
+        android:fillColor="#2B2D42"
+        android:pathData="M112,96 a8.5,10 0 1,0 17,0 a8.5,10 0 1,0 -17,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M74,92 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M115,92 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0 Z" />
+    <!-- Cute happy open smile -->
+    <path
+        android:fillColor="#FF758F"
+        android:pathData="M91,114 C91,124 109,124 109,114 Z" />
+</vector>

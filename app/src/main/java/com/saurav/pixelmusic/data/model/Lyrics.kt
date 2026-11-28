@@ -1,0 +1,37 @@
+package com.saurav.pixelmusic.data.model
+
+import kotlinx.serialization.Serializable
+
+/**
+ * Modelo de datos para las letras de las canciones.
+ *
+ * @param plain Lista de líneas de texto plano (no sincronizadas).
+ * @param synced Lista de pares (milisegundos, línea) para letras sincronizadas.
+ * @param areFromRemote Indica si las letras se obtuvieron de una fuente remota.
+ */
+@Serializable
+data class Lyrics(
+    val plain: List<String>? = null,
+    val synced: List<SyncedLine>? = null,
+    val areFromRemote: Boolean = false,
+    val providerName: String? = null
+)
+
+@Serializable
+data class SyncedLine(
+    val time: Int,
+    val line: String,
+    val words: List<SyncedWord>? = null,
+    val translation: String? = null,
+    val romanization: String? = null,
+    val agent: String? = null,
+    val isBackground: Boolean = false
+)
+
+@Serializable
+data class SyncedWord(
+    val time: Int,
+    val word: String,
+    val startsNewWord: Boolean = true,
+    val endTime: Int? = null
+)

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared login / streaming auth -->
+    <string name="auth_cd_back">वापस जाएं</string>
+    <string name="auth_show_password">पासवर्ड दिखाएं</string>
+    <string name="auth_hide_password">पासवर्ड छिपाएं</string>
+    <string name="auth_connecting">कनेक्ट हो रहा है…</string>
+    <string name="auth_connect">कनेक्ट करें</string>
+    <string name="auth_connection_details">कनेक्शन विवरण</string>
+    <string name="auth_connection_details_subtitle">अपना सर्वर URL और खाता क्रेडेंशियल दर्ज करें।</string>
+    <string name="auth_server_url">सर्वर URL</string>
+    <string name="auth_username">यूज़रनेम</string>
+    <string name="auth_password">पासवर्ड</string>
+    <string name="auth_password_placeholder">पासवर्ड दर्ज करें</string>
+    <string name="auth_username_placeholder_admin">admin</string>
+    <string name="toast_welcome_user">स्वागत है, %1$s!</string>
+
+    <!-- Navidrome / Subsonic -->
+    <string name="auth_navidrome_title">Subsonic / Navidrome</string>
+    <string name="auth_navidrome_subtitle">अपने सेल्फ़-होस्टेड म्यूज़िक सर्वर से कनेक्ट करें</string>
+    <string name="auth_navidrome_info_card">Navidrome, Airsonic, Gonic, Ampache और Subsonic API के साथ संगत अन्य सर्वरों का समर्थन करता है।</string>
+    <string name="auth_server_url_placeholder_https">https://music.example.com</string>
+    <string name="auth_navidrome_server_url_hint">अपने सर्वर का पूरा https:// बेस पता उपयोग करें।</string>
+    <string name="auth_navidrome_username_hint">यह आपका Subsonic या Navidrome खाता नाम है।</string>
+    <string name="auth_navidrome_password_hint">यदि आपका सर्वर इसका समर्थन करता है तो ऐप पासवर्ड भी काम करता है।</string>
+    <string name="auth_navidrome_пароль_hint">यदि आपका सर्वर इसका समर्थन करता है तो ऐप पासवर्ड भी काम करता है।</string>
+    <string name="auth_prefill_https">https:// पहले से भरें</string>
+    <string name="auth_navidrome_footer">Navidrome, Gonic, Airsonic और अन्य Subsonic-संगत सर्वरों के साथ संगत</string>
+    <string name="cd_navidrome_logo">Navidrome</string>
+    <string name="cd_subsonic_logo">Subsonic</string>
+
+    <string name="auth_prefill_http">http:// पहले से भरें</string>
+
+    <!-- Google Drive -->
+    <string name="auth_gdrive_toast_connected">Google Drive कनेक्ट हो गया!</string>
+    <string name="auth_gdrive_title">Google Drive</string>
+
+    <!-- Web login (NetEase / QQ Music) — shared -->
+    <string name="auth_web_exit_confirm_title_netease">NetEase लॉगिन से बाहर निकलें?</string>
+    <string name="auth_web_exit_confirm_title_qq">QQ Music लॉगिन से बाहर निकलें?</string>
+    <string name="auth_web_exit_confirm_body">आप बाद में वापस आ सकते हैं। बंद करने पर वर्तमान पेज की स्थिति हट जाएगी।</string>
+    <string name="auth_exit">बाहर निकलें</string>
+    <string name="auth_stay">बने रहें</string>
+    <string name="auth_login_netease_title">NetEase Music में लॉगिन करें</string>
+    <string name="auth_login_qq_title">QQ Music में लॉगिन करें</string>
+    <string name="auth_web_cd_web_back">वेब पर पीछे जाएं</string>
+    <string name="auth_web_cd_web_forward">वेब पर आगे जाएं</string>
+    <string name="auth_web_cd_refresh">रीफ़्रेश करें</string>
+    <string name="auth_web_cd_open_home">होम खोलें</string>
+    <string name="auth_saving">सहेजा जा रहा है…</string>
+    <string name="auth_done">पूर्ण</string>
+    <string name="auth_web_retry">फिर प्रयास करें</string>
+    <string name="auth_dial_plus">+</string>
+    <string name="auth_snackbar_page_timeout">पेज लोड होने का समय समाप्त हो गया। आप अपनी प्रगति खोए बिना फिर प्रयास कर सकते हैं।</string>
+    <string name="auth_error_cookies_unreadable">सेशन कुकीज़ नहीं पढ़ी जा सकीं।</string>
+    <string name="auth_page_slow">पेज लोड होने में बहुत अधिक समय लग रहा है। रीफ़्रेश करें या कोई दूसरा नेटवर्क आज़माएं।</string>
+    <string name="auth_webview_load_failed">WebView लोड होने में विफल रहा।</string>
+    <string name="auth_http_error_loading_netease">NetEase लोड करते समय HTTP %1$d त्रुटि हुई।</string>
+    <string name="auth_http_error_loading_qq">QQ Music लोड करते समय HTTP %1$d त्रुटि हुई।</string>
+    <string name="auth_error_no_cookies">कोई कुकीज़ नहीं मिलीं। पहले लॉग इन करें।</string>
+    <string name="auth_error_netease_login_incomplete">अभी तक लॉगिन का पता नहीं चला है। पूर्ण दबाने से पहले NetEase लॉगिन पूरा करें।</string>
+    <string name="auth_error_qq_login_incomplete">अभी तक लॉगिन का पता नहीं चला है। पूर्ण दबाने से पहले QQ Music लॉगिन पूरा करें।</string>
+</resources>

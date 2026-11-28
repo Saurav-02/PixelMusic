@@ -1,0 +1,60 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Antenna -->
+    <path
+        android:strokeColor="#64748B"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M100,56 L100,32" />
+    <path
+        android:fillColor="#FF6B6B"
+        android:pathData="M90,28 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z" />
+    <!-- Neck & shoulders -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M88,154 L112,154 L112,168 L88,168 Z" />
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M48,198 C52,168 72,160 100,160 C128,160 148,168 152,198 Z" />
+    <!-- Ear bolts -->
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M32,94 L46,94 L46,124 L32,124 C28,124 26,120 26,116 L26,102 C26,98 28,94 32,94 Z" />
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M154,94 L168,94 C172,94 174,98 174,102 L174,116 C174,120 172,124 168,124 L154,124 Z" />
+    <!-- Head -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M66,56 L134,56 C148,56 158,66 158,80 L158,134 C158,148 148,158 134,158 L66,158 C52,158 42,148 42,134 L42,80 C42,66 52,56 66,56 Z" />
+    <!-- Screen face -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M72,72 L128,72 C138,72 144,78 144,88 L144,126 C144,136 138,142 128,142 L72,142 C62,142 56,136 56,126 L56,88 C56,78 62,72 72,72 Z" />
+    <!-- Glowing eyes -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M71,102 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 Z" />
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M111,102 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 Z" />
+    <path
+        android:fillColor="#E0F2FE"
+        android:pathData="M74,98 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 Z" />
+    <path
+        android:fillColor="#E0F2FE"
+        android:pathData="M114,98 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 Z" />
+    <!-- Happy digital smile -->
+    <path
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M86,122 C93,130 107,130 114,122" />
+    <!-- Chest power indicator -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M92,178 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z" />
+</vector>

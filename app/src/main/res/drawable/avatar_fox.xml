@@ -1,0 +1,75 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Shoulders -->
+    <path
+        android:fillColor="#E86A33"
+        android:pathData="M50,198 C54,160 72,148 100,148 C128,148 146,160 150,198 Z" />
+    <path
+        android:fillColor="#FFF4EA"
+        android:pathData="M80,198 C83,174 91,164 100,164 C109,164 117,174 120,198 Z" />
+    <!-- Ears -->
+    <path
+        android:fillColor="#E86A33"
+        android:pathData="M52,98 L40,38 C39,32 46,28 51,32 L88,62 Z" />
+    <path
+        android:fillColor="#E86A33"
+        android:pathData="M148,98 L160,38 C161,32 154,28 149,32 L112,62 Z" />
+    <!-- Dark ear tips -->
+    <path
+        android:fillColor="#3A2622"
+        android:pathData="M43,54 L40,38 C39,32 46,28 51,32 L63,42 Z" />
+    <path
+        android:fillColor="#3A2622"
+        android:pathData="M157,54 L160,38 C161,32 154,28 149,32 L137,42 Z" />
+    <!-- Inner ear fluff -->
+    <path
+        android:fillColor="#FFE5D0"
+        android:pathData="M58,84 L52,55 L76,70 Z" />
+    <path
+        android:fillColor="#FFE5D0"
+        android:pathData="M142,84 L148,55 L124,70 Z" />
+    <!-- Head base -->
+    <path
+        android:fillColor="#F2743B"
+        android:pathData="M100,56 C138,56 160,84 158,114 C156,144 128,164 100,164 C72,164 44,144 42,114 C40,84 62,56 100,56 Z" />
+    <!-- Cream cheek mask -->
+    <path
+        android:fillColor="#FFF6EE"
+        android:pathData="M43,115 C54,110 74,116 86,130 C92,137 96,142 100,142 C104,142 108,137 114,130 C126,116 146,110 157,115 C154,144 128,164 100,164 C72,164 46,144 43,115 Z" />
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FF8A80"
+        android:fillAlpha="0.45"
+        android:pathData="M54,126 a10,6.5 0 1,0 20,0 a10,6.5 0 1,0 -20,0 Z" />
+    <path
+        android:fillColor="#FF8A80"
+        android:fillAlpha="0.45"
+        android:pathData="M126,126 a10,6.5 0 1,0 20,0 a10,6.5 0 1,0 -20,0 Z" />
+    <!-- Eyes -->
+    <path
+        android:fillColor="#2B1E1B"
+        android:pathData="M71,106 a8.5,9.5 0 1,0 17,0 a8.5,9.5 0 1,0 -17,0 Z" />
+    <path
+        android:fillColor="#2B1E1B"
+        android:pathData="M112,106 a8.5,9.5 0 1,0 17,0 a8.5,9.5 0 1,0 -17,0 Z" />
+    <!-- Eye highlights -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M74,102 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M115,102 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 Z" />
+    <!-- Button nose -->
+    <path
+        android:fillColor="#2B1E1B"
+        android:pathData="M92,126 C92,121 108,121 108,126 C108,131 103,134 100,134 C97,134 92,131 92,126 Z" />
+    <!-- Smile -->
+    <path
+        android:strokeColor="#3A2622"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M91,139 C95,144 105,144 109,139" />
+</vector>
