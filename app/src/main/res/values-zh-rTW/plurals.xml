@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="sharing_playlists_message">
+        <item quantity="other">正在分享 %d 個播放清單</item>
+    </plurals>
+    <plurals name="exported_playlists_message">
+        <item quantity="other">已將 %1$d 個播放清單匯出至 %2$s</item>
+    </plurals>
+    <plurals name="n_songs_added_to_queue">
+        <item quantity="other">已將 %d 首歌曲加入佇列</item>
+    </plurals>
+    <plurals name="n_songs_will_play_next">
+        <item quantity="other">%d 首歌曲將接續播放</item>
+    </plurals>
+    <plurals name="n_songs_added_to_favorites">
+        <item quantity="other">已將 %d 首歌曲加入最愛</item>
+    </plurals>
+    <plurals name="n_songs_removed_from_favorites">
+        <item quantity="other">已從最愛移除 %d 首歌曲</item>
+    </plurals>
+    <plurals name="n_files_deleted">
+        <item quantity="other">已刪除 %d 個檔案</item>
+    </plurals>
+    <plurals name="delete_songs_confirmation_title">
+        <item quantity="other">要刪除 %d 首歌曲嗎？</item>
+    </plurals>
+    <plurals name="sleep_timer_play_count_times">
+        <item quantity="other">%d 次</item>
+    </plurals>
+</resources>

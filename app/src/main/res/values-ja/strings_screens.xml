@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation / misc -->
+    <string name="nav_error_genre_id_missing">エラー: ジャンル ID がありません</string>
+    <string name="easter_egg_thank_you">PixelMusic をご利用いただきありがとうございます！</string>
+
+    <!-- Word delimiter config -->
+    <string name="word_delimiter_section_title">現在の単語区切り</string>
+    <string name="word_delimiter_section_subtitle">スペースで囲まれたこれらのキーワードでアーティスト名を分割します。大文字・小文字は区別されません。タップで削除します。</string>
+    <string name="word_delimiter_empty">単語区切りが設定されていません</string>
+    <string name="word_delimiter_add_title">新しい単語区切りを追加</string>
+    <string name="word_delimiter_hint">例: feat. や ft.</string>
+    <string name="word_delimiter_help_title">単語区切りの仕組み</string>
+    <string name="word_delimiter_help_body">単語区切りは前後にスペースがある場合に大文字・小文字を区別せず一致します。\n\n1文字の区切り（「x」など）は誤検出を防ぐため、両側にスペースが必要です。\n\n例:\n  \"Drake feat. Rihanna\" -&gt; Drake, Rihanna\n  \"Marshmello x Bastille\" -&gt; Marshmello, Bastille\n  \"A vs. B\" -&gt; A, B</string>
+    <string name="word_delimiters_screen_title">単語区切り</string>
+    <string name="word_delimiter_reset_title">単語区切りをリセットしますか？</string>
+    <string name="word_delimiter_reset_message">カスタムの単語区切りをすべて削除し、デフォルトのキーワードに戻します。この操作は取り消せません。</string>
+    <string name="word_delimiter_toast_added">単語区切りを追加しました</string>
+    <string name="word_delimiter_toast_invalid">すでに存在するか、無効な値です</string>
+    <string name="word_delimiter_toast_reset">単語区切りをデフォルトにリセットしました</string>
+    <string name="action_reset">リセット</string>
+
+    <!-- Delimiter config (path separators) -->
+    <string name="delimiter_section_title">現在の区切り文字</string>
+    <string name="delimiter_section_subtitle">区切り文字をタップして削除します。最低1つの区切り文字が必要です。</string>
+    <string name="delimiter_add_title">新しい区切り文字を追加</string>
+    <string name="delimiter_hint">例: / や ;</string>
+    <string name="delimiter_defaults_title">デフォルトの区切り文字</string>
+    <string name="delimiter_reset_title">区切り文字をリセットしますか？</string>
+    <string name="delimiter_reset_message">カスタムの区切り文字をすべて削除し、デフォルトに戻します。この操作は取り消せません。</string>
+    <string name="delimiter_toast_reset">区切り文字をデフォルトにリセットしました</string>
+    <string name="delimiter_toast_at_least_one">最低1つの区切り文字が必要です</string>
+    <string name="delimiter_toast_added">区切り文字を追加しました</string>
+    <string name="delimiter_toast_invalid">すでに存在するか、無効な区切り文字です</string>
+    <string name="path_delimiters_toolbar_title">区切り文字</string>
+    <string name="delimiter_label_space">スペース</string>
+    <string name="cd_add_path_delimiter">区切り文字を追加</string>
+
+    <!-- Accounts -->
+    <string name="accounts_google_drive_soon">Google Drive 連携は近日公開予定です。</string>
+    <string name="accounts_unable_open_screen">現在この画面を開けません。</string>
+
+    <!-- Setup (subset; more keys follow in same file) -->
+    <string name="setup_welcome_prefix">ようこそ、</string>
+    <string name="setup_beta_symbol">β</string>
+    <string name="setup_beta_label">ベータ</string>
+    <string name="setup_intro_body">はじめに基本設定を整えましょう。</string>
+    <string name="setup_checking_backup">バックアップパッケージを確認中…</string>
+    <string name="setup_theme_title">アプリテーマ</string>
+    <string name="setup_theme_subtitle">ライブラリを開く前に、好みの見た目を選んでください。</string>
+    <string name="setup_theme_footer">後で「設定 &gt; 外観 &gt; アプリテーマ」から変更できます。</string>
+    <string name="setup_recommended">おすすめ</string>
+    <string name="setup_library_layout_title">ライブラリレイアウト</string>
+    <string name="setup_library_layout_subtitle">ライブラリの操作スタイルを選択してください。</string>
+    <string name="setup_compact_mode">コンパクトモード</string>
+    <string name="setup_library_layout_footer">後で「設定 &gt; 外観 &gt; ライブラリナビゲーション」から変更できます。</string>
+    <string name="tab_library">ライブラリ</string>
+    <string name="tab_songs">曲</string>
+    <string name="tab_albums">アルバム</string>
+    <string name="tab_artists">アーティスト</string>
+    <string name="setup_all_set_title">準備完了！</string>
+    <string name="setup_all_set_body">音楽を楽しむ準備が整いました。</string>
+    <string name="setup_restore_backup_title">バックアップを復元</string>
+    <string name="setup_restore_backup_subtitle">セットアップ完了前にインポートする項目を確認してください。</string>
+    <string name="setup_modules_selected_format">%2$d 個中 %1$d 個のモジュールを選択</string>
+    <string name="setup_backup_created_format">作成日: %1$s</string>
+    <string name="setup_backup_from_version">%1$s からのバックアップ</string>
+    <string name="unknown_version">不明なバージョン</string>
+    <string name="setup_lets_go">はじめる</string>
+    <string name="setup_step_format">ステップ %1$d / %2$d</string>
+    <string name="setup_app_navigation_title">アプリナビゲーション</string>
+    <string name="setup_app_navigation_subtitle">下部ナビゲーションバーのスタイルを選択してください。</string>
+    <string name="setup_navbar_default_style">デフォルトスタイル</string>
+    <string name="setup_navbar_footer">後で「設定 &gt; 外観 &gt; ナビゲーションバースタイル」から変更できます。</string>
+    <string name="skip_for_now">今はスキップ</string>
+    <string name="skip_not_now">スキップ / 後で</string>
+    <string name="restoring">復元中</string>
+    <string name="restore_selected">選択項目を復元</string>
+    <string name="customize_corner_radius">角丸の半径をカスタマイズ</string>
+    <string name="toast_grant_permission_first">先に必要な権限を許可してください。</string>
+    <string name="toast_grant_all_permissions">必要な権限をすべて許可してください。</string>
+    <string name="toast_grant_storage_first">先にストレージ権限を許可してください</string>
+    <string name="toast_battery_settings_unavailable">バッテリー設定を開けませんでした</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_expand_menu">メニューを展開</string>
+    <string name="cd_next_step">次へ</string>
+    <string name="cd_finish">完了</string>
+    <string name="cd_close">閉じる</string>
+    <string name="cd_remove">削除</string>
+    <string name="cd_add_word_delimiter">単語区切りを追加</string>
+    <string name="cd_reset_defaults">デフォルトにリセット</string>
+
+    <!-- Setup (additional literals) -->
+    <string name="setup_excluded_folders_title">除外フォルダー</string>
+    <string name="setup_excluded_folders_description">デフォルトではすべてのフォルダーがスキャンされます。ライブラリ作成時に無視したい場所があれば選択してください。</string>
+    <string name="setup_choose_folders_ignore">無視するフォルダーを選択</string>
+    <string name="setup_permission_media_title">メディア権限</string>
+    <string name="setup_permission_media_description">音楽ライブラリを構築するため、PixelMusic にオーディオファイルへのアクセス権限が必要です。</string>
+    <string name="setup_permission_granted">権限を許可済み</string>
+    <string name="setup_grant_media_permission">メディア権限を許可</string>
+    <string name="setup_permission_notifications_title">通知</string>
+    <string name="setup_permission_notifications_description">通知を有効にすると、ロック画面や通知パネルから音楽を操作できます。</string>
+    <string name="setup_enable_notifications">通知を有効にする</string>
+    <string name="setup_permission_alarms_title">アラームとリマインダー</string>
+    <string name="setup_permission_alarms_description">任意ですが、スリープタイマーで指定時刻ちょうどに再生を停止させたい場合は有効にすることをおすすめします。</string>
+    <string name="setup_grant_permission_generic">権限を許可</string>
+    <string name="setup_backup_have_title">バックアップはお持ちですか？</string>
+    <string name="setup_backup_have_description">PixelMusic のバックアップがある場合は、今すぐ復元して残りのセットアップの多くをスキップできます。</string>
+    <string name="setup_inspecting_backup">バックアップを確認中</string>
+    <string name="setup_restoring_backup">バックアップを復元中</string>
+    <string name="setup_import_backup">バックアップをインポート</string>
+    <string name="setup_theme_dark_title">ダーク</string>
+    <string name="setup_theme_dark_description">PixelMusic 標準の Material 3 ダークテーマ。</string>
+    <string name="setup_theme_light_title">ライト</string>
+    <string name="setup_theme_light_description">アプリ全体を明るく見せる Material 3 テーマ。</string>
+    <string name="setup_theme_follow_title">システムに従う</string>
+    <string name="setup_theme_follow_description">端末の現在の外観設定に自動で合わせます。</string>
+    <string name="setup_compact_mode_pill_hint">ミニマルなピルナビゲーションを使用中</string>
+    <string name="setup_compact_mode_tab_hint">標準のタブバーを使用中</string>
+    <string name="setup_preview_songs_label">曲</string>
+    <string name="setup_battery_optimization_title">バッテリーの最適化</string>
+    <string name="setup_battery_optimization_description">一部の Android 端末はバックグラウンドアプリを強制終了します。再生が途切れるのを防ぐため、PixelMusic のバッテリー最適化を無効にしてください。</string>
+    <string name="setup_disable_battery_optimization">最適化を無効にする</string>
+    <string name="setup_nav_floating_pill_description">角丸のフローティングピル型</string>
+    <string name="setup_nav_full_width_description">標準の全幅バー</string>
+
+    <!-- Delete song (Material dialog from ViewModel) -->
+    <string name="dialog_delete_song_title">曲を削除しますか？</string>
+    <string name="dialog_delete_song_message">%2$s の「%1$s」\n\nこの曲はデバイスから完全に削除され、復元できません。</string>
+
+    <!-- Home / detail shared -->
+    <string name="home_your_mix_title">あなたへの\nミックス</string>
+    <string name="home_empty_placeholder_title">まだデータがありません</string>
+    <string name="home_empty_placeholder_subtitle">PixelMusic が曲を検出するかソースを同期すると、ここにミックスが表示されます。</string>
+    <string name="home_empty_placeholder_refresh">更新</string>
+    <string name="cd_shuffle_play">シャッフル再生</string>
+    <string name="cd_album_art_for_title">%1$s のアルバムアート</string>
+    <string name="cd_options">オプション</string>
+    <string name="genre_quick_fill">ジャンルをクイック入力</string>
+    <string name="cd_generic_artist">アーティスト画像</string>
+    <string name="cd_play_album">アルバムを再生</string>
+    <string name="cd_shuffle_play_album">アルバムをシャッフル再生</string>
+    <string name="album_cover_for">%1$s のカバー</string>
+    <string name="album_detail_meta_line">%1$s · %2$s</string>
+    <string name="mashup_cd_play_pause">再生/一時停止</string>
+    <string name="cd_song_cover">曲のカバー</string>
+
+    <!-- Crash report dialog -->
+    <string name="crash_report_title">問題が発生しました</string>
+    <string name="crash_report_subtitle">前回のセッション中にアプリがクラッシュしました。改善のためクラッシュレポートの共有にご協力ください。</string>
+    <string name="crash_report_date_line">日時: %1$s</string>
+    <string name="crash_report_error_label">エラー:</string>
+    <string name="crash_report_stack_preview_label">スタックトレース（プレビュー）:</string>
+    <string name="crash_report_clipboard_label">クラッシュログ</string>
+    <string name="toast_crash_log_copied">クラッシュログをクリップボードにコピーしました</string>
+    <string name="crash_report_share_subject">PixelMusic クラッシュレポート</string>
+    <string name="crash_report_share_chooser">クラッシュレポートを共有</string>
+    <string name="action_copy">コピー</string>
+    <string name="action_share">共有</string>
+
+    <!-- Search screen -->
+    <string name="search_placeholder">検索…</string>
+    <string name="cd_search_icon">検索</string>
+    <string name="cd_clear_search_query">検索をクリア</string>
+    <string name="recent_searches">最近の検索</string>
+    <string name="clear_all">すべて消去</string>
+    <string name="cd_search_history_icon">履歴</string>
+    <string name="cd_delete_search_history_item">検索履歴を削除</string>
+    <string name="cd_no_search_results">結果なし</string>
+    <string name="search_no_results_for_query">「%1$s」の検索結果はありません</string>
+    <string name="search_nothing_found">見つかりませんでした</string>
+    <string name="search_try_different_or_filters">別のキーワードを試すか、フィルターを確認してください。</string>
+    <string name="search_no_results_found">検索結果が見つかりませんでした。</string>
+
+    <!-- Genre browse -->
+    <string name="browse_by_genre">ジャンルから探す</string>
+    <string name="no_genres_available">利用可能なジャンルがありません。</string>
+
+    <!-- About -->
+    <string name="about_credits_title">オリジナル作者</string>
+    <string name="about_credits_description">このアプリは、Theo Vilardo によって独自ライセンスの下で作成されたオープンソースの PixelPlayer プロジェクトを基盤に、着想を得て開発されています。</string>
+    <string name="about_no_contributors">現在コントリビューターが見つかりません。後ほどもう一度お試しください。</string>
+    <string name="about_app_name">PixelMusic</string>
+    <string name="about_tagline">コミュニティとともに作るオープンソース音楽プレーヤー。</string>
+    <string name="about_version_format">バージョン v%1$s</string>
+    <string name="about_contributions_format">%1$d 件の貢献</string>
+    <string name="screen_about">アプリについて</string>
+    <string name="about_maintainer_title">メンテナー</string>
+    <string name="about_maintainer_subtitle">PixelMusic の開発・保守担当者。</string>
+    <string name="about_spotlight_title">コミュニティスポットライト</string>
+    <string name="about_spotlight_subtitle">大きな貢献をしてくれた協力者の紹介。</string>
+    <string name="about_contributors_section_title">オープンソースコントリビューター</string>
+    <string name="about_contributors_section_subtitle">GitHub からの最新コントリビューター一覧。</string>
+    <string name="about_signal_open_source">オープンソース</string>
+    <string name="about_signal_community_first">コミュニティ主導</string>
+    <string name="about_signal_material3">Material 3 エクスプレッシブ</string>
+    <string name="cd_open_github_profile">GitHub プロフィールを開く</string>
+    <string name="cd_open_telegram">Telegram を開く</string>
+    <string name="cd_contributor_avatar">%1$s のアバター</string>
+    <string name="cd_contributor_icon">%1$s のアイコン</string>
+
+    <!-- Streaming / cloud dashboards -->
+    <string name="screen_subsonic_dashboard_title">Subsonic</string>
+    <string name="dash_playlists_synced_count">%1$d 件のプレイリストを同期済み</string>
+    <string name="dash_folders_synced_count">%1$d 個のフォルダーを同期済み</string>
+    <string name="dash_title_playlists">プレイリスト</string>
+    <string name="dash_music_folders">音楽フォルダー</string>
+    <string name="dash_action_sync">同期</string>
+    <string name="dash_playlists_empty_title">同期済みのプレイリストはまだありません</string>
+    <string name="dash_playlists_empty_hint_subsonic">同期をタップしてプレイリストを取得</string>
+    <string name="dash_playlists_empty_hint_jellyfin">同期をタップして Jellyfin のプレイリストを取得</string>
+    <string name="dash_no_folders_yet">フォルダーがまだ追加されていません</string>
+    <string name="dash_tap_plus_add_drive_folder">+ をタップして Google Drive フォルダーを追加</string>
+    <string name="dash_quick_actions">クイックアクション</string>
+    <string name="dash_quick_actions_subsonic_subtitle">Navidrome、Airsonic などの Subsonic 互換サーバーを管理します。</string>
+    <string name="dash_quick_actions_jellyfin_subtitle">Jellyfin サーバーへの接続を管理します。</string>
+    <string name="dash_status_syncing">同期中</string>
+    <string name="dash_action_sync_library">ライブラリを同期</string>
+    <string name="dash_action_disconnect">接続を解除</string>
+    <string name="dash_status_syncing_library">ライブラリを同期中…</string>
+    <string name="dash_status_fetching_playlists">プレイリストを取得中…</string>
+    <string name="dash_status_syncing_playlist_format">プレイリストを同期中: %1$s</string>
+    <string name="dash_status_updating_local">ローカルライブラリを更新中…</string>
+    <string name="dash_status_sync_complete">同期完了</string>
+    <string name="dash_status_fetching_albums">アルバム一覧を取得中…</string>
+    <string name="dash_status_fetching_songs_from_format">%1$s から曲を取得中…</string>
+    <string name="dash_status_saving_songs_format">%1$d 曲をデータベースに保存中…</string>
+    <string name="dash_status_no_songs_found">ライブラリの曲が見つかりません</string>
+    <string name="dash_status_library_sync_complete">ライブラリの同期が完了しました</string>
+    <string name="dash_song_count">%1$d 曲</string>
+    <string name="cd_sync">同期</string>
+    <string name="cd_sync_all">すべて同期</string>
+    <string name="cd_add_drive_folder">フォルダーを追加</string>
+    <string name="cd_logout">ログアウト</string>
+    <string name="screen_netease_dashboard_title">NetEase Music</string>
+    <string name="cd_sync_all_playlists">すべてのプレイリストを同期</string>
+    <string name="error_with_message_format">エラー: %1$s</string>
+    <string name="sync_status_syncing_ellipsis">同期中…</string>
+    <string name="qq_select_playlist_type_title">プレイリストの種類を選択</string>
+    <string name="qq_choose_playlists_to_sync">同期するプレイリストを選択してください:</string>
+    <string name="qq_all_playlists">すべてのプレイリスト</string>
+    <string name="qq_created_and_collected">作成済み &amp; コレクション</string>
+    <string name="qq_created_playlists">作成したプレイリスト</string>
+    <string name="qq_collected_playlists">コレクションしたプレイリスト</string>
+    <string name="cd_user_avatar">ユーザーアバター</string>
+    <string name="toast_playlist_created">プレイリストを作成しました</string>
+    <string name="toast_set_ai_provider_api_key_first">先に AI プロバイダーの API キーを設定してください</string>
+    <string name="toast_set_gemini_api_key_first">先に Gemini API キーを設定してください</string>
+    <string name="toast_added_to_queue">キューに追加しました</string>
+    <string name="toast_playing_next">次に再生します</string>
+    <string name="error_share_song_format">曲を共有できませんでした: %1$s</string>
+</resources>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="sharing_playlists_message">
+        <item quantity="other">Đang chia sẻ %d danh sách phát</item>
+    </plurals>
+    <plurals name="exported_playlists_message">
+        <item quantity="other">Đã xuất %1$d danh sách phát vào %2$s</item>
+    </plurals>
+    <plurals name="n_songs_added_to_queue">
+        <item quantity="other">Đã thêm %d bài hát vào hàng đợi</item>
+    </plurals>
+    <plurals name="n_songs_will_play_next">
+        <item quantity="other">%d bài hát sẽ phát tiếp theo</item>
+    </plurals>
+    <plurals name="n_songs_added_to_favorites">
+        <item quantity="other">Đã thêm %d bài hát vào mục yêu thích</item>
+    </plurals>
+    <plurals name="n_songs_removed_from_favorites">
+        <item quantity="other">Đã xóa %d bài hát khỏi mục yêu thích</item>
+    </plurals>
+    <plurals name="n_files_deleted">
+        <item quantity="other">Đã xóa %d tệp</item>
+    </plurals>
+    <plurals name="delete_songs_confirmation_title">
+        <item quantity="other">Xóa %d bài hát?</item>
+    </plurals>
+    <plurals name="sleep_timer_play_count_times">
+        <item quantity="other">%d lần</item>
+    </plurals>
+</resources>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_tap_to_open">タップして開く</string>
+    <string name="widget_album_art">アルバムアート</string>
+    <string name="widget_album_art_placeholder">アルバムアートのプレースホルダー</string>
+    <string name="cd_favorite">お気に入り</string>
+    <string name="cd_play">再生</string>
+    <string name="cd_pause">一時停止</string>
+    <string name="widget_tap_to_play">タップして再生</string>
+    <string name="widget_preview_song_title">曲名</string>
+    <string name="widget_preview_artist">アーティスト</string>
+    <string name="cd_repeat">リピート</string>
+    <string name="widget_wavy_progress_bar_desc">進行状況バー、%1$dパーセント</string>
+
+    <!-- Lyrics more bottom sheet -->
+    <string name="lyrics_more_appearance">外観</string>
+    <string name="lyrics_more_alignment">文字揃え</string>
+    <string name="lyrics_more_controls">コントロール</string>
+    <string name="lyrics_more_dialog_reset_title">歌詞をリセットしますか？</string>
+    <string name="lyrics_more_dialog_reset_message">この曲の歌詞をリセットしてもよろしいですか？</string>
+    <string name="lyrics_more_hide_sync_controls">同期コントロールを隠す</string>
+    <string name="lyrics_more_adjust_sync">同期を調整</string>
+    <string name="lyrics_more_show_romanization">ローマ字表記を表示</string>
+    <string name="lyrics_more_show_translations">翻訳を表示</string>
+    <string name="lyrics_more_disable_immersive_once">没入表示を今回のみ無効</string>
+    <string name="lyrics_more_keep_screen_on">画面をオンに保つ</string>
+    <string name="cd_lyrics_align_left">歌詞を左揃え</string>
+    <string name="cd_lyrics_align_center">歌詞を中央揃え</string>
+    <string name="cd_lyrics_align_right">歌詞を右揃え</string>
+
+    <!-- No internet -->
+    <string name="no_internet_dialog_title">インターネット接続がありません</string>
+    <string name="no_internet_dialog_message">このコンテンツにはインターネット接続が必要です。ネットワーク設定を確認してもう一度お試しください。</string>
+    <string name="offline_screen_title">オフラインです</string>
+    <string name="offline_screen_message">このコンテンツを利用するには、インターネット接続を確認してもう一度お試しください。</string>
+
+    <!-- Equalizer preset dialogs -->
+    <string name="equalizer_save_custom_preset_title">カスタムプリセットを保存</string>
+    <string name="equalizer_save_custom_preset_body">カスタムイコライザープリセットの名前を入力してください。</string>
+    <string name="equalizer_preset_name_label">プリセット名</string>
+    <string name="equalizer_rename_preset_title">プリセット名を変更</string>
+    <string name="error_name_empty">名前を入力してください</string>
+    <string name="action_save">保存</string>
+    <string name="action_rename">名前を変更</string>
+    <string name="equalizer_action_save_new">新規保存</string>
+
+    <!-- AI metadata sheet -->
+    <string name="ai_metadata_headline_success">タグ付けが完了しました！</string>
+    <string name="ai_metadata_headline_default">AI メタデータ</string>
+    <string name="ai_metadata_subtitle_generating">デイリーミックスガイドを参照中…</string>
+    <string name="ai_metadata_subtitle_review">生成された内容を確認・調整してください</string>
+    <string name="song_field_title">タイトル</string>
+    <string name="song_field_artist">アーティスト</string>
+    <string name="song_field_album">アルバム</string>
+    <string name="song_field_album_artist">アルバムアーティスト</string>
+    <string name="song_field_genre">ジャンル</string>
+    <string name="song_field_composer">作曲者</string>
+    <string name="action_try_again">再試行</string>
+    <string name="action_apply_changes">変更を適用</string>
+
+    <!-- Edit song metadata sheet -->
+    <string name="edit_song_info_dialog_title">曲のメタデータ編集について</string>
+    <string name="edit_song_info_dialog_body">曲のメタデータを編集すると、ライブラリでの表示や整理に影響する場合があります。変更はファイルに保存され、元に戻せないことがあります。</string>
+    <string name="edit_song_got_it">了解</string>
+    <string name="cd_info_icon">情報</string>
+    <string name="edit_song_toolbar_title">曲を編集</string>
+    <string name="cd_use_gemini_ai">Gemini AI を使用</string>
+    <string name="cd_show_metadata_info">情報を表示</string>
+    <string name="song_field_track_number">トラック番号</string>
+    <string name="song_field_disc_number">ディスク番号</string>
+    <string name="song_field_replaygain_track_db">ReplayGain トラック (dB)</string>
+    <string name="song_field_replaygain_album_db">ReplayGain アルバム (dB)</string>
+    <string name="placeholder_replaygain_track_example">-6.50</string>
+    <string name="placeholder_replaygain_album_example">-8.20</string>
+    <string name="cd_replaygain_track">ReplayGain トラック</string>
+    <string name="cd_replaygain_album">ReplayGain アルバム</string>
+    <string name="cd_song_title_icon">タイトル</string>
+    <string name="cd_track_number_icon">トラック番号</string>
+    <string name="cd_disc_number_icon">ディスク番号</string>
+    <string name="cd_search_lyrics_lrclib">lrclib.net で歌詞を検索</string>
+    <string name="edit_song_cover_art_heading">カバーアート</string>
+    <string name="edit_song_cover_art_hint">アプリ全体できれいに表示されるよう、正方形の画像を選んで微調整してください。</string>
+    <string name="edit_song_change_cover_art">カバーアートを変更</string>
+    <string name="edit_song_delete_cover_art">カバーアートを削除</string>
+    <string name="cd_cover_art_preview">新しいカバーアートのプレビュー</string>
+    <string name="cd_current_song_cover_art">現在の曲のカバーアート</string>
+    <string name="edit_song_crop_dialog_title">カバーアートを調整</string>
+    <string name="edit_song_crop_dialog_hint">ピンチやドラッグでちょうど良い位置に調整してください。</string>
+    <string name="edit_song_apply_cover_art">カバーアートを適用</string>
+    <string name="edit_song_unable_to_load_image">選択した画像を読み込めませんでした</string>
+
+    <!-- Song info bottom sheet -->
+    <string name="song_info_share_chooser_title">曲ファイルの共有先を選択</string>
+    <string name="cd_play_song_action">曲を再生</string>
+    <string name="cd_share_song_file">曲ファイルを共有</string>
+    <string name="cd_add_to_queue">キューに追加</string>
+    <string name="cd_play_next_in_queue">次に再生</string>
+    <string name="cd_add_to_playlist">プレイリストに追加</string>
+    <string name="action_add_to_queue">キューに追加</string>
+    <string name="action_queue_next">次に再生</string>
+    <string name="action_interested">興味あり</string>
+    <string name="action_not_interested">興味なし</string>
+    <string name="toast_marked_interested">「興味あり」に設定しました。おすすめを調整します。</string>
+    <string name="toast_marked_not_interested">「興味なし」に設定しました。おすすめから非表示にします。</string>
+    <string name="toast_interest_cleared">興味の設定を解除しました</string>
+    <string name="song_info_checking_watch">ウォッチを確認中</string>
+    <string name="song_info_transferring_percent">転送中 %1$d%%</string>
+    <string name="song_info_transferring_to_watch">ウォッチへ転送中</string>
+    <string name="song_info_transfer_in_progress">転送中</string>
+    <string name="song_info_send_to_watch">ウォッチへ送信</string>
+    <string name="song_info_watch_unavailable">ウォッチが利用できません</string>
+    <string name="cd_send_song_to_watch">曲をウォッチへ送信</string>
+    <string name="cd_watch_unavailable">ウォッチが利用できません</string>
+    <string name="song_info_label_duration">再生時間</string>
+    <string name="song_info_label_song_metadata">曲の情報</string>
+    <string name="cd_duration_icon">再生時間</string>
+    <string name="cd_genre_icon">ジャンル</string>
+    <string name="cd_album_icon">アルバム</string>
+    <string name="cd_artist_icon">アーティスト</string>
+    <string name="cd_audio_format_icon">オーディオ形式</string>
+    <string name="cd_provider_icon">プロバイダー</string>
+    <string name="cd_file_icon">ファイル</string>
+    <string name="cd_edit_song_metadata">曲のメタデータを編集</string>
+    <string name="cd_remove_from_favorites">お気に入りから削除</string>
+    <string name="cd_add_to_favorites">お気に入りに追加</string>
+    <string name="song_info_tab_options">オプション</string>
+    <string name="song_info_tab_options_badge">オプション</string>
+    <string name="song_info_tab_details">詳細</string>
+    <string name="song_info_tab_info_badge">情報</string>
+    <string name="cd_details_tab">詳細</string>
+
+    <!-- Multi-selection bottom sheet -->
+    <string name="multi_selection_songs_count_upper">%1$d 曲</string>
+    <string name="multi_selection_selected">選択中</string>
+    <string name="cd_play_all">すべて再生</string>
+    <string name="action_play_all">すべて再生</string>
+    <string name="cd_like_all">すべてお気に入り</string>
+    <string name="cd_unlike_all">すべてお気に入り解除</string>
+    <string name="cd_share_all_as_zip">すべて ZIP で共有</string>
+    <string name="cd_add_all_to_queue">すべてキューに追加</string>
+    <string name="cd_delete_all_songs">すべて削除</string>
+    <string name="action_delete_all">すべて削除</string>
+
+    <string name="playlist_dismissed_message">プレイリストを閉じました</string>
+    <string name="action_undo">元に戻す</string>
+    <string name="home_option_dj_mashup">DJ マッシュアップ</string>
+    <string name="create_playlist_dialog_title">新しいプレイリスト</string>
+    <string name="create_playlist_name_label">プレイリスト名</string>
+    <string name="create_playlist_name_placeholder">マイプレイリスト</string>
+    <string name="action_create">作成</string>
+    <string name="playlist_picker_add_songs_title">%1$d 曲を追加する先…</string>
+    <string name="playlist_picker_select_playlists">プレイリストを選択</string>
+    <string name="search_playlists_hint">プレイリストを検索…</string>
+
+    <string name="multi_selection_playlists_count_upper">%1$d 件のプレイリスト</string>
+    <string name="cd_export_all">すべてエクスポート</string>
+    <string name="cd_merge_all">すべて結合</string>
+    <string name="cd_share_all">すべて共有</string>
+    <string name="action_export">エクスポート</string>
+    <string name="action_merge">結合</string>
+
+    <string name="reorder_tabs_sheet_title">ライブラリタブを並べ替え</string>
+    <string name="reorder_tabs_reset_dialog_title">並び順をリセット</string>
+    <string name="reorder_tabs_reset_dialog_body">タブの並び順をデフォルトに戻しますか？</string>
+    <string name="reorder_tabs_reordering">タブを並べ替え中…</string>
+    <string name="cd_drag_handle">ドラッグハンドル</string>
+    <string name="cd_reset">リセット</string>
+    <string name="action_done">完了</string>
+</resources>

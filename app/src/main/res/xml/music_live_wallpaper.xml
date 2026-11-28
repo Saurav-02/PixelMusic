@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/music_live_wallpaper_service_desc"
+    android:settingsActivity="com.saurav.pixelmusic.MainActivity"
+    android:thumbnail="@mipmap/ic_launcher" />

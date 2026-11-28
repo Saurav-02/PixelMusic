@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation / misc -->
+    <string name="nav_error_genre_id_missing">錯誤：缺少音樂類型 ID</string>
+    <string name="easter_egg_thank_you">感謝您使用 PixelMusic！</string>
+
+    <!-- Word delimiter config -->
+    <string name="word_delimiter_section_title">目前的字詞分隔符號</string>
+    <string name="word_delimiter_section_subtitle">這些關鍵字在前後有空格時會用來拆分藝人名稱，比對時不分大小寫。輕觸即可移除。</string>
+    <string name="word_delimiter_empty">尚未設定字詞分隔符號</string>
+    <string name="word_delimiter_add_title">新增字詞分隔符號</string>
+    <string name="word_delimiter_hint">例如：feat. 或 ft.</string>
+    <string name="word_delimiter_help_title">字詞分隔符號運作方式</string>
+    <string name="word_delimiter_help_body">字詞分隔符號會在前後有空格時進行不分大小寫的比對。\n\n單字元分隔符號（例如 \"x\"）前後皆須有空格，以避免誤判。\n\n範例：\n  \"Drake feat. Rihanna\" -&gt; Drake, Rihanna\n  \"Marshmello x Bastille\" -&gt; Marshmello, Bastille\n  \"A vs. B\" -&gt; A, B</string>
+    <string name="word_delimiters_screen_title">字詞分隔符號</string>
+    <string name="word_delimiter_reset_title">要重設字詞分隔符號嗎？</string>
+    <string name="word_delimiter_reset_message">這將清除所有自訂字詞分隔符號並還原為預設關鍵字。此操作無法復原。</string>
+    <string name="word_delimiter_toast_added">已新增字詞分隔符號</string>
+    <string name="word_delimiter_toast_invalid">已存在或格式無效</string>
+    <string name="word_delimiter_toast_reset">已將字詞分隔符號重設為預設值</string>
+    <string name="action_reset">重設</string>
+
+    <!-- Delimiter config (path separators) -->
+    <string name="delimiter_section_title">目前的分隔符號</string>
+    <string name="delimiter_section_subtitle">輕觸分隔符號即可移除。至少必須保留一個分隔符號。</string>
+    <string name="delimiter_add_title">新增分隔符號</string>
+    <string name="delimiter_hint">例如：/ 或 ;</string>
+    <string name="delimiter_defaults_title">預設分隔符號</string>
+    <string name="delimiter_reset_title">要重設分隔符號嗎？</string>
+    <string name="delimiter_reset_message">這將清除所有自訂分隔符號並還原為預設值。此操作無法復原。</string>
+    <string name="delimiter_toast_reset">已將分隔符號重設為預設值</string>
+    <string name="delimiter_toast_at_least_one">至少需要一個分隔符號</string>
+    <string name="delimiter_toast_added">已新增分隔符號</string>
+    <string name="delimiter_toast_invalid">分隔符號已存在或格式無效</string>
+    <string name="path_delimiters_toolbar_title">分隔符號</string>
+    <string name="delimiter_label_space">空格</string>
+    <string name="cd_add_path_delimiter">新增分隔符號</string>
+
+    <!-- Accounts -->
+    <string name="accounts_google_drive_soon">Google Drive 功能即將推出。</string>
+    <string name="accounts_unable_open_screen">目前無法開啟此畫面。</string>
+
+    <!-- Setup (subset; more keys follow in same file) -->
+    <string name="setup_welcome_prefix">歡迎使用 </string>
+    <string name="setup_beta_symbol">β</string>
+    <string name="setup_beta_label">測試版</string>
+    <string name="setup_intro_body">讓我們為您完成初始設定。</string>
+    <string name="setup_checking_backup">正在檢查備份套件…</string>
+    <string name="setup_theme_title">應用程式主題</string>
+    <string name="setup_theme_subtitle">開始探索音樂庫前，先挑選您喜歡的外觀風格。</string>
+    <string name="setup_theme_footer">您稍後可以在「設定 &gt; 外觀 &gt; 應用程式主題」中變更。</string>
+    <string name="setup_recommended">推薦</string>
+    <string name="setup_library_layout_title">音樂庫版面</string>
+    <string name="setup_library_layout_subtitle">選擇您偏好的音樂庫瀏覽方式。</string>
+    <string name="setup_compact_mode">精簡模式</string>
+    <string name="setup_library_layout_footer">您稍後可以在「設定 &gt; 外觀 &gt; 音樂庫導覽」中變更。</string>
+    <string name="tab_library">音樂庫</string>
+    <string name="tab_songs">歌曲</string>
+    <string name="tab_albums">專輯</string>
+    <string name="tab_artists">藝人</string>
+    <string name="setup_all_set_title">全部準備就緒！</string>
+    <string name="setup_all_set_body">現在就能開始享受您的音樂。</string>
+    <string name="setup_restore_backup_title">還原備份</string>
+    <string name="setup_restore_backup_subtitle">完成設定前，請確認您要匯入的項目。</string>
+    <string name="setup_modules_selected_format">已選取 %1$d / %2$d 個模組</string>
+    <string name="setup_backup_created_format">建立時間：%1$s</string>
+    <string name="setup_backup_from_version">來自 %1$s 的備份</string>
+    <string name="unknown_version">未知版本</string>
+    <string name="setup_lets_go">開始使用！</string>
+    <string name="setup_step_format">步驟 %1$d / %2$d</string>
+    <string name="setup_app_navigation_title">應用程式導覽</string>
+    <string name="setup_app_navigation_subtitle">選擇底部導覽列的樣式。</string>
+    <string name="setup_navbar_default_style">預設樣式</string>
+    <string name="setup_navbar_footer">您稍後可以在「設定 &gt; 外觀 &gt; 導覽列樣式」中變更。</string>
+    <string name="skip_for_now">暫時略過</string>
+    <string name="skip_not_now">略過 / 稍後再說</string>
+    <string name="restoring">還原中</string>
+    <string name="restore_selected">還原所選項目</string>
+    <string name="customize_corner_radius">自訂圓角半徑</string>
+    <string name="toast_grant_permission_first">請先授予必要權限。</string>
+    <string name="toast_grant_all_permissions">請授予所有必要權限。</string>
+    <string name="toast_grant_storage_first">請先授予儲存空間權限</string>
+    <string name="toast_battery_settings_unavailable">無法開啟電池設定</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_expand_menu">展開選單</string>
+    <string name="cd_next_step">下一步</string>
+    <string name="cd_finish">完成</string>
+    <string name="cd_close">關閉</string>
+    <string name="cd_remove">移除</string>
+    <string name="cd_add_word_delimiter">新增字詞分隔符號</string>
+    <string name="cd_reset_defaults">重設為預設值</string>
+
+    <!-- Setup (additional literals) -->
+    <string name="setup_excluded_folders_title">排除的資料夾</string>
+    <string name="setup_excluded_folders_description">預設會掃描所有資料夾。請挑選建立音樂庫時要忽略的位置。</string>
+    <string name="setup_choose_folders_ignore">選擇要忽略的資料夾</string>
+    <string name="setup_permission_media_title">媒體權限</string>
+    <string name="setup_permission_media_description">PixelMusic 需要存取您的音訊檔案，才能建立音樂庫。</string>
+    <string name="setup_permission_granted">已授予權限</string>
+    <string name="setup_grant_media_permission">授予媒體權限</string>
+    <string name="setup_permission_notifications_title">通知</string>
+    <string name="setup_permission_notifications_description">啟用通知以在鎖定畫面與通知欄控制音樂播放。</string>
+    <string name="setup_enable_notifications">啟用通知</string>
+    <string name="setup_permission_alarms_title">鬧鐘與提醒</string>
+    <string name="setup_permission_alarms_description">非必要項目，但若您會使用睡眠計時器並希望 PixelMusic 準時停止播放，建議授予此權限。</string>
+    <string name="setup_grant_permission_generic">授予權限</string>
+    <string name="setup_backup_have_title">您有備份檔嗎？</string>
+    <string name="setup_backup_have_description">如果您已有 PixelMusic 備份，現在就能還原並略過此裝置上的大部分設定步驟。</string>
+    <string name="setup_inspecting_backup">正在檢查備份</string>
+    <string name="setup_restoring_backup">正在還原備份</string>
+    <string name="setup_import_backup">匯入備份</string>
+    <string name="setup_theme_dark_title">深色</string>
+    <string name="setup_theme_dark_description">PixelMusic 預設的 Material 3 深色外觀。</string>
+    <string name="setup_theme_light_title">淺色</string>
+    <string name="setup_theme_light_description">整體更明亮的 Material 3 外觀。</string>
+    <string name="setup_theme_follow_title">跟隨系統</string>
+    <string name="setup_theme_follow_description">自動配合您手機目前的外觀設定。</string>
+    <string name="setup_compact_mode_pill_hint">使用極簡膠囊導覽</string>
+    <string name="setup_compact_mode_tab_hint">使用標準分頁列</string>
+    <string name="setup_preview_songs_label">歌曲</string>
+    <string name="setup_battery_optimization_title">電池最佳化</string>
+    <string name="setup_battery_optimization_description">部分 Android 裝置會積極終止背景應用程式。建議為 PixelMusic 停用電池最佳化，以避免播放意外中斷。</string>
+    <string name="setup_disable_battery_optimization">停用最佳化</string>
+    <string name="setup_nav_floating_pill_description">圓角懸浮膠囊樣式</string>
+    <string name="setup_nav_full_width_description">標準全寬導覽列</string>
+
+    <!-- Delete song (Material dialog from ViewModel) -->
+    <string name="dialog_delete_song_title">要刪除歌曲嗎？</string>
+    <string name="dialog_delete_song_message">%2$s 的「%1$s」\n\n此歌曲將會從您的裝置永久刪除，且無法復原。</string>
+
+    <!-- Home / detail shared -->
+    <string name="home_your_mix_title">為你\n精選</string>
+    <string name="home_empty_placeholder_title">尚無可顯示的資料</string>
+    <string name="home_empty_placeholder_subtitle">當 PixelMusic 找到歌曲或同步來源後，您的專屬合輯將會顯示於此。</string>
+    <string name="home_empty_placeholder_refresh">重新整理</string>
+    <string name="cd_shuffle_play">隨機播放</string>
+    <string name="cd_album_art_for_title">%1$s 的專輯封面</string>
+    <string name="cd_options">選項</string>
+    <string name="genre_quick_fill">快速填入音樂類型</string>
+    <string name="cd_generic_artist">一般藝人</string>
+    <string name="cd_play_album">播放專輯</string>
+    <string name="cd_shuffle_play_album">隨機播放專輯</string>
+    <string name="album_cover_for">%1$s 的封面</string>
+    <string name="album_detail_meta_line">%1$s · %2$s</string>
+    <string name="mashup_cd_play_pause">播放/暫停</string>
+    <string name="cd_song_cover">歌曲封面</string>
+
+    <!-- Crash report dialog -->
+    <string name="crash_report_title">糟糕！發生了錯誤</string>
+    <string name="crash_report_subtitle">應用程式在上次使用時發生當機。分享當機報告可協助我們修正此問題。</string>
+    <string name="crash_report_date_line">日期：%1$s</string>
+    <string name="crash_report_error_label">錯誤：</string>
+    <string name="crash_report_stack_preview_label">堆疊追蹤（預覽）：</string>
+    <string name="crash_report_clipboard_label">當機紀錄</string>
+    <string name="toast_crash_log_copied">當機紀錄已複製到剪貼簿</string>
+    <string name="crash_report_share_subject">PixelMusic 當機報告</string>
+    <string name="crash_report_share_chooser">分享當機報告</string>
+    <string name="action_copy">複製</string>
+    <string name="action_share">分享</string>
+
+    <!-- Search screen -->
+    <string name="search_placeholder">搜尋…</string>
+    <string name="cd_search_icon">搜尋</string>
+    <string name="cd_clear_search_query">清除搜尋</string>
+    <string name="recent_searches">近期搜尋</string>
+    <string name="clear_all">全部清除</string>
+    <string name="cd_search_history_icon">歷史紀錄</string>
+    <string name="cd_delete_search_history_item">刪除搜尋紀錄項目</string>
+    <string name="cd_no_search_results">沒有結果</string>
+    <string name="search_no_results_for_query">找不到「%1$s」的相關結果</string>
+    <string name="search_nothing_found">找不到任何內容</string>
+    <string name="search_try_different_or_filters">請嘗試其他搜尋字詞或檢查篩選條件。</string>
+    <string name="search_no_results_found">找不到任何結果。</string>
+
+    <!-- Genre browse -->
+    <string name="browse_by_genre">依音樂類型瀏覽</string>
+    <string name="no_genres_available">沒有可用的音樂類型。</string>
+
+    <!-- About -->
+    <string name="about_credits_title">原作者</string>
+    <string name="about_credits_description">本應用程式建構於並受啟發自 Theo Vilardo 以專屬授權條款建立的開源專案 PixelPlayer。</string>
+    <string name="about_no_contributors">目前找不到貢獻者資料，請稍後再試。</string>
+    <string name="about_app_name">PixelMusic</string>
+    <string name="about_tagline">與社群共同打造的開源音樂播放器。</string>
+    <string name="about_version_format">版本 v%1$s</string>
+    <string name="about_contributions_format">%1$d 次貢獻</string>
+    <string name="screen_about">關於</string>
+    <string name="about_maintainer_title">維護者</string>
+    <string name="about_maintainer_subtitle">PixelMusic 背後的開發與維護者。</string>
+    <string name="about_spotlight_title">社群焦點</string>
+    <string name="about_spotlight_subtitle">表揚具有重大貢獻的協作者。</string>
+    <string name="about_contributors_section_title">開源貢獻者</string>
+    <string name="about_contributors_section_subtitle">來自 GitHub 的即時貢獻者名單。</string>
+    <string name="about_signal_open_source">開源專案</string>
+    <string name="about_signal_community_first">社群優先</string>
+    <string name="about_signal_material3">Material 3 表現力設計</string>
+    <string name="cd_open_github_profile">開啟 GitHub 個人檔案</string>
+    <string name="cd_open_telegram">開啟 Telegram</string>
+    <string name="cd_contributor_avatar">%1$s 的頭像</string>
+    <string name="cd_contributor_icon">%1$s 的圖示</string>
+
+    <!-- Streaming / cloud dashboards -->
+    <string name="screen_subsonic_dashboard_title">Subsonic</string>
+    <string name="dash_playlists_synced_count">已同步 %1$d 個播放清單</string>
+    <string name="dash_folders_synced_count">已同步 %1$d 個資料夾</string>
+    <string name="dash_title_playlists">播放清單</string>
+    <string name="dash_music_folders">音樂資料夾</string>
+    <string name="dash_action_sync">同步</string>
+    <string name="dash_playlists_empty_title">尚未同步任何播放清單</string>
+    <string name="dash_playlists_empty_hint_subsonic">輕觸同步以取得您的播放清單</string>
+    <string name="dash_playlists_empty_hint_jellyfin">輕觸同步以取得您的 Jellyfin 播放清單</string>
+    <string name="dash_no_folders_yet">尚未新增任何資料夾</string>
+    <string name="dash_tap_plus_add_drive_folder">輕觸 + 以新增 Google Drive 資料夾</string>
+    <string name="dash_quick_actions">快速操作</string>
+    <string name="dash_quick_actions_subsonic_subtitle">管理 Navidrome、Airsonic 及其他相容於 Subsonic 的伺服器。</string>
+    <string name="dash_quick_actions_jellyfin_subtitle">管理您的 Jellyfin 伺服器連線。</string>
+    <string name="dash_status_syncing">同步中</string>
+    <string name="dash_action_sync_library">同步音樂庫</string>
+    <string name="dash_action_disconnect">中斷連線</string>
+    <string name="dash_status_syncing_library">正在同步音樂庫…</string>
+    <string name="dash_status_fetching_playlists">正在取得播放清單…</string>
+    <string name="dash_status_syncing_playlist_format">正在同步播放清單：%1$s</string>
+    <string name="dash_status_updating_local">正在更新本機音樂庫…</string>
+    <string name="dash_status_sync_complete">同步完成</string>
+    <string name="dash_status_fetching_albums">正在取得專輯清單…</string>
+    <string name="dash_status_fetching_songs_from_format">正在從 %1$s 取得歌曲…</string>
+    <string name="dash_status_saving_songs_format">正在將 %1$d 首歌曲儲存至資料庫…</string>
+    <string name="dash_status_no_songs_found">找不到音樂庫歌曲</string>
+    <string name="dash_status_library_sync_complete">音樂庫同步完成</string>
+    <string name="dash_song_count">%1$d 首歌曲</string>
+    <string name="cd_sync">同步</string>
+    <string name="cd_sync_all">全部同步</string>
+    <string name="cd_add_drive_folder">新增資料夾</string>
+    <string name="cd_logout">登出</string>
+    <string name="screen_netease_dashboard_title">NetEase Music</string>
+    <string name="cd_sync_all_playlists">同步所有播放清單</string>
+    <string name="error_with_message_format">錯誤：%1$s</string>
+    <string name="sync_status_syncing_ellipsis">同步中…</string>
+    <string name="qq_select_playlist_type_title">選擇播放清單類型</string>
+    <string name="qq_choose_playlists_to_sync">選擇要同步的播放清單：</string>
+    <string name="qq_all_playlists">所有播放清單</string>
+    <string name="qq_created_and_collected">自建與收藏</string>
+    <string name="qq_created_playlists">自建播放清單</string>
+    <string name="qq_collected_playlists">收藏的播放清單</string>
+    <string name="cd_user_avatar">使用者頭像</string>
+    <string name="toast_playlist_created">已成功建立播放清單</string>
+    <string name="toast_set_ai_provider_api_key_first">請先設定您的 AI 供應商 API 金鑰</string>
+    <string name="toast_set_gemini_api_key_first">請先設定您的 Gemini API 金鑰</string>
+    <string name="toast_added_to_queue">已加入播放佇列</string>
+    <string name="toast_playing_next">將接續播放</string>
+    <string name="error_share_song_format">無法分享歌曲：%1$s</string>
+</resources>

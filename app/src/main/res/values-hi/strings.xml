@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pixel Music</string>
+    <string name="app_name_change_title">ऐप के नाम में बदलाव</string>
+    <string name="app_name_change_message">ट्रेडमार्क से जुड़ी एक समस्या के कारण हमने अपने ऐप का नाम PixelMusic से बदलकर PixelMusic कर दिया है। संगीत का आनंद लेते रहें!</string>
+    <string name="do_not_show_again">दोबारा न दिखाएं</string>
+    <string name="dismiss">बंद करें</string>
+    <string name="all_files_access_title">विशेष अनुमति आवश्यक है</string>
+    <string name="all_files_access_description">गाने का मेटाडेटा (.mp3 फ़ाइलें) संपादित करने के लिए PixelMusic को सभी फ़ाइलों की विशेष पहुँच की आवश्यकता है। इससे हम ट्रैक टैग सीधे बदल सकते हैं। मेटाडेटा संपादन चालू करने के लिए कृपया अगली स्क्रीन पर यह अनुमति दें।</string>
+    <string name="grant_permission_button">अनुमति दें</string>
+    <string name="all_files_access_setting">सभी फ़ाइलों की पहुँच</string>
+    <string name="error">त्रुटि</string>
+    <string name="ok">ठीक है</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="import_file">इम्पोर्ट करें</string>
+    <string name="search">खोजें</string>
+
+    <string name="lyrics">लिरिक्स</string>
+    <string name="close_lyrics_sheet">लिरिक्स शीट बंद करें</string>
+    <string name="loading_lyrics">लिरिक्स लोड हो रहे हैं…</string>
+    <string name="cant_find_lyrics">इस गाने के लिरिक्स नहीं मिले।</string>
+    <string name="lyrics_provided_by">लिरिक्स का स्रोत</string>
+    <string name="lrclib_uri">https://lrclib.net/</string>
+    <string name="lyrics_not_found">लिरिक्स नहीं मिले</string>
+    <string name="search_lyrics_online_prompt">क्या आप ऑनलाइन लिरिक्स खोजना चाहेंगे?</string>
+    <string name="lyrics_custom_search_hint">हमें अपने आप लिरिक्स नहीं मिले। आप शीर्षक या कलाकार का नाम बदलकर मैन्युअल रूप से खोजने की कोशिश कर सकते हैं।</string>
+    <string name="failed_to_search_for_lyrics">लिरिक्स खोजने में विफल</string>
+    <string name="failed_to_fetch_lyrics_from_remote">ऑनलाइन लिरिक्स लाने में विफल</string>
+    <string name="lyrics_fetch_timeout">कनेक्शन का समय समाप्त हो गया। कृपया अपना इंटरनेट कनेक्शन जांचें।</string>
+    <string name="lyrics_network_error">नेटवर्क त्रुटि। कृपया अपना इंटरनेट कनेक्शन जांचें।</string>
+    <string name="lyrics_server_error">सर्वर त्रुटि (कोड %d)। कृपया बाद में फिर प्रयास करें।</string>
+    <string name="found_n_matches_format">%d मिलान मिले</string>
+    <string name="searched_for_x_format">\"%s\" के लिए खोजा गया</string>
+    <string name="searching_lyrics">लिरिक्स खोजे जा रहे हैं…</string>
+    <string name="lyrics_already_available">लिरिक्स पहले से उपलब्ध हैं। ऑनलाइन खोज छोड़ दी गई।</string>
+    <string name="lyrics_embedded_already_available">एम्बेडेड लिरिक्स पहले से मौजूद हैं। ऑनलाइन खोज छोड़ दी गई।</string>
+    <string name="local_lrc_already_available">लोकल (.lrc) लिरिक्स पहले से मौजूद हैं। ऑनलाइन खोज छोड़ दी गई।</string>
+    <string name="fetch_lyrics_show_options_title">लिरिक्स विकल्प दिखाएं</string>
+    <string name="fetch_lyrics_show_options_subtitle">पहला मिलान अपने आप लागू करने के बजाय हमेशा चयन सूची खोलें</string>
+    <string name="save_lyrics_as_lrc">लिरिक्स को .lrc के रूप में सहेजें</string>
+    <string name="save_lyrics_dialog_title">लिरिक्स सहेजें</string>
+    <string name="save_lyrics_dialog_message">चुनें कि कौन सा संस्करण सहेजना है:</string>
+    <string name="save_synced_lyrics">सिंक किए गए (टाइमस्टैम्प के साथ)</string>
+    <string name="save_plain_lyrics">सादा (केवल टेक्स्ट)</string>
+    <string name="lyrics_saved_successfully">लिरिक्स सफलतापूर्वक सहेजे गए</string>
+    <string name="lyrics_save_failed">लिरिक्स सहेजने में विफल</string>
+    <string name="no_lyrics_to_save">सहेजने के लिए कोई लिरिक्स उपलब्ध नहीं हैं</string>
+    <string name="reset_imported_lyrics">इम्पोर्ट किए गए लिरिक्स रीसेट करें</string>
+    <string name="lyrics_sync_offset">लिरिक्स सिंक ऑफ़सेट</string>
+    <string name="lyrics_sync_offset_format">%+.1fs</string>
+    <string name="lyrics_sync_offset_reset">रीसेट</string>
+    <string name="lyrics_earlier">पहले</string>
+    <string name="lyrics_later">बाद में</string>
+
+    <string name="sync_scanning">संगीत फ़ाइलें स्कैन हो रही हैं…</string>
+    <string name="sync_processing">फ़ाइलें प्रोसेस हो रही हैं…</string>
+    <string name="sync_files_progress">%2$d में से %1$d फ़ाइलें</string>
+    <string name="sync_in_progress">लाइब्रेरी सिंक हो रही है…</string>
+    <string name="sync_complete">सिंक पूरा हुआ</string>
+    <string name="sync_pending">प्रतीक्षा में…</string>
+    <string name="syncing_library">लाइब्रेरी सिंक हो रही है…</string>
+    <string name="library_background_sync">बैकग्राउंड में पूरा हो रहा है…</string>
+    <string name="library_background_sync_lyrics">लिरिक्स स्कैन हो रहे हैं…</string>
+    <string name="library_background_sync_cache">एल्बम आर्ट कैश साफ़ हो रहा है…</string>
+    <string name="library_background_sync_cloud">क्लाउड स्रोत सिंक हो रहे हैं…</string>
+    <string name="unknown_song_title">अज्ञात ट्रैक</string>
+    <string name="unknown_artist">अज्ञात कलाकार</string>
+    <string name="unknown_album">अज्ञात एल्बम</string>
+    <string name="artist_picker_title">कलाकार चुनें</string>
+    <string name="artist_picker_supporting_text">इस ट्रैक से जुड़े किसी भी कलाकार का पेज खोलें।</string>
+    <string name="artist_picker_count_single">1 कलाकार</string>
+    <string name="artist_picker_count_multiple">%1$d कलाकार</string>
+    <string name="artist_picker_primary_label">मुख्य कलाकार</string>
+    <string name="artist_picker_shortcut_label">कलाकार पेज</string>
+    <string name="external_queue_label">क्विक प्ले</string>
+    <string name="external_playback_error">यह ऑडियो फ़ाइल नहीं खोली जा सकी।</string>
+    <string name="open_full_player">पूरा प्लेयर खोलें</string>
+    <string name="close_external_player">फ़्लोटिंग प्लेयर बंद करें</string>
+    <string name="close_notification_player">प्लेयर बंद करें</string>
+    <string name="previous_track">पिछला ट्रैक</string>
+    <string name="next_track">अगला ट्रैक</string>
+    <string name="pause_playback">प्लेबैक रोकें</string>
+    <string name="play_playback">चलाएं</string>
+    <string name="playlist_not_found">प्लेलिस्ट नहीं मिली।</string>
+    <string name="disc_number_header">डिस्क %d</string>
+
+    <string name="ai_error_api_key">कृपया सेटिंग्स में चुने गए AI प्रदाता के लिए एक मान्य API कुंजी सेट करें।</string>
+    <string name="ai_error_generic">AI त्रुटि: %s</string>
+    <string name="ai_error_quota">चुने गए AI प्रदाता ने अनुरोध अस्वीकार कर दिया क्योंकि खाते में क्रेडिट या उपलब्ध कोटा नहीं है।</string>
+    <string name="ai_error_model_unavailable">चुना गया AI मॉडल अब उपलब्ध नहीं है। PixelMusic ने अपने आप समर्थित मॉडल पर स्विच करने की कोशिश की।</string>
+    <string name="ai_no_songs_found">AI को आपके प्रॉम्प्ट के लिए कोई गाना नहीं मिला।</string>
+    <string name="ai_prompt_empty">अपने डेली मिक्स के लिए कोई आइडिया लिखें</string>
+    <string name="ai_daily_mix_updated">AI के साथ डेली मिक्स अपडेट हो गया</string>
+    <string name="ai_no_songs_for_mix">AI को इस मिक्स के लिए कोई गाना नहीं मिला</string>
+
+    <string name="shortcut_shuffle_short">शफ़ल</string>
+    <string name="shortcut_shuffle_long">सभी गाने शफ़ल करें</string>
+    <string name="shortcut_playlist_short">प्लेलिस्ट</string>
+    <string name="shortcut_playlist_long">पिछली चलाई गई प्लेलिस्ट</string>
+
+    <string name="tile_shuffle_all">सभी शफ़ल करें</string>
+    <string name="tile_last_playlist">पिछली प्लेलिस्ट</string>
+    <string name="tile_last_playlist_unavailable">खोलने के लिए कोई प्लेलिस्ट उपलब्ध नहीं है</string>
+
+    <string name="invalid_album_id">अमान्य एल्बम ID</string>
+    <string name="album_id_not_found">एल्बम ID नहीं मिली</string>
+    <string name="error_loading_album">एल्बम डेटा लोड करने में त्रुटि: %s</string>
+    <string name="album_not_found">एल्बम नहीं मिला</string>
+    <string name="could_not_update">अपडेट नहीं किया जा सका: %s</string>
+    <string name="invalid_artist_id">अमान्य कलाकार ID</string>
+    <string name="artist_id_not_found">कलाकार ID नहीं मिली</string>
+    <string name="error_loading_artist">कलाकार डेटा लोड करने में त्रुटि: %s</string>
+    <string name="could_not_find_artist">कलाकार नहीं मिला</string>
+    <string name="no_valid_songs">चलाने के लिए कोई मान्य गाना नहीं मिला</string>
+
+    <string name="glance_widget_description">रिस्पॉन्सिव विजेट जो अपने आकार के अनुसार ढल जाता है</string>
+    <string name="widget_bar_4x1_desc">कॉम्पैक्ट प्लेयर बार</string>
+    <string name="widget_control_4x2_desc">शफ़ल और रिपीट के साथ पूरे नियंत्रण</string>
+    <string name="widget_grid_2x2_desc">मिनिमलिस्ट चौकोर प्लेयर</string>
+    <string name="widget_blur_2x2_desc">ब्लर एल्बम आर्ट चौकोर प्लेयर</string>
+
+    <string name="service_processing_action">प्लेबैक क्रिया प्रोसेस हो रही है…</string>
+
+    <!-- Playlist bulk actions -->
+    <string name="playlist_none_to_share">शेयर करने के लिए कोई प्लेलिस्ट नहीं है</string>
+    <string name="playlist_share_chooser_title">प्लेलिस्ट शेयर करें</string>
+    <string name="playlist_share_failed">शेयर करने में विफल: %1$s</string>
+    <string name="playlist_none_to_export">एक्सपोर्ट करने के लिए कोई प्लेलिस्ट नहीं है</string>
+    <string name="playlist_export_failed">एक्सपोर्ट करने में विफल: %1$s</string>
+    <string name="playlist_export_folder_display">Music/PixelMusic Exports</string>
+    <string name="ai_playlist_gemini_key_required">कृपया सेटिंग्स में अपनी Gemini API कुंजी सेट करें।</string>
+    <string name="error_unknown">अज्ञात त्रुटि</string>
+
+    <!-- Watch transfer foreground service -->
+    <string name="watch_transfer_sending_n_to_watch">वॉच पर %1$d गाने भेजे जा रहे हैं</string>
+    <string name="watch_transfer_sending_to_watch">वॉच पर भेजा जा रहा है</string>
+    <string name="watch_transfer_complete">ट्रांसफ़र पूरा हुआ</string>
+    <string name="watch_transfer_failed">ट्रांसफ़र विफल रहा</string>
+    <string name="watch_transfer_cancelled">ट्रांसफ़र रद्द किया गया</string>
+    <string name="watch_transfer_preparing">वॉच ट्रांसफ़र तैयार हो रहा है</string>
+    <string name="watch_transfer_summary_n">%1$d ट्रांसफ़र</string>
+    <string name="watch_transfer_starting">ट्रांसफ़र शुरू हो रहा है…</string>
+    <string name="watch_transfer_multiple_active">कई ट्रांसफ़र सक्रिय हैं</string>
+    <string name="watch_transfer_preparing_transfer">ट्रांसफ़र तैयार हो रहा है…</string>
+    <string name="watch_transfer_status_transferring">ट्रांसफ़र हो रहा है</string>
+    <string name="watch_transfer_status_completed">पूरा हुआ</string>
+    <string name="watch_transfer_status_failed">विफल</string>
+    <string name="watch_transfer_status_cancelled">रद्द किया गया</string>
+    <string name="watch_transfer_status_preparing">तैयारी हो रही है</string>
+    <string name="watch_transfer_starting_short">शुरू हो रहा है</string>
+    <string name="watch_transfer_channel_name">वॉच ट्रांसफ़र</string>
+    <string name="watch_transfer_channel_description">फ़ोन से वॉच पर संगीत ट्रांसफ़र की लाइव प्रगति दिखाता है</string>
+
+    <!-- Cast HTTP server -->
+    <string name="cast_server_channel_name">कास्ट मीडिया सर्वर</string>
+    <string name="cast_server_notification_title">डिवाइस पर कास्ट हो रहा है</string>
+    <string name="cast_server_notification_text">कास्ट डिवाइस पर मीडिया भेजा जा रहा है</string>
+    <string name="cast_server_foreground_error">%1$s: %2$s</string>
+
+    <!-- Backup / data transfer (ViewModels) -->
+    <string name="backup_invalid_format">अमान्य बैकअप: %1$s</string>
+    <string name="backup_progress_preparing_restore">रीस्टोर तैयार हो रहा है</string>
+    <string name="backup_progress_starting_task">रीस्टोर प्रक्रिया शुरू हो रही है।</string>
+    <string name="backup_progress_preparing_backup">बैकअप तैयार हो रहा है</string>
+    <string name="backup_progress_starting_backup_task">बैकअप प्रक्रिया शुरू हो रही है।</string>
+    <string name="restore_completed_success">बैकअप सफलतापूर्वक रीस्टोर हो गया</string>
+    <string name="restore_completed_partial_issues">रीस्टोर कुछ अनसुलझी समस्याओं के साथ पूरा हुआ।</string>
+    <string name="restore_could_not_complete">रीस्टोर पूरा नहीं हो सका: %1$s</string>
+    <string name="restore_failed_format">रीस्टोर विफल रहा: %1$s</string>
+    <string name="data_exported_successfully">डेटा सफलतापूर्वक एक्सपोर्ट किया गया</string>
+    <string name="export_failed_format">एक्सपोर्ट विफल रहा: %1$s</string>
+    <string name="data_restored_successfully">डेटा सफलतापूर्वक रीस्टोर किया गया</string>
+    <string name="restore_partial_unresolved_format">रीस्टोर अनसुलझी समस्याओं के साथ पूरा हुआ। विफल: %1$s</string>
+    <string name="models_fetch_failed">मॉडल लोड करने में विफल</string>
+    <string name="dev_test_crash_message">डेवलपर विकल्पों से टेस्ट क्रैश ट्रिगर किया गया - यह क्रैश रिपोर्टिंग सिस्टम का परीक्षण करने के लिए जानबूझकर किया गया है</string>
+
+    <!-- PlayerViewModel -->
+    <string name="player_song_not_found_in_list">वर्तमान सूची में गाना नहीं मिला</string>
+    <string name="player_could_not_locate_song">गाना नहीं मिल सका</string>
+    <string name="player_no_songs_in_library_toast">लाइब्रेरी में कोई गाना नहीं मिला</string>
+    <string name="player_playback_stopped_eot">प्लेबैक रुका: %1$s समाप्त हो गया (ट्रैक का अंत)।</string>
+    <string name="player_default_track_title">ट्रैक</string>
+    <string name="player_no_songs_to_shuffle">शफ़ल करने के लिए कोई गाना नहीं है।</string>
+    <string name="player_queue_name_selected_albums">चुने गए एल्बम</string>
+    <string name="player_no_playable_songs_in_albums">चुने गए एल्बम में चलाने योग्य कोई गाना नहीं मिला</string>
+    <string name="player_only_first_n_albums_queued">केवल पहले %1$d एल्बम क्यू में जोड़े गए</string>
+    <string name="player_albums_queued_format">%1$d एल्बम क्यू में जोड़े गए (%2$d गाने)</string>
+    <string name="player_could_not_queue_albums">चुने गए एल्बम क्यू में नहीं जोड़े जा सके</string>
+    <string name="player_all_songs_already_in_favorites">सभी गाने पहले से पसंदीदा में हैं</string>
+    <string name="player_no_songs_were_in_favorites">पसंदीदा में कोई गाना नहीं था</string>
+    <string name="player_creating_zip">ZIP फ़ाइल बनाई जा रही है…</string>
+    <string name="player_share_zip_failed_format">शेयर करने में विफल: %1$s</string>
+    <string name="player_cannot_delete_currently_playing">अभी चल रहे गाने को हटाया नहीं जा सकता</string>
+    <string name="player_batch_delete_files_deleted_skipped_format">%1$d फ़ाइलें हटाई गईं (%2$d छोड़ी गईं - चल रही हैं)</string>
+    <string name="player_batch_delete_partial_format">%2$d में से %1$d फ़ाइलें हटाई गईं</string>
+    <string name="player_delete_files_failed">फ़ाइलें हटाने में विफल</string>
+    <string name="player_file_deleted">फ़ाइल हटाई गई</string>
+    <string name="player_delete_file_not_found">फ़ाइल हटाई नहीं जा सकी या फ़ाइल नहीं मिली</string>
+    <string name="player_deletion_cancelled">हटाने की क्रिया रद्द की गई</string>
+    <string name="player_permission_denied_edit_files">अनुमति अस्वीकृत – फ़ाइलें संपादित नहीं की जा सकतीं</string>
+    <string name="player_permission_denied_save_lyrics">अनुमति अस्वीकृत – लिरिक्स सहेजे नहीं जा सकते</string>
+    <string name="player_permission_denied_edit_this_file">अनुमति अस्वीकृत – इस फ़ाइल को संपादित नहीं किया जा सकता</string>
+    <string name="metadata_updated_successfully">मेटाडेटा सफलतापूर्वक अपडेट हुआ</string>
+    <string name="player_updating_n_songs">%1$d गाने अपडेट हो रहे हैं…</string>
+    <string name="player_batch_genre_updated_all">%1$d गाने सफलतापूर्वक अपडेट हो गए!</string>
+    <string name="player_batch_genre_updated_partial">%1$d गाने अपडेट हुए। विफल: %2$d</string>
+    <string name="playlist_restored_toast">प्लेलिस्ट रीस्टोर की गई</string>
+    <string name="delete_songs_permanent_message">ये गाने आपके डिवाइस से स्थायी रूप से हटा दिए जाएंगे और इन्हें वापस नहीं लाया जा सकेगा।</string>
+    <string name="delete_action">हटाएं</string>
+
+    <!-- Sleep timer (SleepTimerStateHolder + TimerOptionsBottomSheet) -->
+    <string name="sleep_timer_n_minutes_format">%1$d मिनट</string>
+    <string name="sleep_timer_display_eot">ट्रैक के अंत में</string>
+    <string name="sleep_timer_set_for_minutes_toast">टाइमर %1$d मिनट के लिए सेट किया गया।</string>
+    <string name="sleep_timer_cancelled_toast">टाइमर रद्द किया गया।</string>
+    <string name="sleep_timer_eot_no_song_toast">ट्रैक का अंत विकल्प चालू नहीं किया जा सकता: कोई सक्रिय गाना नहीं है।</string>
+    <string name="sleep_timer_eot_song_changed_toast">ट्रैक के अंत का टाइमर बंद हो गया: गाना %1$s से %2$s में बदल गया।</string>
+    <string name="sleep_timer_eot_stop_at_end_toast">ट्रैक के अंत में प्लेबैक रुक जाएगा।</string>
+    <string name="sleep_timer_label_previous_track">पिछला ट्रैक</string>
+    <string name="sleep_timer_label_current_track">वर्तमान ट्रैक</string>
+    <string name="sleep_timer_ui_title">स्लीप टाइमर</string>
+    <string name="sleep_timer_ui_slider_label_timer">टाइमर</string>
+    <string name="sleep_timer_ui_end_of_current_track">वर्तमान ट्रैक के अंत में</string>
+    <string name="sleep_timer_ui_custom_time">कस्टम समय</string>
+    <string name="sleep_timer_ui_cancel_timer">टाइमर रद्द करें</string>
+    <string name="sleep_timer_ui_set_custom_duration">कस्टम अवधि सेट करें</string>
+    <string name="sleep_timer_ui_play_count_label">प्ले काउंट: %1$s</string>
+    <string name="sleep_timer_ui_play_count_one_time">1 बार</string>
+    <string name="cd_switch_on">चालू करें</string>
+    <string name="ui_format_percent_d">%1$d%%</string>
+    <string name="backup_manifest_schema_v">v%1$d</string>
+    <string name="backup_manifest_device_line">%1$s %2$s</string>
+
+    <!-- Share Bottom Sheet -->
+    <string name="share_sheet_title">शेयर करें</string>
+    <string name="share_sheet_chooser_title">इसके ज़रिए शेयर करें</string>
+    <string name="share_card_tab_song">गाना कार्ड</string>
+    <string name="share_card_tab_lyrics">लिरिक्स कार्ड</string>
+    <string name="share_action_snapchat">Snapchat\nस्टोरी</string>
+    <string name="share_action_instagram">Instagram\nस्टोरी</string>
+    <string name="share_action_download_card">कार्ड\nसहेजें</string>
+    <string name="share_action_copy_yt_link">YT लिंक\nकॉपी करें</string>
+    <string name="share_action_more_apps">अन्य पर\nशेयर करें</string>
+    <string name="share_action_add_to_playlist">प्लेलिस्ट में जोड़ें</string>
+    <string name="share_action_add_to_playlist_sub">इस गाने को अपनी किसी प्लेलिस्ट में जोड़ें</string>
+    <string name="share_action_copy_github_link">ऐप लिंक कॉपी करें</string>
+    <string name="share_card_saved">कार्ड Pictures में सहेजा गया</string>
+    <string name="share_link_copied">लिंक क्लिपबोर्ड पर कॉपी हो गया</string>
+    <string name="share_text_format">अभी सुन रहा हूँ \"%1$s\" — %2$s 🎵\n%3$s</string>
+    <string name="share_format_photo">फ़ोटो</string>
+    <string name="share_format_video">30 सेकंड वीडियो</string>
+    <string name="share_action_download_video">वीडियो\nसहेजें</string>
+    <string name="share_action_share_video">वीडियो\nशेयर करें</string>
+    <string name="share_video_saved">वीडियो Movies/PixelMusic में सहेजा गया</string>
+    <string name="share_video_generating">30 सेकंड का वीडियो बन रहा है…</string>
+    <string name="share_video_failed">वीडियो बनाने में विफल: %1$s</string>
+    <string name="share_video_progress_title">30 सेकंड का वीडियो बन रहा है</string>
+    <string name="share_video_progress_subtitle">गाने के ऑडियो के साथ कार्ड आर्टवर्क एन्कोड हो रहा है…</string>
+
+    <!-- Player Share / Options Menu -->
+    <string name="player_menu_share_card">स्टोरी कार्ड शेयर करें</string>
+    <string name="player_menu_download">गाना डाउनलोड करें</string>
+    <string name="player_menu_add_to_playlist">प्लेलिस्ट में जोड़ें</string>
+    <string name="cd_player_more_options">अधिक विकल्प</string>
+    <string name="cd_player_theme">थीम बदलें</string>
+    <string name="setcat_navbar_style_floating_pill">फ़्लोटिंग पिल</string>
+
+    <!-- Listen Together -->
+    <string name="listen_together">साथ सुनें</string>
+    <string name="listen_together_desc">चाहे आपके दोस्त कहीं भी हों, एक ही समय में एक ही संगीत सुनें</string>
+    <string name="listen_together_host_only">केवल होस्ट ही प्लेबैक नियंत्रित कर सकता है</string>
+    <string name="listen_together_your_name">आपका नाम</string>
+    <string name="listen_together_start">सेशन शुरू करें</string>
+    <string name="listen_together_join">सेशन से जुड़ें</string>
+    <string name="listen_together_room_code">रूम कोड</string>
+    <string name="listen_together_guest_name">गेस्ट का नाम (वैकल्पिक)</string>
+    <string name="listen_together_creating">सेशन बनाया जा रहा है\u2026</string>
+    <string name="listen_together_joining">जुड़ रहे हैं\u2026</string>
+    <string name="listen_together_share_code">यह कोड दोस्तों के साथ शेयर करें</string>
+    <string name="listen_together_copy_code">कोड कॉपी करें</string>
+    <string name="listen_together_code_copied">कोड क्लिपबोर्ड पर कॉपी हो गया</string>
+    <string name="listen_together_listeners">%1$d/4 सुन रहे हैं</string>
+    <string name="listen_together_end_session">सेशन समाप्त करें</string>
+    <string name="listen_together_listening_with">%1$s के साथ सुन रहे हैं</string>
+    <string name="listen_together_guest_note">आराम से सुनें, संगीत होस्ट द्वारा नियंत्रित है</string>
+    <string name="listen_together_leave">बाहर निकलें</string>
+    <string name="listen_together_live">लाइव</string>
+    <string name="listen_together_listening">सुन रहे हैं</string>
+    <string name="listen_together_reconnecting">फिर से जुड़ रहे हैं\u2026</string>
+    <string name="listen_together_slow_down">थोड़ा धीरे चलें</string>
+    <string name="listen_together_host">होस्ट</string>
+    <string-array name="listen_together_preset_messages">
+        <item>कमाल का गाना है 🔥</item>
+        <item>दोबारा चलाएं? 🔁</item>
+        <item>अगला कोई चिल गाना 🎧</item>
+        <item>आवाज़ बढ़ाओ 🔊</item>
+    </string-array>
+    <string name="listen_together_track_unavailable">यह ट्रैक आपके लिए उपलब्ध नहीं है, होस्ट के साथ सिंक बने हुए हैं</string>
+</resources>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared login / streaming auth -->
+    <string name="auth_cd_back">Voltar</string>
+    <string name="auth_show_password">Mostrar senha</string>
+    <string name="auth_hide_password">Ocultar senha</string>
+    <string name="auth_connecting">Conectando…</string>
+    <string name="auth_connect">Conectar</string>
+    <string name="auth_connection_details">Detalhes da conexão</string>
+    <string name="auth_connection_details_subtitle">Insira a URL do seu servidor e as credenciais da conta.</string>
+    <string name="auth_server_url">URL do servidor</string>
+    <string name="auth_username">Nome de usuário</string>
+    <string name="auth_password">Senha</string>
+    <string name="auth_password_placeholder">Digite a senha</string>
+    <string name="auth_username_placeholder_admin">admin</string>
+    <string name="toast_welcome_user">Bem-vindo, %1$s!</string>
+
+    <!-- Navidrome / Subsonic -->
+    <string name="auth_navidrome_title">Subsonic / Navidrome</string>
+    <string name="auth_navidrome_subtitle">Conecte-se ao seu servidor de música auto-hospedado</string>
+    <string name="auth_navidrome_info_card">Compatível com Navidrome, Airsonic, Gonic, Ampache e outros servidores compatíveis com a API Subsonic.</string>
+    <string name="auth_server_url_placeholder_https">https://music.example.com</string>
+    <string name="auth_navidrome_server_url_hint">Use o endereço base completo https:// do seu servidor.</string>
+    <string name="auth_navidrome_username_hint">Este é o nome da sua conta Subsonic ou Navidrome.</string>
+    <string name="auth_navidrome_password_hint">Senhas de aplicativo também funcionam se o seu servidor oferecer suporte.</string>
+    <string name="auth_navidrome_пароль_hint">Senhas de aplicativo também funcionam se o seu servidor oferecer suporte.</string>
+    <string name="auth_prefill_https">Preencher https://</string>
+    <string name="auth_navidrome_footer">Compatível com Navidrome, Gonic, Airsonic e outros servidores compatíveis com Subsonic</string>
+    <string name="cd_navidrome_logo">Navidrome</string>
+    <string name="cd_subsonic_logo">Subsonic</string>
+
+    <string name="auth_prefill_http">Preencher http://</string>
+
+    <!-- Google Drive -->
+    <string name="auth_gdrive_toast_connected">Google Drive conectado!</string>
+    <string name="auth_gdrive_title">Google Drive</string>
+
+    <!-- Web login (NetEase / QQ Music) — shared -->
+    <string name="auth_web_exit_confirm_title_netease">Sair do login do NetEase?</string>
+    <string name="auth_web_exit_confirm_title_qq">Sair do login do QQ Music?</string>
+    <string name="auth_web_exit_confirm_body">Você pode voltar mais tarde. O estado atual da página será descartado ao fechar.</string>
+    <string name="auth_exit">Sair</string>
+    <string name="auth_stay">Ficar</string>
+    <string name="auth_login_netease_title">Entrar no NetEase Music</string>
+    <string name="auth_login_qq_title">Entrar no QQ Music</string>
+    <string name="auth_web_cd_web_back">Voltar na página</string>
+    <string name="auth_web_cd_web_forward">Avançar na página</string>
+    <string name="auth_web_cd_refresh">Atualizar</string>
+    <string name="auth_web_cd_open_home">Abrir página inicial</string>
+    <string name="auth_saving">Salvando…</string>
+    <string name="auth_done">Concluído</string>
+    <string name="auth_web_retry">Tentar novamente</string>
+    <string name="auth_dial_plus">+</string>
+    <string name="auth_snackbar_page_timeout">O carregamento da página expirou. Você pode tentar novamente sem perder seu progresso.</string>
+    <string name="auth_error_cookies_unreadable">Não foi possível ler os cookies da sessão.</string>
+    <string name="auth_page_slow">A página está demorando muito para carregar. Use atualizar ou tente outra rede.</string>
+    <string name="auth_webview_load_failed">Falha ao carregar o WebView.</string>
+    <string name="auth_http_error_loading_netease">HTTP %1$d ao carregar o NetEase.</string>
+    <string name="auth_http_error_loading_qq">HTTP %1$d ao carregar o QQ Music.</string>
+    <string name="auth_error_no_cookies">Nenhum cookie encontrado. Faça login primeiro.</string>
+    <string name="auth_error_netease_login_incomplete">Login ainda não detectado. Conclua o login no NetEase antes de tocar em Concluído.</string>
+    <string name="auth_error_qq_login_incomplete">Login ainda não detectado. Conclua o login no QQ Music antes de tocar em Concluído.</string>
+</resources>

@@ -1,0 +1,51 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Ear tufts -->
+    <path
+        android:fillColor="#6D597A"
+        android:pathData="M56,74 L46,38 C46,34 52,32 56,35 L84,54 Z" />
+    <path
+        android:fillColor="#6D597A"
+        android:pathData="M144,74 L154,38 C154,34 148,32 144,35 L116,54 Z" />
+    <!-- Plump Owl Body -->
+    <path
+        android:fillColor="#7D648C"
+        android:pathData="M100,48 C142,48 162,80 162,124 C162,158 154,182 148,198 L52,198 C46,182 38,158 38,124 C38,80 58,48 100,48 Z" />
+    <!-- Cream feathered belly -->
+    <path
+        android:fillColor="#F4EBD9"
+        android:pathData="M100,132 C126,132 142,154 142,198 L58,198 C58,154 74,132 100,132 Z" />
+    <!-- Subtle belly feather arcs -->
+    <path
+        android:strokeColor="#C9B7A2"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M78,162 C82,168 90,168 94,162 M106,162 C110,168 118,168 122,162 M92,178 C96,184 104,184 108,178" />
+    <!-- Large cream eye circles -->
+    <path
+        android:fillColor="#FFF8EE"
+        android:pathData="M50,102 a25,25 0 1,0 50,0 a25,25 0 1,0 -50,0 Z" />
+    <path
+        android:fillColor="#FFF8EE"
+        android:pathData="M100,102 a25,25 0 1,0 50,0 a25,25 0 1,0 -50,0 Z" />
+    <!-- Glossy eyes -->
+    <path
+        android:fillColor="#2B2233"
+        android:pathData="M64,102 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0 Z" />
+    <path
+        android:fillColor="#2B2233"
+        android:pathData="M114,102 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M68,97 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M118,97 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 Z" />
+    <!-- Golden diamond beak -->
+    <path
+        android:fillColor="#FFB703"
+        android:pathData="M100,110 L110,122 L100,134 L90,122 Z" />
+</vector>

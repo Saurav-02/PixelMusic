@@ -1,0 +1,63 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Shoulders -->
+    <path
+        android:fillColor="#6BCB77"
+        android:pathData="M48,198 C52,160 72,150 100,150 C128,150 148,160 152,198 Z" />
+    <path
+        android:fillColor="#D9F99D"
+        android:pathData="M74,198 C77,174 88,166 100,166 C112,166 123,174 126,198 Z" />
+    <!-- Perched Frog Eye Bumps -->
+    <path
+        android:fillColor="#74D680"
+        android:pathData="M48,74 a24,24 0 1,0 48,0 a24,24 0 1,0 -48,0 Z" />
+    <path
+        android:fillColor="#74D680"
+        android:pathData="M104,74 a24,24 0 1,0 48,0 a24,24 0 1,0 -48,0 Z" />
+    <!-- Head -->
+    <path
+        android:fillColor="#74D680"
+        android:pathData="M100,74 C140,74 162,96 162,122 C162,148 136,164 100,164 C64,164 38,148 38,122 C38,96 60,74 100,74 Z" />
+    <!-- Lighter chin -->
+    <path
+        android:fillColor="#CFF6C8"
+        android:pathData="M100,132 C126,132 146,142 146,152 C134,161 118,164 100,164 C82,164 66,161 54,152 C54,142 74,132 100,132 Z" />
+    <!-- White sclera -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,75 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M112,75 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0 Z" />
+    <!-- Pupils -->
+    <path
+        android:fillColor="#233128"
+        android:pathData="M64,76 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 Z" />
+    <path
+        android:fillColor="#233128"
+        android:pathData="M118,76 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M67,72 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M121,72 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0 Z" />
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FF8FA3"
+        android:fillAlpha="0.55"
+        android:pathData="M48,122 a12,7.5 0 1,0 24,0 a12,7.5 0 1,0 -24,0 Z" />
+    <path
+        android:fillColor="#FF8FA3"
+        android:fillAlpha="0.55"
+        android:pathData="M128,122 a12,7.5 0 1,0 24,0 a12,7.5 0 1,0 -24,0 Z" />
+    <!-- Wide happy frog smile -->
+    <path
+        android:strokeColor="#244A2D"
+        android:strokeWidth="3.8"
+        android:strokeLineCap="round"
+        android:pathData="M72,126 C84,142 116,142 128,126" />
+</vector>

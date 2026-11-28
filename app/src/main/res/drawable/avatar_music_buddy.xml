@@ -1,0 +1,58 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Headphone band -->
+    <path
+        android:strokeColor="#3A3D5C"
+        android:strokeWidth="12"
+        android:strokeLineCap="round"
+        android:pathData="M42,108 C42,56 68,36 100,36 C132,36 158,56 158,108" />
+    <!-- Shoulders -->
+    <path
+        android:fillColor="#5B5F97"
+        android:pathData="M48,198 C52,162 72,152 100,152 C128,152 148,162 152,198 Z" />
+    <!-- Cute round music buddy head -->
+    <path
+        android:fillColor="#FFF4E6"
+        android:pathData="M100,56 C134,56 152,82 152,112 C152,144 132,162 100,162 C68,162 48,144 48,112 C48,82 66,56 100,56 Z" />
+    <!-- Left & Right Studio Earcups -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:pathData="M34,88 L50,88 C53,88 56,91 56,94 L56,126 C56,129 53,132 50,132 L34,132 C26,132 22,124 22,110 C22,96 26,88 34,88 Z" />
+    <path
+        android:fillColor="#FF6B6B"
+        android:pathData="M150,88 L166,88 C174,88 178,96 178,110 C178,124 174,132 166,132 L150,132 C147,132 144,129 144,126 L144,94 C144,91 147,88 150,88 Z" />
+    <!-- Cushion trim -->
+    <path
+        android:fillColor="#3A3D5C"
+        android:pathData="M48,90 L55,90 L55,130 L48,130 Z" />
+    <path
+        android:fillColor="#3A3D5C"
+        android:pathData="M145,90 L152,90 L152,130 L145,130 Z" />
+    <!-- Happy vibing eyes -->
+    <path
+        android:strokeColor="#2B2D42"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:pathData="M71,108 C75,99 85,99 89,108" />
+    <path
+        android:strokeColor="#2B2D42"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:pathData="M111,108 C115,99 125,99 129,108" />
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FF8FA3"
+        android:fillAlpha="0.6"
+        android:pathData="M62,122 a10,6.5 0 1,0 20,0 a10,6.5 0 1,0 -20,0 Z" />
+    <path
+        android:fillColor="#FF8FA3"
+        android:fillAlpha="0.6"
+        android:pathData="M118,122 a10,6.5 0 1,0 20,0 a10,6.5 0 1,0 -20,0 Z" />
+    <!-- Singing/vibing smile -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:pathData="M88,125 C90,138 110,138 112,125 Z" />
+</vector>

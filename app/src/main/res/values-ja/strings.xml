@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pixel Music</string>
+    <string name="app_name_change_title">アプリ名の変更</string>
+    <string name="app_name_change_message">商標に関する事情により、アプリ名を PixelMusic から PixelMusic に変更しました。引き続き音楽をお楽しみください！</string>
+    <string name="do_not_show_again">今後表示しない</string>
+    <string name="dismiss">閉じる</string>
+    <string name="all_files_access_title">特別な権限が必要です</string>
+    <string name="all_files_access_description">曲のメタデータ（.mp3 ファイル）を編集するには、PixelMusic にすべてのファイルへのアクセス権限が必要です。これにより、トラックタグを直接編集できるようになります。次の画面で権限を許可してください。</string>
+    <string name="grant_permission_button">権限を許可</string>
+    <string name="all_files_access_setting">すべてのファイルへのアクセス</string>
+    <string name="error">エラー</string>
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
+    <string name="import_file">インポート</string>
+    <string name="search">検索</string>
+
+    <string name="lyrics">歌詞</string>
+    <string name="close_lyrics_sheet">歌詞シートを閉じる</string>
+    <string name="loading_lyrics">歌詞を読み込み中…</string>
+    <string name="cant_find_lyrics">この曲の歌詞が見つかりませんでした。</string>
+    <string name="lyrics_provided_by">歌詞提供:</string>
+    <string name="lrclib_uri">https://lrclib.net/</string>
+    <string name="lyrics_not_found">歌詞が見つかりません</string>
+    <string name="search_lyrics_online_prompt">オンラインで歌詞を検索しますか？</string>
+    <string name="lyrics_custom_search_hint">歌詞を自動で見つけられませんでした。曲名やアーティスト名を編集して手動で検索してみてください。</string>
+    <string name="failed_to_search_for_lyrics">歌詞の検索に失敗しました</string>
+    <string name="failed_to_fetch_lyrics_from_remote">リモートからの歌詞取得に失敗しました</string>
+    <string name="lyrics_fetch_timeout">接続がタイムアウトしました。インターネット接続を確認してください。</string>
+    <string name="lyrics_network_error">ネットワークエラーが発生しました。インターネット接続を確認してください。</string>
+    <string name="lyrics_server_error">サーバーエラー（コード %d）。しばらくしてからもう一度お試しください。</string>
+    <string name="found_n_matches_format">%d件の候補が見つかりました</string>
+    <string name="searched_for_x_format">「%s」の検索結果</string>
+    <string name="searching_lyrics">歌詞を検索中…</string>
+    <string name="lyrics_already_available">歌詞はすでに利用可能です。オンライン取得をスキップしました。</string>
+    <string name="lyrics_embedded_already_available">埋め込み歌詞が見つかったため、オンライン取得をスキップしました。</string>
+    <string name="local_lrc_already_available">ローカル（.lrc）の歌詞が見つかったため、オンライン取得をスキップしました。</string>
+    <string name="fetch_lyrics_show_options_title">歌詞の候補を表示</string>
+    <string name="fetch_lyrics_show_options_subtitle">最初の一致を自動適用せず、常に選択画面を開く</string>
+    <string name="save_lyrics_as_lrc">歌詞を .lrc として保存</string>
+    <string name="save_lyrics_dialog_title">歌詞を保存</string>
+    <string name="save_lyrics_dialog_message">保存する形式を選択してください:</string>
+    <string name="save_synced_lyrics">同期歌詞（タイムスタンプ付き）</string>
+    <string name="save_plain_lyrics">通常歌詞（テキストのみ）</string>
+    <string name="lyrics_saved_successfully">歌詞を保存しました</string>
+    <string name="lyrics_save_failed">歌詞の保存に失敗しました</string>
+    <string name="no_lyrics_to_save">保存できる歌詞がありません</string>
+    <string name="reset_imported_lyrics">インポート済み歌詞をリセット</string>
+    <string name="lyrics_sync_offset">歌詞の同期オフセット</string>
+    <string name="lyrics_sync_offset_format">%+.1f秒</string>
+    <string name="lyrics_sync_offset_reset">リセット</string>
+    <string name="lyrics_earlier">早める</string>
+    <string name="lyrics_later">遅らせる</string>
+
+    <string name="sync_scanning">音楽ファイルをスキャン中…</string>
+    <string name="sync_processing">ファイルを処理中…</string>
+    <string name="sync_files_progress">%1$d / %2$d ファイル</string>
+    <string name="sync_in_progress">ライブラリを同期中…</string>
+    <string name="sync_complete">同期完了</string>
+    <string name="sync_pending">待機中…</string>
+    <string name="syncing_library">ライブラリを同期中…</string>
+    <string name="library_background_sync">バックグラウンドで仕上げ中…</string>
+    <string name="library_background_sync_lyrics">歌詞をスキャン中…</string>
+    <string name="library_background_sync_cache">アルバムアートのキャッシュを整理中…</string>
+    <string name="library_background_sync_cloud">クラウドソースを同期中…</string>
+    <string name="unknown_song_title">不明なトラック</string>
+    <string name="unknown_artist">不明なアーティスト</string>
+    <string name="unknown_album">不明なアルバム</string>
+    <string name="artist_picker_title">アーティストを選択</string>
+    <string name="artist_picker_supporting_text">この曲に参加しているアーティストを開きます。</string>
+    <string name="artist_picker_count_single">1人のアーティスト</string>
+    <string name="artist_picker_count_multiple">%1$d人のアーティスト</string>
+    <string name="artist_picker_primary_label">メインアーティスト</string>
+    <string name="artist_picker_shortcut_label">アーティストページ</string>
+    <string name="external_queue_label">クイック再生</string>
+    <string name="external_playback_error">このオーディオファイルを開けませんでした。</string>
+    <string name="open_full_player">フルプレーヤーを開く</string>
+    <string name="close_external_player">フローティングプレーヤーを閉じる</string>
+    <string name="close_notification_player">プレーヤーを閉じる</string>
+    <string name="previous_track">前の曲</string>
+    <string name="next_track">次の曲</string>
+    <string name="pause_playback">一時停止</string>
+    <string name="play_playback">再生</string>
+    <string name="playlist_not_found">プレイリストが見つかりません。</string>
+    <string name="disc_number_header">ディスク %d</string>
+
+    <string name="ai_error_api_key">設定で選択した AI プロバイダーの有効な API キーを設定してください。</string>
+    <string name="ai_error_generic">AI エラー: %s</string>
+    <string name="ai_error_quota">アカウントのクレジットまたは利用枠が不足しているため、選択した AI プロバイダーによりリクエストが拒否されました。</string>
+    <string name="ai_error_model_unavailable">選択した AI モデルは現在利用できません。PixelMusic が対応モデルへの自動切り替えを試みました。</string>
+    <string name="ai_no_songs_found">入力内容に合う曲が見つかりませんでした。</string>
+    <string name="ai_prompt_empty">デイリーミックスのテーマを入力してください</string>
+    <string name="ai_daily_mix_updated">AI でデイリーミックスを更新しました</string>
+    <string name="ai_no_songs_for_mix">このミックスに合う曲が見つかりませんでした</string>
+
+    <string name="shortcut_shuffle_short">シャッフル</string>
+    <string name="shortcut_shuffle_long">すべての曲をシャッフル</string>
+    <string name="shortcut_playlist_short">プレイリスト</string>
+    <string name="shortcut_playlist_long">最後に再生したプレイリスト</string>
+
+    <string name="tile_shuffle_all">すべてシャッフル</string>
+    <string name="tile_last_playlist">前回のプレイリスト</string>
+    <string name="tile_last_playlist_unavailable">開けるプレイリストがありません</string>
+
+    <string name="invalid_album_id">無効なアルバム ID です</string>
+    <string name="album_id_not_found">アルバム ID が見つかりません</string>
+    <string name="error_loading_album">アルバムデータの読み込みエラー: %s</string>
+    <string name="album_not_found">アルバムが見つかりません</string>
+    <string name="could_not_update">更新できませんでした: %s</string>
+    <string name="invalid_artist_id">無効なアーティスト ID です</string>
+    <string name="artist_id_not_found">アーティスト ID が見つかりません</string>
+    <string name="error_loading_artist">アーティストデータの読み込みエラー: %s</string>
+    <string name="could_not_find_artist">アーティストが見つかりませんでした</string>
+    <string name="no_valid_songs">再生できる曲が見つかりませんでした</string>
+
+    <string name="glance_widget_description">サイズに合わせて変化するレスポンシブウィジェット</string>
+    <string name="widget_bar_4x1_desc">コンパクトなプレーヤーバー</string>
+    <string name="widget_control_4x2_desc">シャッフル・リピート対応のフルコントロール</string>
+    <string name="widget_grid_2x2_desc">ミニマルなスクエアプレーヤー</string>
+    <string name="widget_blur_2x2_desc">ぼかしアルバムアートのスクエアプレーヤー</string>
+
+    <string name="service_processing_action">再生操作を処理中…</string>
+
+    <!-- Playlist bulk actions -->
+    <string name="playlist_none_to_share">共有できるプレイリストがありません</string>
+    <string name="playlist_share_chooser_title">プレイリストを共有</string>
+    <string name="playlist_share_failed">共有に失敗しました: %1$s</string>
+    <string name="playlist_none_to_export">エクスポートできるプレイリストがありません</string>
+    <string name="playlist_export_failed">エクスポートに失敗しました: %1$s</string>
+    <string name="playlist_export_folder_display">Music/PixelMusic Exports</string>
+    <string name="ai_playlist_gemini_key_required">設定で Gemini API キーを設定してください。</string>
+    <string name="error_unknown">不明なエラー</string>
+
+    <!-- Watch transfer foreground service -->
+    <string name="watch_transfer_sending_n_to_watch">%1$d曲をウォッチへ送信中</string>
+    <string name="watch_transfer_sending_to_watch">ウォッチへ送信中</string>
+    <string name="watch_transfer_complete">転送完了</string>
+    <string name="watch_transfer_failed">転送に失敗しました</string>
+    <string name="watch_transfer_cancelled">転送をキャンセルしました</string>
+    <string name="watch_transfer_preparing">ウォッチへの転送を準備中</string>
+    <string name="watch_transfer_summary_n">%1$d件の転送</string>
+    <string name="watch_transfer_starting">転送を開始中…</string>
+    <string name="watch_transfer_multiple_active">複数の転送が進行中</string>
+    <string name="watch_transfer_preparing_transfer">転送を準備中…</string>
+    <string name="watch_transfer_status_transferring">転送中</string>
+    <string name="watch_transfer_status_completed">完了</string>
+    <string name="watch_transfer_status_failed">失敗</string>
+    <string name="watch_transfer_status_cancelled">キャンセル済み</string>
+    <string name="watch_transfer_status_preparing">準備中</string>
+    <string name="watch_transfer_starting_short">開始中</string>
+    <string name="watch_transfer_channel_name">ウォッチ転送</string>
+    <string name="watch_transfer_channel_description">スマートフォンからウォッチへの音楽転送の進行状況を表示します</string>
+
+    <!-- Cast HTTP server -->
+    <string name="cast_server_channel_name">Cast メディアサーバー</string>
+    <string name="cast_server_notification_title">デバイスにキャスト中</string>
+    <string name="cast_server_notification_text">Cast デバイスにメディアを配信中</string>
+    <string name="cast_server_foreground_error">%1$s: %2$s</string>
+
+    <!-- Backup / data transfer (ViewModels) -->
+    <string name="backup_invalid_format">無効なバックアップ: %1$s</string>
+    <string name="backup_progress_preparing_restore">復元を準備中</string>
+    <string name="backup_progress_starting_task">復元タスクを開始しています。</string>
+    <string name="backup_progress_preparing_backup">バックアップを準備中</string>
+    <string name="backup_progress_starting_backup_task">バックアップタスクを開始しています。</string>
+    <string name="restore_completed_success">バックアップを復元しました</string>
+    <string name="restore_completed_partial_issues">一部の問題を残して復元が完了しました。</string>
+    <string name="restore_could_not_complete">復元を完了できませんでした: %1$s</string>
+    <string name="restore_failed_format">復元に失敗しました: %1$s</string>
+    <string name="data_exported_successfully">データをエクスポートしました</string>
+    <string name="export_failed_format">エクスポートに失敗しました: %1$s</string>
+    <string name="data_restored_successfully">データを復元しました</string>
+    <string name="restore_partial_unresolved_format">一部の問題を残して復元が完了しました。失敗: %1$s</string>
+    <string name="models_fetch_failed">モデルの読み込みに失敗しました</string>
+    <string name="dev_test_crash_message">開発者オプションからテストクラッシュを実行しました（クラッシュレポート機能のテスト用）</string>
+
+    <!-- PlayerViewModel -->
+    <string name="player_song_not_found_in_list">現在のリストに曲が見つかりません</string>
+    <string name="player_could_not_locate_song">曲が見つかりませんでした</string>
+    <string name="player_no_songs_in_library_toast">ライブラリに曲が見つかりません</string>
+    <string name="player_playback_stopped_eot">再生を停止しました: %1$s が終了しました（トラック終了）。</string>
+    <string name="player_default_track_title">トラック</string>
+    <string name="player_no_songs_to_shuffle">シャッフルできる曲がありません。</string>
+    <string name="player_queue_name_selected_albums">選択したアルバム</string>
+    <string name="player_no_playable_songs_in_albums">選択したアルバムに再生できる曲がありません</string>
+    <string name="player_only_first_n_albums_queued">最初の %1$d 枚のアルバムのみキューに追加されました</string>
+    <string name="player_albums_queued_format">%1$d 枚のアルバムをキューに追加しました（%2$d 曲）</string>
+    <string name="player_could_not_queue_albums">選択したアルバムをキューに追加できませんでした</string>
+    <string name="player_all_songs_already_in_favorites">すべての曲がすでにお気に入りに登録されています</string>
+    <string name="player_no_songs_were_in_favorites">お気に入りに登録されている曲はありませんでした</string>
+    <string name="player_creating_zip">ZIP ファイルを作成中…</string>
+    <string name="player_share_zip_failed_format">共有に失敗しました: %1$s</string>
+    <string name="player_cannot_delete_currently_playing">再生中の曲は削除できません</string>
+    <string name="player_batch_delete_files_deleted_skipped_format">%1$d 個のファイルを削除しました（%2$d 個は再生中のためスキップ）</string>
+    <string name="player_batch_delete_partial_format">%2$d 個中 %1$d 個のファイルを削除しました</string>
+    <string name="player_delete_files_failed">ファイルの削除に失敗しました</string>
+    <string name="player_file_deleted">ファイルを削除しました</string>
+    <string name="player_delete_file_not_found">ファイルを削除できないか、見つかりません</string>
+    <string name="player_deletion_cancelled">削除をキャンセルしました</string>
+    <string name="player_permission_denied_edit_files">権限がありません – ファイルを編集できません</string>
+    <string name="player_permission_denied_save_lyrics">権限がありません – 歌詞を保存できません</string>
+    <string name="player_permission_denied_edit_this_file">権限がありません – このファイルを編集できません</string>
+    <string name="metadata_updated_successfully">メタデータを更新しました</string>
+    <string name="player_updating_n_songs">%1$d 曲を更新中…</string>
+    <string name="player_batch_genre_updated_all">%1$d 曲を更新しました！</string>
+    <string name="player_batch_genre_updated_partial">%1$d 曲を更新しました。失敗: %2$d 件</string>
+    <string name="playlist_restored_toast">プレイリストを復元しました</string>
+    <string name="delete_songs_permanent_message">これらの曲はデバイスから完全に削除され、復元できません。</string>
+    <string name="delete_action">削除</string>
+
+    <!-- Sleep timer (SleepTimerStateHolder + TimerOptionsBottomSheet) -->
+    <string name="sleep_timer_n_minutes_format">%1$d分</string>
+    <string name="sleep_timer_display_eot">曲の終了時</string>
+    <string name="sleep_timer_set_for_minutes_toast">タイマーを %1$d 分に設定しました。</string>
+    <string name="sleep_timer_cancelled_toast">タイマーをキャンセルしました。</string>
+    <string name="sleep_timer_eot_no_song_toast">曲の終了時タイマーを有効にできません: 再生中の曲がありません。</string>
+    <string name="sleep_timer_eot_song_changed_toast">曲が %1$s から %2$s に変更されたため、曲の終了時タイマーを解除しました。</string>
+    <string name="sleep_timer_eot_stop_at_end_toast">現在の曲が終わったら再生を停止します。</string>
+    <string name="sleep_timer_label_previous_track">前の曲</string>
+    <string name="sleep_timer_label_current_track">現在の曲</string>
+    <string name="sleep_timer_ui_title">スリープタイマー</string>
+    <string name="sleep_timer_ui_slider_label_timer">タイマー</string>
+    <string name="sleep_timer_ui_end_of_current_track">現在の曲の終了時</string>
+    <string name="sleep_timer_ui_custom_time">カスタム時間</string>
+    <string name="sleep_timer_ui_cancel_timer">タイマーをキャンセル</string>
+    <string name="sleep_timer_ui_set_custom_duration">カスタム時間を設定</string>
+    <string name="sleep_timer_ui_play_count_label">再生回数: %1$s</string>
+    <string name="sleep_timer_ui_play_count_one_time">1回</string>
+    <string name="cd_switch_on">オン</string>
+    <string name="ui_format_percent_d">%1$d%%</string>
+    <string name="backup_manifest_schema_v">v%1$d</string>
+    <string name="backup_manifest_device_line">%1$s %2$s</string>
+
+    <!-- Share Bottom Sheet -->
+    <string name="share_sheet_title">共有</string>
+    <string name="share_sheet_chooser_title">共有先を選択</string>
+    <string name="share_card_tab_song">曲カード</string>
+    <string name="share_card_tab_lyrics">歌詞カード</string>
+    <string name="share_action_snapchat">Snapchat\nストーリー</string>
+    <string name="share_action_instagram">Instagram\nストーリー</string>
+    <string name="share_action_download_card">カードを\n保存</string>
+    <string name="share_action_copy_yt_link">YT リンクを\nコピー</string>
+    <string name="share_action_more_apps">その他の\nアプリ</string>
+    <string name="share_action_add_to_playlist">プレイリストに追加</string>
+    <string name="share_action_add_to_playlist_sub">この曲をプレイリストに追加します</string>
+    <string name="share_action_copy_github_link">アプリリンクをコピー</string>
+    <string name="share_card_saved">カードを Pictures に保存しました</string>
+    <string name="share_link_copied">リンクをクリップボードにコピーしました</string>
+    <string name="share_text_format">%2$s の「%1$s」を聴いています 🎵\n%3$s</string>
+    <string name="share_format_photo">画像</string>
+    <string name="share_format_video">30秒動画</string>
+    <string name="share_action_download_video">動画を\n保存</string>
+    <string name="share_action_share_video">動画を\n共有</string>
+    <string name="share_video_saved">動画を Movies/PixelMusic に保存しました</string>
+    <string name="share_video_generating">30秒動画を作成中…</string>
+    <string name="share_video_failed">動画の作成に失敗しました: %1$s</string>
+    <string name="share_video_progress_title">30秒動画を作成中</string>
+    <string name="share_video_progress_subtitle">カード画像と曲の音声をエンコードしています…</string>
+
+    <!-- Player Share / Options Menu -->
+    <string name="player_menu_share_card">ストーリーカードを共有</string>
+    <string name="player_menu_download">曲をダウンロード</string>
+    <string name="player_menu_add_to_playlist">プレイリストに追加</string>
+    <string name="cd_player_more_options">その他のオプション</string>
+    <string name="cd_player_theme">テーマを変更</string>
+    <string name="setcat_navbar_style_floating_pill">フローティングピル</string>
+
+    <!-- Listen Together -->
+    <string name="listen_together">一緒に聴く</string>
+    <string name="listen_together_desc">遠くにいる友だちとも、同じ音楽をリアルタイムで一緒に再生できます</string>
+    <string name="listen_together_host_only">再生操作はホストのみ可能です</string>
+    <string name="listen_together_your_name">あなたの名前</string>
+    <string name="listen_together_start">セッションを開始</string>
+    <string name="listen_together_join">セッションに参加</string>
+    <string name="listen_together_room_code">ルームコード</string>
+    <string name="listen_together_guest_name">ゲスト名（任意）</string>
+    <string name="listen_together_creating">セッションを作成中\u2026</string>
+    <string name="listen_together_joining">参加中\u2026</string>
+    <string name="listen_together_share_code">このコードを友だちに共有してください</string>
+    <string name="listen_together_copy_code">コードをコピー</string>
+    <string name="listen_together_code_copied">コードをクリップボードにコピーしました</string>
+    <string name="listen_together_listeners">%1$d/4 人が視聴中</string>
+    <string name="listen_together_end_session">セッションを終了</string>
+    <string name="listen_together_listening_with">%1$s と一緒に聴いています</string>
+    <string name="listen_together_guest_note">再生はホストが操作しています</string>
+    <string name="listen_together_leave">退出</string>
+    <string name="listen_together_live">ライブ</string>
+    <string name="listen_together_listening">視聴中</string>
+    <string name="listen_together_reconnecting">再接続中\u2026</string>
+    <string name="listen_together_slow_down">少しゆっくり操作してください</string>
+    <string name="listen_together_host">ホスト</string>
+    <string-array name="listen_together_preset_messages">
+        <item>神曲 🔥</item>
+        <item>もう1回聴く？ 🔁</item>
+        <item>次はチル系で 🎧</item>
+        <item>音量上げて 🔊</item>
+    </string-array>
+    <string name="listen_together_track_unavailable">この曲はあなたの環境では再生できません。ホストとの同期を維持しています</string>
+</resources>

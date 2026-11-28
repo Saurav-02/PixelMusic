@@ -1,0 +1,36 @@
+uniform shader content;
+uniform float2 resolution;
+uniform float2 direction; // Normalized direction vector
+uniform float blurAmount; // Magnitude of blur in pixels
+
+half4 main(float2 fragCoord) {
+    if (blurAmount <= 0.5) {
+        return content.eval(fragCoord);
+    }
+    
+    // 7-tap directional blur along the direction vector
+    half4 color = half4(0.0);
+    float totalWeight = 0.0;
+    
+    const int samples = 7;
+    float step = blurAmount / float(samples);
+    
+    for (int i = -3; i <= 3; i++) {
+        float offset = float(i) * step;
+        float2 sampleCoord = fragCoord + direction * offset;
+        
+        // Skip samples outside layer bounds to avoid edge streaking
+        if (sampleCoord.x >= 0.0 && sampleCoord.x <= resolution.x &&
+            sampleCoord.y >= 0.0 && sampleCoord.y <= resolution.y) {
+            float weight = 1.0 - (abs(float(i)) / 4.0);
+            color += content.eval(sampleCoord) * weight;
+            totalWeight += weight;
+        }
+    }
+    
+    if (totalWeight < 0.001) {
+        return content.eval(fragCoord);
+    }
+    
+    return color / totalWeight;
+}

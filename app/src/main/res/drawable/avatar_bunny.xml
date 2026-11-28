@@ -1,0 +1,61 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Shoulders -->
+    <path
+        android:fillColor="#FFF8F3"
+        android:pathData="M52,198 C56,162 74,152 100,152 C126,152 144,162 148,198 Z" />
+    <!-- Tall bunny ears -->
+    <path
+        android:fillColor="#FFF8F3"
+        android:pathData="M76,84 C64,54 62,24 75,20 C88,16 96,46 92,80 Z" />
+    <path
+        android:fillColor="#FFF8F3"
+        android:pathData="M124,84 C136,54 138,24 125,20 C112,16 104,46 108,80 Z" />
+    <!-- Pink inner ears -->
+    <path
+        android:fillColor="#FFB7C5"
+        android:pathData="M78,76 C71,54 70,32 77,29 C84,27 89,48 86,74 Z" />
+    <path
+        android:fillColor="#FFB7C5"
+        android:pathData="M122,76 C129,54 130,32 123,29 C116,27 111,48 114,74 Z" />
+    <!-- Head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M100,72 C134,72 154,94 154,122 C154,150 132,166 100,166 C68,166 46,150 46,122 C46,94 66,72 100,72 Z" />
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FFA3B5"
+        android:fillAlpha="0.58"
+        android:pathData="M56,132 a11,7 0 1,0 22,0 a11,7 0 1,0 -22,0 Z" />
+    <path
+        android:fillColor="#FFA3B5"
+        android:fillAlpha="0.58"
+        android:pathData="M122,132 a11,7 0 1,0 22,0 a11,7 0 1,0 -22,0 Z" />
+    <!-- Eyes -->
+    <path
+        android:fillColor="#32262A"
+        android:pathData="M72,115 a8.5,9.5 0 1,0 17,0 a8.5,9.5 0 1,0 -17,0 Z" />
+    <path
+        android:fillColor="#32262A"
+        android:pathData="M111,115 a8.5,9.5 0 1,0 17,0 a8.5,9.5 0 1,0 -17,0 Z" />
+    <!-- Eye highlights -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M75,111 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M114,111 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 Z" />
+    <!-- Pink nose -->
+    <path
+        android:fillColor="#FF85A1"
+        android:pathData="M94,129 C94,125 106,125 106,129 C106,133 102,135 100,135 C98,135 94,133 94,129 Z" />
+    <!-- Cute smile -->
+    <path
+        android:strokeColor="#5A4248"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M90,139 C93,144 98,143 100,138 C102,143 107,144 110,139" />
+</vector>

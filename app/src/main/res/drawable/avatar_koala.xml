@@ -1,0 +1,65 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Shoulders -->
+    <path
+        android:fillColor="#8D99AE"
+        android:pathData="M48,198 C52,160 72,148 100,148 C128,148 148,160 152,198 Z" />
+    <path
+        android:fillColor="#EDF2F4"
+        android:pathData="M78,198 C81,174 90,166 100,166 C110,166 119,174 122,198 Z" />
+    <!-- Big fluffy ears -->
+    <path
+        android:fillColor="#8D99AE"
+        android:pathData="M24,90 a28,28 0 1,0 56,0 a28,28 0 1,0 -56,0 Z" />
+    <path
+        android:fillColor="#8D99AE"
+        android:pathData="M120,90 a28,28 0 1,0 56,0 a28,28 0 1,0 -56,0 Z" />
+    <path
+        android:fillColor="#EDF2F4"
+        android:pathData="M36,92 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0 Z" />
+    <path
+        android:fillColor="#EDF2F4"
+        android:pathData="M132,92 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0 Z" />
+    <!-- Head -->
+    <path
+        android:fillColor="#9DA8BC"
+        android:pathData="M100,58 C134,58 154,84 154,114 C154,144 132,162 100,162 C68,162 46,144 46,114 C46,84 66,58 100,58 Z" />
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FF9AA2"
+        android:fillAlpha="0.55"
+        android:pathData="M56,128 a10,6.5 0 1,0 20,0 a10,6.5 0 1,0 -20,0 Z" />
+    <path
+        android:fillColor="#FF9AA2"
+        android:fillAlpha="0.55"
+        android:pathData="M124,128 a10,6.5 0 1,0 20,0 a10,6.5 0 1,0 -20,0 Z" />
+    <!-- Eyes -->
+    <path
+        android:fillColor="#2B2D42"
+        android:pathData="M67,108 a8,9 0 1,0 16,0 a8,9 0 1,0 -16,0 Z" />
+    <path
+        android:fillColor="#2B2D42"
+        android:pathData="M117,108 a8,9 0 1,0 16,0 a8,9 0 1,0 -16,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,104 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M120,104 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0 Z" />
+    <!-- Iconic oval koala nose -->
+    <path
+        android:fillColor="#3A3D52"
+        android:pathData="M89,118 C89,105 111,105 111,118 C111,130 106,136 100,136 C94,136 89,130 89,118 Z" />
+    <path
+        android:fillColor="#5B5F7A"
+        android:pathData="M94,113 a3.5,4.5 0 1,0 7,0 a3.5,4.5 0 1,0 -7,0 Z" />
+    <!-- Smile -->
+    <path
+        android:strokeColor="#2B2D42"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M91,143 C96,148 104,148 109,143" />
+</vector>
